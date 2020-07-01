@@ -1,0 +1,31 @@
+
+ #
+ # Copyright 2020 Amirreza Zarrabi <amrzar@gmail.com>
+ #
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation; either version 2 of the License, or
+ # (at your option) any later version.
+ #
+ # This program is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+
+choice "Archtecture"
+	CONFIG_ARCH
+	option "x86" [default]
+	help
+		"Choose the architecture for the the current build."
+
+.include "arch/x86/configs.in"
+
+menu "Compiler Configurations"
+	config "Compile with debug information"
+		CONFIG_DEBUG_BUILD
+		BOOL false
+		help
+			"If enabled, the resulting ukernel includes debugging information
+			 resulting in a larger kernel image."
+endmenu

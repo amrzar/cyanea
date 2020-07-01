@@ -1,0 +1,64 @@
+
+ #
+ # Copyright 2020 Amirreza Zarrabi <amrzar@gmail.com>
+ #
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation; either version 2 of the License, or
+ # (at your option) any later version.
+ #
+ # This program is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+
+menu "x86 Processor"
+	depends CONFIG_ARCH == "x86"
+
+	choice "x86 microarchitecture"
+		CONFIG_X86_MICROARCHITECTURE
+		option "native" [default]
+		option "nehalem"
+		option "westmere"
+		option "sandybridge"
+		option "ivybridge"
+		option "haswell"
+		option "broadwell"
+		option "skylake"
+
+	menu "Multiboot Configuration"
+		config "Use EGA-standard text mode"
+			CONFIG_MULTIBOOT_GRAPHICS_MODE_EGA
+			BOOL false
+			help
+				"If enabled, the boot loader will use EGA-standard text mode
+				 instead of linear graphics mode."	
+
+		config "Screen height"
+			CONFIG_MULTIBOOT_GRAPHICS_HEIGHT
+			INTEGER 0
+			help
+				"Specify number of the columns.
+				 This is specified in pixels in EGA text mode,
+				 and in characters in linear mode. 
+				 (zero indicates that the OS has no preference)"
+
+		config "Screen width"
+			CONFIG_MULTIBOOT_GRAPHICS_WIDTH
+			INTEGER 0
+			help
+				"Specify number of the columns.
+				 This is specified in pixels in EGA text mode,
+				 and in characters in linear mode.
+				 (zero indicates that the OS has no preference)"
+
+		config "Screen depth"
+			CONFIG_MULTIBOOT_GRAPHICS_DEPTH
+			INTEGER 0
+			depends CONFIG_MULTIBOOT_GRAPHICS_MODE_EGA
+			help
+				"The number of bits per pixel in EGA mode"
+	endmenu
+
+endmenu
