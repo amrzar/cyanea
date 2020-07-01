@@ -1,0 +1,93 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+menu "Architecture dependant configurations" # arch-dep-config
+	depends CONFIG_ARCH == "x86"
+
+	menu "x86 processor" # x86-processor
+		config
+			CONFIG_X86 BOOL
+
+		config "Build 64-bit ukernel"
+			CONFIG_64BIT BOOL
+			help
+				"Choose 64-bit ''x86_64'' or 32-bit	''x86_32'' ukernel."
+
+		config
+			CONFIG_X86_32 BOOL
+			depends NOT CONFIG_64BIT
+
+		config
+			CONFIG_X86_64 BOOL
+			depends CONFIG_64BIT
+
+		config
+			CONFIG_CPU_LITTLE_ENDIAN BOOL
+		
+		config "Maximum number of CPUs"
+			CONFIG_NR_CPUS
+			INTEGER 8
+			help
+				"This allows you to specify the maximum number of CPUs which
+				this kernel will support."
+
+		.include "arch/x86/configs.in.cpu"
+	endmenu # x86-processor
+
+	menu "ukernel image ''ukernel'' configurations" # ukernel-image-config
+		config "ukernel physical address"
+			CONFIG_PHYSICAL_START
+			INTEGER 0x400000
+			help
+				"This is the physical address where the ukernel is loaded.
+				
+				If ukernel is a not relocatable ''CONFIG_RELOCATABLE is not set''
+				then ukernel will decompress itself to above physical address
+				and run from there. Otherwise, it will run from the address where
+				it has been	loaded by the boot-loader and will ignore this physical
+				address."
+
+		config "ukernel alignment"
+			CONFIG_PHYSICAL_ALIGN
+			INTEGER 0x400000
+			help
+				"The alignment for the physical address where the ukernel is
+				loaded and run from. ''CONFIG_PHYSICAL_START'' must meet this
+				alignment restriction."
+
+		config "relocatable ukernel"
+			CONFIG_RELOCATABLE BOOL
+			help
+				"This builds a ukernel image that retains relocation information
+				so it can be loaded at different places. The relocations tend
+				to make the ukernel binary larger, but are discarded at runtime."
+
+		config
+			CONFIG_X86_NEED_RELOCS BOOL
+			depends CONFIG_RELOCATABLE && CONFIG_X86_32 
+
+	endmenu # ukernel-image-config
+
+	menu "Extensible Firmware Interface (EFI) support" # efi-support
+		config "EFI stub"
+			CONFIG_EFI_STUB
+			BOOL false
+			select CONFIG_RELOCATABLE
+			help
+				"This feature allows the ''ukernel'' to be loaded directly by EFI
+				firmware without the use of a boot-loader."
+
+		config "mixed-mode EFI"
+			CONFIG_EFI_MIXED
+			BOOL false
+			depends CONFIG_EFI_STUB && CONFIG_64BIT
+			help
+				"Allow a 64-bit ukernel to be booted on a 32-bit firmware, provided
+				that your CPU supports 64-bit mode.
+
+				Note: It is not possible to boot a mixed-mode enabled ukernel
+				via the EFI boot stub, a boot-loader that supports the EFI handover
+				protocol must be used."
+	
+	endmenu # efi-support
+
+endmenu # arch-dep-config

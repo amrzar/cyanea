@@ -1,0 +1,81 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+include $(srctree)/scripts/makefile.lib
+
+#
+# 'obj-y'     List objects and directories that should be built for '.builtin.o'.
+# 'extra-y    List of targets should be built before '.builtin.o'.
+# 'subdir-y'  List of directories should be built before '.builtin.o'.
+#
+
+targets-for-builtin := $(filter %.o, $(obj-y))
+subdir-for-builtin  := $(sort $(filter %/, $(obj-y)))
+
+all-targets := $(targets-for-builtin) $(extra-y)
+subdir := $(subdir-y) $(subdir-for-builtin)
+
+dep-files := $(foreach a-path, $(all-targets), $(call dot-file, $(a-path)).d)
+
+#
+# 'CPPFLAGS', 'cppflags' Global and directory preprocessor flags.
+# 'LDFLAGS', 'ld-flags'  Global and directory linker flags for '.builtin.o'.
+# 'CFLAGS', 'cflags', CFLAGS-$(@F)  Global, directory, and per-file compiler flags.
+# 'AFLAGS', 'aflags', AFLAGS-$(@F)  Global, directory, and per-file assembler flags.
+# 'OBJCOPYFLAGS', 'OBJCOPYFLAGS-$(@F)'  Global and per-file 'objcopy' flags.
+#
+
+-include $(dep-files)
+
+c_flags   = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
+	$(UKERINCLUDE) $(CPPFLAGS) $(CFLAGS) $(cflags) $(CFLAGS-$(@F))
+
+a_flags   = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
+	$(UKERINCLUDE) $(CPPFLAGS) $(AFLAGS) $(aflags) $(AFLAGS-$(@F))
+
+cpp_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
+	$(UKERINCLUDE) $(CPPFLAGS) $(cppflags)
+
+%.o: %.c
+	@$(call cmd-info, CC, $<)
+	$(Q)$(CC) $(c_flags) -c -o $@ $<
+
+%.o: %.S
+	@$(call cmd-info, AS, $<)
+	$(Q)$(CC) $(a_flags) -c -o $@ $<
+
+%.s: %.c
+	@$(call cmd-info, CC, $<)
+	$(Q)$(CC) $(c_flags) -S -o $@ $<
+
+%.lds: %.lds.S
+	@$(call cmd-info, LDS, $<)
+	$(Q)$(CPP) $(cpp_flags) -Wp,-MT,$@ -P -D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
+
+#
+#
+
+.builtin.o: $(extra-y) $(subdir-for-builtin) $(targets-for-builtin)
+	@$(call cmd-info, LD, $@)
+	$(Q)$(LD) $(LDFLAGS) $(ld-flags) $(targets-for-builtin) \
+		$(patsubst %/,%/.builtin.o,$(subdir-for-builtin)) -r -o $@
+
+%.elf: .builtin.o
+	$(Q)$(LD) $(LDFLAGS) $(LDFLAGS-$(@F)) -o $@ .builtin.o
+
+%.bin: %.elf
+	@$(call cmd-info, OBJCOPY, $<)
+	$(Q)$(OBJCOPY) $(OBJCOPYFLAGS) $(OBJCOPYFLAGS-$(@F)) $< $@
+
+# Descending ...
+$(subdir): FORCE
+	@$(call cmd-info, DESCEND, $@)
+	$(call descend-make, $@)
+
+rm-files: FORCE
+	$(foreach a-subdir, $(subdir), $(call descend, $(a-subdir) rm-files))
+	$(Q)rm -f $(all-targets) $(dep-files)
+	$(Q)rm -rf $(CLEAN_FILES)
+	$(Q)rm -f .builtin.o
+
+.DEFAULT_GOAL := .builtin.o
+.SECONDARY:

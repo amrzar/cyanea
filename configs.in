@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+choice "Architecture"
+	CONFIG_ARCH
+	option "x86" [default]
+	option "ARM"
+	help
+		"Choose the architecture for the the current build."
+
+	menu "Hardware setting" # hardware-setting
+		config "Number of UART ports"
+			CONFIG_NR_UARTS
+			INTEGER 4
+			help
+				"Set this to the number of serial ports supported."
+
+		config "Maximum number of memory region"
+			CONFIG_MEMBLOCK_MEMORY_REGIONS
+			INTEGER 128
+			help
+				"Number of memory regions."
+
+	endmenu # hardware-setting
+
+config "Build debug version"
+	CONFIG_DEBUG BOOL
+	help
+		"Build a ukernel for debugging purposes."
+
+config "ukernel version"
+	CONFIG_VERSION
+	STRING "1.0.0"
+	help
+		"Set the ukernel version for your build."
+	
+.include "arch/x86/configs.in"

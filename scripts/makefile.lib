@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+cmd-info = printf '%-8s%s\n' $1 $2
+dot-file = $(dir $1).$(notdir $1)
+
+#
+# 'if-changed' is used to check if the content of a generated file is updated.
+#
+# The existing file will be compared with the new one.
+#	- If no file exist it is created
+#	- If the content differ the new file is used
+#	- If they are equal no change, and no timestamp update
+#
+
+define if-changed
+	$(Q)set -e;	\
+	trap "rm -f $(call dot-file, $@).tmp" EXIT; \
+	{ $(1); } > $(call dot-file, $@).tmp; \
+	if [ ! -r $@ ] || ! cmp -s $@ $(call dot-file, $@).tmp; then \
+		$(call cmd-info, UPD, $@); \
+		mv -f $(call dot-file, $@).tmp $@; \
+	fi
+endef
+
+#
+# 'asm-offset.h' header generation.
+#
+# extra-y += arch/$(ARCH)/asm-offsets.s
+# include/generated/asm-offsets.h: arch/$(ARCH)/asm-offsets.s FORCE
+#	  $(call if-changed,$(asm-offset))
+#
+
+define sed-offsets
+	's/^\.ascii "\(.*\)".*/\1/; \
+	/^->/{s:->#\(.*\):/* \1 */:; \
+	s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; \
+	s:->::; p;}'
+endef
+
+define asm-offset
+	echo "#ifndef __ASM_OFFSETS_H__"; \
+	echo "#define __ASM_OFFSETS_H__"; \
+	echo "/** DO NOT MODIFY!! **/"; \
+	echo ""; \
+	sed -ne $(sed-offsets) < $<; \
+	echo ""; \
+	echo "#endif /* __ASM_OFFSETS_H__ */"
+endef
+
+#
+
+define descend-make
+	$(Q)$(MAKE) -C $(1)
+endef
+
+FORCE:
+.PHONY: FORCE

@@ -1,0 +1,50 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+
+#ifndef __ULIBS_IO_BUFFER_H__
+#define __ULIBS_IO_BUFFER_H__
+
+#include <cyanea/types.h>
+#include <cyanea/stdarg.h>
+
+enum io_bufmode { _IONBF, _IOLBF, _IOFBF };
+#define _IONBF _IONBF
+#define _IOLBF _IOLBF
+#define _IOFBF _IOFBF
+
+typedef struct io_buffer {
+    enum io_bufmode mode;
+
+    /* * */
+    /* The 'io_buffer' can be used as input buffer or output buffer.
+     * It is determined based on whether 'in' or 'out' has a valid value.
+     *
+     * 'buffer' is pointer to beginning of buffer 'slop + buffer'
+     * 'buf_size' is the buffer size -- 'slop' not included.
+     * 'io_unget_slop' is size of extra buffer 'slop' for 'ungetc'.
+     * 'inptr' is pointer to the beginning of input data in 'buffer'.
+     *
+     * */
+
+    size_t in, out;
+    size_t buf_size;
+    char *inptr, *buffer;
+
+#define _IO_UNGET_SLOP_FULL(io) ((io)->inptr == (io)->buffer)
+    size_t io_unget_slop;
+
+    size_t (*read)(struct io_buffer *, char *, size_t);
+    size_t (*write)(struct io_buffer *, const char *, size_t);
+    int (*flush)(struct io_buffer *);
+} *_IO_BUFFER;
+
+extern size_t __iob_write(_IO_BUFFER, const char *, size_t);
+extern size_t __iob_read(_IO_BUFFER, char *, size_t);
+extern int __iob_ungetc(_IO_BUFFER, char);
+
+extern int iob_strtoull(_IO_BUFFER, int, unsigned long long *);
+extern int iob_strtoll(_IO_BUFFER, int, long long *);
+
+extern int iob_vsnprintf(_IO_BUFFER, const char *, va_list);
+extern int iob_vsscanf(_IO_BUFFER, const char *, va_list);
+
+#endif /* __ULIBS_IO_BUFFER_H__ */
