@@ -27,12 +27,12 @@ typedef _Bool bool;
 #define _SIZE_T
 typedef __ukernel_size_t size_t;
 #endif
- 
+
 #ifndef _SSIZE_T
 #define _SSIZE_T
 typedef __ukernel_ssize_t ssize_t;
 #endif
- 
+
 #ifndef _PTRDIFF_T
 #define _PTRDIFF_T
 typedef __ukernel_ptrdiff_t ptrdiff_t;

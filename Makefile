@@ -104,3 +104,23 @@ help:
 
 .PHONY: ukernel mrproper clean help
 .DEFAULT_GOAL := ukernel
+
+style:
+	$(Q)find $(srctree) \
+		\( -name "*.c" -o -name "*.h" \) -exec \
+		astyle \
+		--style=attach \
+		--indent-after-parens \
+		--indent-preproc-define \
+		--convert-tabs \
+		--indent-labels \
+		--indent-preproc-cond \
+		--break-blocks \
+		--pad-oper \
+		--pad-comma \
+		--pad-header \
+		--align-pointer=name \
+		--break-one-line-headers \
+		{} +
+
+.PHONY: style

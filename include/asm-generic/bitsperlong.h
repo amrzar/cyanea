@@ -19,11 +19,11 @@
 #define BITS_PER_LONG 64 /* ... 64-bit kernel. */
 
 #if defined(__BITS_PER_LONG)
- #if BITS_PER_LONG != __BITS_PER_LONG
- # error inconsistent word size.
- #endif
+#if BITS_PER_LONG != __BITS_PER_LONG
+# error inconsistent word size.
+#endif
 #else
- # error '__BITS_PER_LONG' is undefined.
+# error '__BITS_PER_LONG' is undefined.
 #endif
 
 #ifndef BITS_PER_LONG_LONG
