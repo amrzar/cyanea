@@ -29,7 +29,7 @@ CPPFLAGS += -I$(srctree)/arch/x86/include
 
 head := arch/x86/multiboot.o arch/x86/head.o
 
-arch/x86/.linker.lds: arch/x86/linker.lds.S
+arch/x86/.linker.lds: arch/x86/linker.lds.S FORCE
 	$(Q)$(CPP) $(CPPFLAGS) -D__ASSEMBLY__ -o $@ $<
 
 ukernel.image: $(head) arch/x86/.linker.lds .output.o
@@ -37,6 +37,7 @@ ukernel.image: $(head) arch/x86/.linker.lds .output.o
 	$(Q)$(LD) $(LDFLAGS) $(LDFLAGS_ukernel) -o arch/x86/.$@.tmp \
 		-T arch/x86/.linker.lds $(head) .output.o
 	$(Q)$(OBJCOPY) -O elf32-i386 arch/x86/.$@.tmp arch/x86/$@
-	$(Q)rm -f arch/x86/.$@.tmp arch/x86/.linker.lds
+	$(Q)rm -f arch/x86/.$@.tmp
 
 CLEAN_FILES += arch/x86/ukernel.image
+CLEAN_FILES += arch/x86/.linker.lds
