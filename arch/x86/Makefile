@@ -39,5 +39,7 @@ ukernel.image: $(head) arch/x86/.linker.lds .output.o
 	$(Q)$(OBJCOPY) -O elf32-i386 arch/x86/.$@.tmp arch/x86/$@
 	$(Q)rm -f arch/x86/.$@.tmp
 
+ukernel: ukernel.image
+
 CLEAN_FILES += arch/x86/ukernel.image
 CLEAN_FILES += arch/x86/.linker.lds

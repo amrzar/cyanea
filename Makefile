@@ -74,8 +74,6 @@ defconfig:
 	$(Q)echo "[BUILD] $@" 
 	$(Q)sed -n 's/^#define CONFIG_\([^ ]*\) "\?\([^"]*\)"\? *$$/export \1=\2/w $@' $(sys-config-h)
 
-ukernel: .sys.config.in ukernel.image
-
 clean:
 	$(Q)echo "[CLEAN]"
 	$(Q)find $(srctree) \
