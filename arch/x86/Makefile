@@ -32,10 +32,10 @@ head := arch/x86/multiboot.o arch/x86/head.o
 arch/x86/.linker.lds: arch/x86/linker.lds.S
 	$(Q)$(CPP) $(CPPFLAGS) -D__ASSEMBLY__ -o $@ $<
 
-ukernel.image: $(head) arch/x86/.linker.lds out.o
+ukernel.image: $(head) arch/x86/.linker.lds .output.o
 	$(Q)echo "[BUILD] $@" 
 	$(Q)$(LD) $(LDFLAGS) $(LDFLAGS_ukernel) -o arch/x86/.$@.tmp \
-		-T arch/x86/.linker.lds $(head) out.o
+		-T arch/x86/.linker.lds $(head) .output.o
 	$(Q)$(OBJCOPY) -O elf32-i386 arch/x86/.$@.tmp arch/x86/$@
 	$(Q)rm -f arch/x86/.$@.tmp arch/x86/.linker.lds
 

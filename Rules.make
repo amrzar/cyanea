@@ -28,11 +28,10 @@ subdirs = $(sort $(filter %/,$(objects)))
 	$(Q)$(CC) -MMD $(NOSTDINC_FLAGS) $(CPPFLAGS) $(AFLAGS) \
 		$(as-flags) $(as-flags-$(@F)) -c -o $@ $<
 
-all-objects = $(patsubst %/,%/out.o,$(objects))
-
-out.o: $(filter-out %/,$(objects)) $(subdirs)
+.output.o: $(filter-out %/,$(objects)) $(subdirs)
 	$(Q)echo "LD $@"
-	$(Q)$(LD) $(LDFLAGS) $(ld-flags) $(all-objects) -r -o $@
+	$(Q)$(LD) $(LDFLAGS) $(ld-flags) \
+		$(patsubst %/,%/.output.o,$(objects)) -r -o $@
 
 $(subdirs): FORCE
  # Descending ...
