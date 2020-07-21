@@ -13,7 +13,7 @@
  # GNU General Public License for more details.
  #
 
-subdirs = $(filter %/,$(objects))
+subdirs = $(sort $(filter %/,$(objects)))
 
  # ... object's depfiles.
 -include $(patsubst %.o,%.d,$(filter-out %/,$(objects)))
@@ -30,13 +30,13 @@ subdirs = $(filter %/,$(objects))
 
 all-objects = $(patsubst %/,%/out.o,$(objects))
 
-out.o: $(filter-out %/,$(objects)) $(patsubst %/,%/.out.ss,$(subdirs))
+out.o: $(filter-out %/,$(objects)) $(subdirs)
 	$(Q)echo "LD $@"
 	$(Q)$(LD) $(LDFLAGS) $(ld-flags) $(all-objects) -r -o $@
-	$(Q)touch .out.ss
 
-%/.out.ss: % FORCE
-	$(Q)$(MAKE) -C $<
+$(subdirs): FORCE
+ # Descending ...
+	$(Q)$(MAKE) -C $@
 
 FORCE:
 .PHONY: FORCE

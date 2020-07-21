@@ -79,7 +79,7 @@ ukernel: .sys.config.in ukernel.image
 clean:
 	$(Q)echo "[CLEAN]"
 	$(Q)find $(srctree) \
-		\( -name "*.o" -o -name "*.d" -o -name .out.ss \) \
+		\( -name "*.o" -o -name "*.d" \) \
 		-type f -delete
 	$(Q)rm -f $(CLEAN_FILES) # ... delete whatever there.
 
