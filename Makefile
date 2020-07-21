@@ -89,16 +89,18 @@ mrproper: clean
 
 help:
  # ... brief documentation of the typical targets used
-	@echo 'Cleaning targets:'
-	@echo '  clean           - remove generated files but keep config files'
-	@echo '  mrproper        - remove generated files and config files'
-	@echo ''
-	@echo 'Configuration targets:'
-	@echo '  ukernel         - build the cyanea ukernel'
-	@echo ''
-	@echo '  menuconfig      - start uconfig gui'
-	@echo '  silentoldconfig - generate sys.config.h form existing config files'
-	@echo '  defconfig       - generate default config files'
+	echo 'Cleaning targets:'
+	echo '  clean           - remove generated files but keep config files'
+	echo '  mrproper        - remove generated files and config files'
+	echo ''
+	echo 'Configuration targets:'
+	echo '  ukernel         - build the cyanea ukernel'
+	echo ''
+	echo '  menuconfig      - start uconfig gui'
+	echo '  silentoldconfig - generate sys.config.h form existing config files'
+	echo '  defconfig       - generate default config files'
+
+.SILENT: help
 
 .PHONY: ukernel mrproper clean help
 .DEFAULT_GOAL := ukernel
