@@ -13,10 +13,10 @@
  # GNU General Public License for more details.
  #
 
-subdirs = $(sort $(filter %/,$(objects)))
+_objects = $(filter-out %/,$(objects))
 
  # ... object's depfiles.
--include $(patsubst %.o,%.d,$(filter-out %/,$(objects)))
+-include $(patsubst %.o,%.d,$(_objects))
  
 %.o: %.c FORCE
 	$(Q)echo "CC $<"
@@ -28,7 +28,9 @@ subdirs = $(sort $(filter %/,$(objects)))
 	$(Q)$(CC) -MMD $(NOSTDINC_FLAGS) $(CPPFLAGS) $(AFLAGS) \
 		$(as-flags) $(as-flags-$(@F)) -c -o $@ $<
 
-.output.o: $(filter-out %/,$(objects)) $(subdirs)
+subdirs = $(sort $(filter %/,$(objects)))
+
+.output.o: $(_objects) $(subdirs)
 	$(Q)echo "LD $@"
 	$(Q)$(LD) $(LDFLAGS) $(ld-flags) \
 		$(patsubst %/,%/.output.o,$(objects)) -r -o $@
