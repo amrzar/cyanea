@@ -27,7 +27,7 @@ AFLAGS += -m64
 
 CPPFLAGS += -I$(srctree)/arch/x86/include
 
-head := arch/x86/multiboot.o arch/x86/head.o
+head := arch/x86/head.o
 
 arch/x86/.linker.lds: arch/x86/linker.lds.S FORCE
 	$(Q)$(CPP) $(CPPFLAGS) -D__ASSEMBLY__ -o $@ $<
