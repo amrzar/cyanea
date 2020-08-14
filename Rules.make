@@ -18,12 +18,12 @@ _objects = $(filter-out %/,$(objects))
  # ... object's depfiles.
 -include $(patsubst %.o,%.d,$(_objects))
  
-%.o: %.c FORCE
+%.o: %.c
 	$(Q)echo "CC $<"
 	$(Q)$(CC) -MMD $(NOSTDINC_FLAGS) $(CPPFLAGS) $(CFLAGS) \
 		$(cc-flags) $(cc-flags-$(@F)) -c -o $@ $<
 
-%.o: %.S FORCE
+%.o: %.S
 	$(Q)echo "CC $<"
 	$(Q)$(CC) -MMD $(NOSTDINC_FLAGS) $(CPPFLAGS) $(AFLAGS) \
 		$(as-flags) $(as-flags-$(@F)) -c -o $@ $<
