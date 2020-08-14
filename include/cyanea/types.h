@@ -38,6 +38,11 @@ typedef __ukernel_ssize_t ssize_t;
 typedef __ukernel_ptrdiff_t ptrdiff_t;
 #endif
 
+typedef u8 uint8_t;
+typedef u16 uint16_t;
+typedef u32 uint32_t;
+typedef u64 uint64_t;
+
 typedef unsigned long uintptr_t;
 
 #endif /* __ASSEMBLY__ */
