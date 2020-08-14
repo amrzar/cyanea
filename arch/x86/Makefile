@@ -30,7 +30,7 @@ CPPFLAGS += -I$(srctree)/arch/x86/include
 head := arch/x86/head.o
 
 arch/x86/.linker.lds: arch/x86/linker.lds.S FORCE
-	$(Q)$(CPP) $(CPPFLAGS) -D__ASSEMBLY__ -o $@ $<
+	$(Q)$(CPP) $(CPPFLAGS) -D__ASSEMBLY__ -P -C -o $@ $<
 
 ukernel.image: $(head) arch/x86/.linker.lds .output.o
 	$(Q)echo "[BUILD] $@" 
