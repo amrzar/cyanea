@@ -41,3 +41,4 @@ $(subdirs): FORCE
 
 FORCE:
 .PHONY: FORCE
+.DEFAULT_GOAL := .output.o
