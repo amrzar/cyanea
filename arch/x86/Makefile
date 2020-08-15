@@ -19,8 +19,8 @@ LDFLAGS_ukernel :=
 CFLAGS += -march=$(X86_MICROARCHITECTURE)
 CFLAGS += -mno-red-zone
 CFLAGS += -mcmodel=kernel
-CFLAGS += -pipe
 CFLAGS += -mno-sse -mno-mmx -mno-sse2 -mno-3dnow
+CFLAGS += -mno-avx
 CFLAGS += -m64
 
 AFLAGS += -m64

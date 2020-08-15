@@ -28,7 +28,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 NOSTDINC_FLAGS = -nostdinc
 
 HOSTCC = gcc
-HOSTCFLAGS = -Wall -Wstrict-prototypes -Wno-unused-function -O2 -fomit-frame-pointer
+HOSTCFLAGS = -Wall -Wstrict-prototypes -Wno-unused-function -O2
 
 export CROSS_COMPILE CPP AS LD CC OBJCOPY NOSTDINC_FLAGS
 export HOSTCC HOSTCFLAGS
@@ -37,15 +37,19 @@ export srctree Q
 UKERNELINCLUDE := $(srctree)/include
 
 CPPFLAGS := -D__KERNEL__ -I$(UKERNELINCLUDE)
-CFLAGS := -Wall -Werror -Wundef -Wstrict-prototypes -Wmissing-prototypes \
-	-Wnested-externs -Wmissing-declarations -Wpointer-arith -O2 -ffreestanding
+CFLAGS := -Wall -Wundef -Wstrict-prototypes -fno-common -std=gnu89 -fno-PIE \
+	-Werror -Wmissing-prototypes -Wnested-externs -Wmissing-declarations \
+	-Wpointer-arith -ffreestanding
 AFLAGS := -D__ASSEMBLY__
 
 export CPPFLAGS CFLAGS AFLAGS LDFLAGS ARFLAGS UKERNELINCLUDE
 
 ifdef DEBUG_BUILD
 CFLAGS += -g -ggdb
-endif
+endif # DEBUG_BUILD
+
+ # ... disable stack protector if enabled by default.
+CFLAGS += -fno-stack-protector
 
  # ... architecture dependant.
 -include $(srctree)/arch/$(ARCH)/Makefile
