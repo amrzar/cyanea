@@ -15,6 +15,11 @@
 
 MAKEFLAGS += --no-print-directory
 
+VERSION = 1
+PATCHLEVEL = 0
+SUBLEVEL = 0
+EXTRAVERION =
+
 srctree := $(CURDIR)
 uconfig = ../tools/uconfig
 
@@ -43,6 +48,10 @@ CFLAGS := -Wall -Wundef -Wstrict-prototypes -fno-common -std=gnu89 -fno-PIE \
 AFLAGS := -D__ASSEMBLY__
 
 export CPPFLAGS CFLAGS AFLAGS LDFLAGS ARFLAGS UKERNELINCLUDE
+
+UKERNELRELEASE = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
+
+export VERSION PATCHLEVEL SUBLEVEL EXTRAVERION UKERNELRELEASE
 
 ifdef DEBUG_BUILD
 CFLAGS += -g -ggdb
