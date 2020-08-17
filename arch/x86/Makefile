@@ -13,7 +13,7 @@
  # GNU General Public License for more details.
  #
 
-LDFLAGS := -m elf_x86_64
+LDFLAGS := -melf_x86_64
 LDFLAGS_ukernel :=
 
 CFLAGS += -march=$(X86_MICROARCHITECTURE)
