@@ -14,7 +14,6 @@ DEBUG_OPTIONS=("-s" "-S")
 echo "(Starting QEMU)"
 case ${ARCH} in
     x86)
-        [[ -v X86_32 ]] && QEMU=i386
         [[ -v X86_64 ]] && QEMU=x86_64
 
         if [[ -v DEBUG ]]; then

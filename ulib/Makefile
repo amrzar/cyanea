@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-obj-y += __udivmodti4.o
-obj-y += __udivdi3.o
-
 obj-y += ctype.o
 obj-y += string.o
 obj-y += strtox.o

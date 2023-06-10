@@ -127,11 +127,7 @@ static void update_pecoff_section_header(char *section_name,
     uintptr_t pe_header = read_le32(&buffer[OFFSET_PE_HEADER_PTR]);
 
 #define OFFSET_PECOFF_NR_SECTIONS 0x6
-#ifdef CONFIG_X86_32
-#define OFFSET_PECOFF_SECTION_TABLE 0xA8
-#else
 #define OFFSET_PECOFF_SECTION_TABLE 0xB8
-#endif /* CONFIG_X86_32 */
 
     int num_sections =
         read_le32(&buffer[pe_header + OFFSET_PECOFF_NR_SECTIONS]);
@@ -232,20 +228,15 @@ static int update_setup_handover(void)
 {
     uintptr_t stub;
 
-#ifdef CONFIG_X86_32
-    stub = efi32_stub_entry;
-#else
     stub = efi64_stub_entry - 0x200;
-#ifdef CONFIG_EFI_MIXED
 
+#ifdef CONFIG_EFI_MIXED
     if (efi32_stub_entry != stub) {
         fprintf(stderr,
             "'efi32_stub_entry' and 'efi64_stub_entry' should be 512-byte apart.\n");
         return -1;
     }
-
 #endif /* CONFIG_EFI_MIXED */
-#endif /* CONFIG_X86_32 */
 
     store_le32(&buffer[OFFSET_HANDOVER_OFFSET], stub);
     return 0;

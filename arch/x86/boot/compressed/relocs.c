@@ -13,40 +13,6 @@ static uintptr_t *relocs;
 #define _ElfW(bits, type) __ElfW(bits, type)
 #define __ElfW(bits, type) Elf##bits##_##type
 
-#ifdef CONFIG_X86_32
-#define ELF_BITS 32
-#define SHT_REL_TYPE SHT_REL
-#define ELF_R_SYM ELF32_R_SYM
-#define Elf_Rel Elf32_Rel
-
-static int __do_reloc_32(Elf32_Rel * rel, Elf32_Sym * sym,
-    int (*process)(Elf32_Rel * rel, Elf32_Sym * sym))
-{
-    int ret = SUCCESS;
-    unsigned int r_type = ELF32_R_TYPE(rel->r_info);
-
-    if (sym->st_shndx == SHN_ABS)
-        return SUCCESS;
-
-    switch (r_type) {
-    case R_386_NONE:
-    case R_386_PC32:
-
-        break;
-
-    case R_386_32:
-        process(rel, sym);
-        break;
-
-    default:
-        error("Unsupported relocation type: %u\n", r_type);
-    }
-
-    return SUCCESS;
-}
-
-#define do_reloc __do_reloc_32
-#else
 #define ELF_BITS 64
 #define SHT_REL_TYPE SHT_RELA
 #define ELF_R_SYM ELF64_R_SYM
@@ -59,7 +25,6 @@ static int __do_reloc_64(Elf64_Rel * rel, Elf64_Sym * sym,
 }
 
 #define do_reloc __do_reloc_64
-#endif /* CONFIG_X86_32 */
 
 #define Elf_Ehdr ElfW(Ehdr)
 #define Elf_Shdr ElfW(Shdr)

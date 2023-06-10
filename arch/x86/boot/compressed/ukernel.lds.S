@@ -2,15 +2,9 @@
 
 #include <asm/page.h>
 
-#ifdef CONFIG_X86_32
-OUTPUT_FORMAT("elf32-i386")
-OUTPUT_ARCH(i386)
-ENTRY(startup_32)
-#else
 OUTPUT_FORMAT("elf64-x86-64")
 OUTPUT_ARCH(i386:x86-64)
 ENTRY(startup_64)
-#endif
 
 SECTIONS
 {
@@ -52,14 +46,12 @@ SECTIONS
         _ebss = .;
     }
 
-#ifdef CONFIG_X86_64
     . = ALIGN(PAGE_SIZE);
     .pgtable : {
         _pgtable = . ;
         *(.pgtable)
         _epgtable = . ;
     }
-#endif /* CONFIG_X86_64 */
 
     . = ALIGN(PAGE_SIZE);
     _end = .;
@@ -74,23 +66,7 @@ SECTIONS
 
     .got.plt : { *(.got.plt) }
 
-#ifdef CONFIG_X86_64
     ASSERT((SIZEOF(.got.plt) == 0x0), "Unexpected '.got.plt' entries detected!")
-#else
-
-    /*
-     * '.got.plt' contains the target addresses after they have been looked up by
-     * 'ld.so' or address of the next instruction at the lookup site that invokes
-     * the first instruction in '.plt' to trigger 'ld.so'.
-     *
-     * The code at the '.plt' uses the first three entries of '.got.plt' which
-     * point to the '.dynamic' section '_DYNAMIC' and the fixup routine in 'ld.so'.
-     * Hence, '0x0C'.
-     *
-     * */
-
-    ASSERT((SIZEOF(.got.plt) == 0x0C), "Unexpected '.got.plt' entries detected!")
-#endif /* CONFIG_X86_64 */
 
     .got : { *(.got) }
     .plt : { *(.plt) *(.plt.*) }

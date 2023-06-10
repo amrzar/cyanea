@@ -10,11 +10,6 @@
 
 #ifndef __ASSEMBLY__
 
-#ifdef CONFIG_X86_32
-#define __phys_addr(x) __phys_addr_kernel(x)
-#define __phys_addr_symbol(x) __phys_addr(x)
-
-#else
 extern unsigned long phys_base;
 
 static always_inline unsigned long __phys_addr(unsigned long x)
@@ -37,7 +32,6 @@ static always_inline unsigned long __phys_addr(unsigned long x)
 }
 
 #define __phys_addr_symbol(x) (__phys_addr_kernel(x) + phys_base)
-#endif /* CONFIG_X86_32 */
 
 #define __pa(x) __phys_addr((unsigned long)(x))
 #define __pa_symbol(x) __phys_addr_symbol((unsigned long)(x))

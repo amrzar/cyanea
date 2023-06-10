@@ -162,28 +162,10 @@ static int decompress_gzip(unsigned char *dest, size_t *dest_len,
     return SUCCESS;
 }
 
-#ifdef CONFIG_X86_NEED_RELOCS
-extern void emit_relocs(void *);
-extern void handle_relocations(void *, unsigned long);
-#else
-static inline void emit_relocs(void *output)
-{
-}
-
-static inline void handle_relocations(void *output, unsigned long output_len)
-{
-}
-#endif
-
 static void parse_elf(void *output)
 {
-#ifdef CONFIG_X86_32
-    Elf32_Ehdr ehdr;
-    Elf32_Phdr *phdrs, *phdr;
-#else
     Elf64_Ehdr ehdr;
     Elf64_Phdr *phdrs, *phdr;
-#endif
 
     int i;
     void *dest;
@@ -197,7 +179,6 @@ static void parse_elf(void *output)
 
     printf("Parsing ELF ...\n");
 
-    emit_relocs(output);
     phdrs = malloc(sizeof(*phdr) * ehdr.e_phnum);
 
     if (phdrs == NULL)
@@ -248,7 +229,6 @@ void *decompress_ukernel(void *bp, void *heap,
 
 #ifdef CONFIG_X86_64
 #ifdef CONFIG_RELOCATABLE
-#ifndef CONFIG_X86_NEED_RELOCS
 
     /*
      * For x86_64 if we do not relocate the virtual addresses then we rely on
@@ -266,7 +246,6 @@ void *decompress_ukernel(void *bp, void *heap,
             output, CONFIG_PHYSICAL_START);
     }
 
-#endif /* CONFIG_X86_NEED_RELOCS */
 #endif /* CONFIG_RELOCATABLE */
 #endif /* CONFIG_X86_64 */
 
@@ -277,7 +256,6 @@ void *decompress_ukernel(void *bp, void *heap,
         error("''decompress_gzip'' failed (ret = %d).\n", ret);
 
     parse_elf((void *)(output));
-    handle_relocations(output, output_len);
 
     printf("Done.\nBooting the ukernel (output = %p).\n", output);
 

@@ -7,9 +7,7 @@ static unsigned long get_cmd_line(void)
 {
     unsigned long cmd_line_ptr = boot_params->hdr.cmd_line_ptr;
 
-#ifdef CONFIG_X86_64
     cmd_line_ptr |= ((unsigned long)(boot_params->ext_cmd_line_ptr)) << 32;
-#endif
 
     return cmd_line_ptr;
 }

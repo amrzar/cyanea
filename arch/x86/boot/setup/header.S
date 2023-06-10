@@ -54,16 +54,9 @@ bootsect_start:
 #define EFI_STUB_MAJOR_VERSION 0x1
 #define EFI_STUB_MINOR_VERSION 0x0
 
-#ifdef CONFIG_X86_32
-    .set    pe_machine, 0x14c               # IMAGE_FILE_MACHINE_I386
-    .set    image_file_extra_flags, 0x0100  # IMAGE_FILE_32BIT_MACHINE
-    .set    pe_opt_magic, 0x10b             # Magic: PE32 format
-
-#else
     .set    pe_machine, 0x8664              # IMAGE_FILE_MACHINE_AMD64
     .set    image_file_extra_flags, 0       # None!
     .set    pe_opt_magic, 0x20b             # Magic: PE32+ format
-#endif /* CONFIG_X86_32 */
 
     .byte   0x4d              # "MZ", MS-DOS header
     .byte   0x5a
@@ -151,20 +144,8 @@ optional_header:
     .long   0x0000          # AddressOfEntryPoint, filled it at compile time.
     .long   0x0200          # BaseOfCode, '_start' at begining of second sector.
 
-#ifdef CONFIG_X86_32
-    .long   0               # BaseOfData
-                            # In PE32+, 'ImageBase' member is expanded to 64-bit,
-                            # 'BaseOfData' is removed to make room for 'ImageBase'
-#endif /* CONFIG_X86_32 */
-
 extra_header_fields:
-#ifdef CONFIG_X86_32
-    .long   CONFIG_PHYSICAL_START   # 'ImageBase' is the preferred address of the
-                                    # first byte of image when loaded into memory,
-                                    # must be multiple of 64KiB.
-#else
     .quad   CONFIG_PHYSICAL_START
-#endif /* CONFIG_X86_32 */
 
     .long   0x20            # SectionAlignment
     .long   0x20            # FileAlignment
@@ -181,18 +162,10 @@ extra_header_fields:
     .word   0xa             # IMAGE_SUBSYSTEM_EFI_APPLICATION
     .word   0               # DllCharacteristics
 
-#ifdef CONFIG_X86_32
-    .long   0               # SizeOfStackReserve
-    .long   0               # SizeOfStackCommit
-    .long   0               # SizeOfHeapReserve
-    .long   0               # SizeOfHeapCommit
-#else
     .quad   0               # SizeOfStackReserve
     .quad   0               # SizeOfStackCommit
     .quad   0               # SizeOfHeapReserve
     .quad   0               # SizeOfHeapCommit
-
-#endif /* CONFIG_X86_32 */
 
     .long   0               # LoaderFlags
     .long   0x6             # NumberOfRvaAndSizes

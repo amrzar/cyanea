@@ -48,9 +48,7 @@
 #define __PAGE_KERNEL_LARGE      (__PP|__RW|   0|___A|__XD|___D|_PSE|___G)
 #define __PAGE_KERNEL_LARGE_EXEC (__PP|__RW|   0|___A|   0|___D|_PSE|___G)
 
-#ifdef CONFIG_X86_32
-#  include "pgtable_types_32.h"
-#else
+#ifdef CONFIG_X86_64
 #  include "pgtable_types_64.h"
 #endif
 

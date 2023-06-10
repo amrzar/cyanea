@@ -3,14 +3,9 @@
 choice "Processor family"
 	CONFIG_PROCESSOR
 	option "Generic"     if CONFIG_X86_64 [default]
-	option "Pentium-Pro" if CONFIG_X86_32 [default]
 	help
 		"This is the processor types of your CPU."
 
 config
     CONFIG_L1_CACHE_6_SHIFT BOOL
     depends CONFIG_PROCESSOR == "Generic"
-
-config
-    CONFIG_L1_CACHE_5_SHIFT BOOL
-    depends CONFIG_PROCESSOR == "Pentium-Pro"

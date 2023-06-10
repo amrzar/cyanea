@@ -7,12 +7,8 @@ CFLAGS += -ffreestanding -fno-stack-protector
 CFLAGS += -fno-asynchronous-unwind-tables
 CFLAGS += -D__USE_GENERIC_ULIB
 
-ifdef X86_32
-CLAFGS += -march=i386
-else
 CFLAGS += -mcmodel=small
 CFLAGS += -mno-red-zone
-endif # CONFIG_X86_32
 
 AFLAGS := $(CFLAGS) -D__ASSEMBLY__
 LDFLAGS := -m elf_$(UTS_MACHINE)
@@ -38,7 +34,6 @@ obj-y += misc.o
 obj-y += string.o
 obj-y += early_params.o
 obj-y += printf.o
-obj-$(X86_NEED_RELOCS) += relocs.o
 
 extra-y += ukernel.lds
 

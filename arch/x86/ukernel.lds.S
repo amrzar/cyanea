@@ -3,16 +3,9 @@
 #include <cyanea/pgtable.h>
 #include <asm/cache.h>
 
-#ifdef CONFIG_X86_32
-OUTPUT_FORMAT("elf32-i386")
-OUTPUT_ARCH(i386)
-ENTRY(phys_startup_32)
-
-#else
 OUTPUT_FORMAT("elf64-x86-64")
 OUTPUT_ARCH(i386:x86-64)
 ENTRY(phys_startup_64)
-#endif
 
 #define LOAD_OFFSET __START_KERNEL_map
 
@@ -27,11 +20,8 @@ PHDRS {
 SECTIONS
 {
     . = __START_KERNEL;
-#ifdef CONFIG_X86_32
-    phys_startup_32 = ABSOLUTE(startup_32 - LOAD_OFFSET);
-#else
+
     phys_startup_64 = ABSOLUTE(startup_64 - LOAD_OFFSET);
-#endif
 
     .text : AT(ADDR(.text) - LOAD_OFFSET) {
         _text = .;

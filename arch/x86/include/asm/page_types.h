@@ -10,9 +10,7 @@
 #define PAGE_SIZE BIT_UL(PAGE_SHIFT)
 #define PAGE_MASK (~((PAGE_SIZE) - 1))
 
-#ifdef CONFIG_X86_32
-#  include "page_types_32.h"
-#else
+#ifdef CONFIG_X86_64
 #  include "page_types_64.h"
 #endif
 
