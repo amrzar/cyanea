@@ -1,27 +1,27 @@
 
-                         voffset.h ... arch/x86/ukernel.img
+                            [voffset.h] ... ukernel.elf
                                                 │
                                                 ├─ compress (gzip)
                                                 │
                                                 ▼
-                                         ukernel.img.gz
+                                         ukernel.elf.gz
                                                 │
                                                 ├─ mkpiggy (mkpiggy.S)
                                                 │
                                                 ▼
-                    Objects from >>>  *.o +  piggy.o
-                   boot/compress      │         │
+        Objects from compressed >>>  *.o +  piggy.o
+                                      │         │
                                       └────┬────┘
                                            │
-                        zoffset.h ... ukernel.elf (-pie)
+                      [zoffset.h] ... ukernel.elf (-pie)
                                            │
-         Objects from >>> setup.elf        ├─ Stripped
-           boot/setup       │              │
+                         setup.elf         ├─ Stripped
+                            │              │
                             │              ▼
-                  Stripped ─┤        ukernel.bin
+                  Stripped ─┤        ukernel.bin (1)
                             │              │
                             ▼              │
-                         setup.bin         │
+                        setup.bin (2)      │
                             │              │
                             └──────┬───────┘
                                    │
@@ -30,6 +30,9 @@
                                    ▼
                                zukernel
 
-There are two 'ukerne.bin' created in this process. One as position indipendant code which is stored in compresse directory, let's call it compressed ukernel.bin.
-The other is the main kernel. The bootloader will starts the compressed ukernel.bin which will move itself and decompress the main kernel into it's place.
-setup.elf is lined at address 0 and is relocated simply by to normalising the address, see header.S.
+There are two 'ukernel.bin' created in this process. One as position independent
+code which is stored in compresses directory (1), let's call it compressed ukernel.bin.
+The other (2) is the setup directory.
+
+The boot-loader will starts the compressed ukernel.bin which will move itself
+and decompress the main kernel 'ukernel.elf.gz' into it's own place.

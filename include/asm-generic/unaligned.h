@@ -10,8 +10,7 @@
 /* '__get_unaligned_t' and '__put_unaligned_t' by using '__packed' convince the
  * compiler that alignment of pointer 'ptr' is one. So that, the compiler issues
  * the correct load and store instructions.
- *
- * */
+ */
 
 #define __get_unaligned_t(type, ptr) ({ \
         const struct { type x; } __packed *__pptr = (typeof(__pptr))(ptr); \
@@ -27,10 +26,10 @@
 #define put_unaligned(value, p) __put_unaligned_t(typeof(*(p)), (value), (p))
 
 #define __gen_put_unaligned(size, type) \
-static inline void put_unaligned_ ## type ## size (u ## size value, void *p) \
-{ \
-    __put_unaligned_t(__ ## type ## size, cpu_to_ ## type ## size (value), p); \
-}
+    static inline void put_unaligned_ ## type ## size (u ## size value, void *p) \
+    { \
+        __put_unaligned_t(__ ## type ## size, cpu_to_ ## type ## size (value), p); \
+    }
 
 __gen_put_unaligned(16, le);    /* ''put_unaligned_le16'' */
 __gen_put_unaligned(32, le);    /* ''put_unaligned_le32'' */
@@ -41,10 +40,10 @@ __gen_put_unaligned(64, be);    /* ''put_unaligned_be64'' */
 #  undef __gen_put_unaligned
 
 #define __gen_get_unaligned(size, type) \
-static inline u ## size get_unaligned_ ## type ## size (const void *p) \
-{ \
-    return type ## size ## _to_cpu(__get_unaligned_t(__ ## type ## size, p)); \
-}
+    static inline u ## size get_unaligned_ ## type ## size (const void *p) \
+    { \
+        return type ## size ## _to_cpu(__get_unaligned_t(__ ## type ## size, p)); \
+    }
 
 __gen_get_unaligned(16, le);    /* ''get_unaligned_le16'' */
 __gen_get_unaligned(32, le);    /* ''get_unaligned_le32'' */

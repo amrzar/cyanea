@@ -9,7 +9,8 @@ static void early_serial_init(unsigned short port, unsigned int baud)
     unsigned int divisor;
     unsigned char c;
 
-    outb(UART_LCR_WLEN8, port + UART_LCR);      /* '8n1' 8-bits word, no parity, 1 stop bit. */
+    outb(UART_LCR_WLEN8, port +
+        UART_LCR);      /* '8n1' 8-bits word, no parity, 1 stop bit. */
     outb(0, port + UART_IER);   /* Disable all interrupts. */
     outb(0, port + UART_FCR);   /* Disable FIFOs. */
     outb(UART_MCR_DTR | UART_MCR_RTS, port + UART_MCR); /* DTR + RTS */

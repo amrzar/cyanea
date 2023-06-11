@@ -5,9 +5,8 @@
 #
 
 #include <asm-offsets.h>
-#include <asm/desc_defs.h>
-#include <asm/segment.h>
-#include <asm/cpu_registers.h>
+#include <asm/desc_types.h>
+#include <asm/cpu.h>
 #include <asm/page.h>
 
 #include "../boot.h"
@@ -40,10 +39,6 @@
 # Using '(X - startup_32)(%reg)', where '%reg' is base 'startup_32', to access
 # symbol 'X' forces linker to store displacement without any relocation entry.
 # This is valid because 'X' and 'startup_32' are in a same section.
-#
-# To access the symbol address after moving the code, it only needs to update '%reg'
-# to 'new_base + startup_32', see description of '_end@GOTOFF' in 'head_32.S'.
-# As 'startup_32' is zero, '%reg' need to be updated with 'new_base'.
 #
 
 #define relative_va(X) ((X) - startup_32)
@@ -113,12 +108,16 @@ startup_32:
     movl    $CONFIG_PHYSICAL_START, %ebx
 #endif /* CONFIG_RELOCATABLE */
 
-    addl    BP_init_size(%esi), %ebx        # 'EBX' is end of buffer.
+    addl    BP_init_size(%esi), %ebx
 
     #
-    # 'EBX' should be 'EBX - _end + startup_32' or the address where kernel image
-    # should be moved to continue running plus 'startup_32'. Therefore, to access
-    # symbole after the move we can use 'relative_va(symbole)(%ebx)'.
+    # 'EBX' is end of buffer reserved by bootloder.
+    #
+    # For the compressed kernel image, addresses start from zero; so, '_end' is
+    # the kernel image size. Subtract '_end - startup_32' from 'EBX'.
+    # It will be address where kernel image will be moved ('EBX - _end') plus 'startup_32'.
+    #
+    # Therefore, to access symbol after the move we can use 'relative_va(symbol)(%ebx)'.
     #
 
     subl    $relative_va(_end), %ebx
@@ -140,7 +139,7 @@ startup_32:
     rep; stosl
 
     #
-    # Do 'ident-mapping' for the first 4GiB of memory.
+    # Do indentity mappings for the first 4GiB of memory.
     #
 
     leal    relative_va(pgtable + 0)(%ebx), %edi
@@ -252,12 +251,13 @@ startup_64:
 #endif /* CONFIG_RELOCATABLE */
 
     movl    BP_init_size(%rsi), %ebx
+
     subl    $relative_va(_end), %ebx
 
     #
-    # 'RBX' is the address where kernel image should be moved to continue
-    # running plus 'startup_32'. Therefore, to access symbole after the move we
-    # can use 'relative_va(symbole)(%rbx)'.
+    # 'RBX' is the address where kernel image will be moved ('RBX - _end') plus 'startup_32'.
+    #
+    # Therefore, to access symbol after the move we can use 'relative_va(symbol)(%rbx)'.
     #
 
     addq    %rbp, %rbx
@@ -305,20 +305,11 @@ startup_64:
     shrq    $3, %rcx
     rep; stosq
 
-    #
-    # 'output_len', 'input_len', and 'input_data' are defined in 'piggy.S',
-    # See 'mkpiggy.c'.
-    #
-
     pushq   %rsi                        # Save 'ESI'.
 
     movq    %rsi, %rdi                  # bp - boot_params address.
-    leaq    boot_heap(%rip), %rsi       # heap - address of available heap.
-    leaq    input_data(%rip), %rdx      # input_data - compressed ukernel.
-    movl    input_len(%rip), %ecx       # input_len - size of compressed ukernel.
-    movq    %rbp, %r8                   # output - uncompressed ukernel.
-    movl    output_len(%rip), %r9d      # output_len - size of uncompressed ukernel.
-    
+    movq    %rbp, %rsi                  # output - uncompressed ukernel.
+  
     call    decompress_ukernel          # Returns ukernel location in 'EAX'.
 
     popq    %rsi                        # Restore 'ESI'.
@@ -338,7 +329,7 @@ gdt64:
     .type   gdt64, @object
     .size   gdt64, . - gdt64
 
-    .balign 8
+    .balign 16                  # Recommended by Intel.
 gdt:
     .word   gdt_end - gdt - 1   # GDT size.
     .long   0                   # GDT base, filled above.
@@ -353,15 +344,8 @@ gdt_end:
     .size   gdt, . - gdt
 
     .bss
-    .balign 4
-boot_heap:
-    .fill   BOOT_HEAP_SIZE, 1, 0
-
-    .type   boot_heap, @object
-    .size   boot_heap, . - boot_heap
-
 boot_stack:
-    .fill   BOOT_STACK_SIZE, 1, 0
+    .space  BOOT_STACK_SIZE
     .balign 16
 boot_stack_end:
     .type   boot_stack_end, @object

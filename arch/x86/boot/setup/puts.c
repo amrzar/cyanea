@@ -11,11 +11,14 @@
 
 static void __bios_putchar(int c)
 {
-    asm volatile ("pushal\n"
-        "pushw %%ds\n"
-        "int $0x10\n"
-        "popw %%ds\n" "popal"::"b" (0x0007), "c"(0x0001), "a"(0x0e00 | c)
-        );
+    asm volatile(
+        "pushal         ;"
+        "pushw  %%ds    ;"
+        "int    $0x10   ;"
+        "popw   %%ds    ;"
+        "popal          ;"
+        : : "b" (0x0007), "c" (0x0001), "a" (0x0e00 | c)
+    );
 }
 
 void putchar(int c)

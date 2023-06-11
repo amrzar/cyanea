@@ -35,14 +35,14 @@ obj-y += string.o
 obj-y += early_params.o
 obj-y += printf.o
 
-extra-y += ukernel.lds
+ukernel.elf: ukernel.lds
 
 LDFLAGS-ukernel.elf := -T ukernel.lds -pie -z noexecstack
 LDFLAGS-ukernel.elf += --no-dynamic-linker --orphan-handling=error
 LDFLAGS-ukernel.elf += --no-ld-generated-unwind-info
 
 OBJCOPYFLAGS-ukernel.bin := -O binary -S
-CLEAN_FILES += ukernel.elf ukernel.bin
+CLEAN_FILES += ukernel.lds ukernel.elf ukernel.bin
 
 include $(srctree)/scripts/makefile.build
 .DEFAULT_GOAL := ukernel.bin

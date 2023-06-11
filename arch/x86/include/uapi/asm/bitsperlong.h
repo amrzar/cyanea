@@ -10,11 +10,11 @@
 #endif
 
 #ifdef CONFIG_X86_64
-#if __BITS_PER_LONG != 64
-#  error "Inconsistent word size".
-#endif
+# if __BITS_PER_LONG != 64
+#  error "Inconsistent word size."
+# endif
 #else
-#  error "Unsupported word size".
+# error "Unsupported word size."
 #endif /* CONFIG_X86_64 */
 
 #define BITS_PER_LONG __BITS_PER_LONG

@@ -20,23 +20,21 @@ void putchar(int c)
 
 void puts(const char *str)
 {
-    while (*str) {
+    while (*str)
         putchar(*str++);
-    }
 }
 
-#define FL_ZERO  (1 << 0)
-#define FL_HASH  (1 << 1)
-#define FL_UPPER (1 << 2)
-#define FL_SIGN  (1 << 3)
-#define FL_MINUS (1 << 4)
+#define FL_ZERO   (1 << 0)
+#define FL_HASH   (1 << 1)
+#define FL_UPPER  (1 << 2)
+#define FL_SIGNED (1 << 3)
+#define FL_MINUS  (1 << 4)
 
 enum ranks {
-    rank_char = -2,
-    rank_short = -1,
-    rank_int = 0,
-    rank_long = 1,
-    rank_size_t = 2
+    RANK_CHAR = -2,
+    RANK_SHORT = -1,
+    RANK_INT = 0,
+    RANK_LONG = 1
 };
 
 static void put_padding(int condition, char c, int width, int nchar)
@@ -55,7 +53,7 @@ static void format_int(unsigned long value, int base,
 
     int minus = 0, ndigits = 0, nchar = 0;
 
-    if ((flags & FL_SIGN) && (long)(value) < 0) {
+    if ((flags & FL_SIGNED) && (long)(value) < 0) {
         value = (unsigned long)(-(long)(value));
         minus = 1;
         nchar = 1;
@@ -73,7 +71,8 @@ static void format_int(unsigned long value, int base,
 
     /* 'ndigits' is number of digits to represent the 'value'.
      * 'nchar' is number of character including sign and preceding string, e.g. '0x'.
-     * 'width' is minimum number of character for this field. * */
+     * 'width' is minimum number of character for this field.
+     */
 
     nchar += ndigits;
 
@@ -105,7 +104,7 @@ static void format_int(unsigned long value, int base,
 
     while (ndigits > 0) {
         t_str[--ndigits] = ((flags & FL_UPPER) ?
-            "0123456789ABCDEF" : "0123456789abcdef")
+                "0123456789ABCDEF" : "0123456789abcdef")
             [value % base];
         value /= base;
     }
@@ -116,41 +115,63 @@ static void format_int(unsigned long value, int base,
     put_padding((flags & FL_MINUS), ' ', width, nchar);
 }
 
+#define USTTOLL(x) ((unsigned long)(x))
+#define STTOLL(x)  ((unsigned long)(long)(x))
+
 static void ap_format_int(int base, unsigned long flags, int width,
-    int precision, int rank, va_list * ap)
+    int precision, int rank, va_list *ap)
 {
     unsigned long value = 0;
 
-    /* ... and do series of type cast for correct data type. */
+    /* Do series of type cast for correct data type. */
 
-    switch (rank) {
-    case rank_char:
-        value = (unsigned long)((flags & FL_SIGN) ?
-            (long)(char)(va_arg(*ap, int)) :
-            (unsigned char)(va_arg(*ap, unsigned int)));
-        break;
+    if (flags & FL_SIGNED) {
+        switch (rank) {
+        case RANK_CHAR:
+            value = STTOLL((unsigned char)(va_arg(*ap, int)));
+            break;
 
-    case rank_short:
-        value = (unsigned long)((flags & FL_SIGN) ?
-            (long)(short)(va_arg(*ap, int)) :
-            (unsigned short)(va_arg(*ap, unsigned int)));
-        break;
+        case RANK_SHORT:
+            value = STTOLL((unsigned short)(va_arg(*ap, int)));
+            break;
 
-    case rank_int:
-        value = (unsigned long)((flags & FL_SIGN) ?
-            (long)(va_arg(*ap, int)) : (va_arg(*ap, unsigned int)));
-        break;
+        case RANK_INT:
+            value = STTOLL(va_arg(*ap, unsigned int));
+            break;
 
-    case rank_long:
-        value = (unsigned long)((flags & FL_SIGN) ?
-            (va_arg(*ap, long)) : (va_arg(*ap, unsigned long)));
-        break;
+        case RANK_LONG:
+            value = STTOLL(va_arg(*ap, unsigned long));
+            break;
 
-    case rank_size_t:
-        value = (unsigned long)(va_arg(*ap, size_t));
+            /* No 'rank_long_long' so that 'format_int' can use 'div' and '%'
+             * without using gcc '__udiv' helping functions.
+             */
 
-        /* No 'rank_long_long' so that 'format_int' can use 'div' and '%'
-         * without using gcc '__udiv' helping functions. * */
+        }
+
+    } else {
+        switch (rank) {
+        case RANK_CHAR:
+            value = USTTOLL((unsigned char)(va_arg(*ap, int)));
+            break;
+
+        case RANK_SHORT:
+            value = USTTOLL((unsigned short)(va_arg(*ap, int)));
+            break;
+
+        case RANK_INT:
+            value = USTTOLL(va_arg(*ap, unsigned int));
+            break;
+
+        case RANK_LONG:
+            value = USTTOLL(va_arg(*ap, unsigned long));
+            break;
+
+            /* No 'rank_long_long' so that 'format_int' can use 'div' and '%'
+             * without using gcc '__udiv' helping functions.
+             */
+
+        }
     }
 
     format_int(value, base, flags, width, precision);
@@ -166,9 +187,8 @@ static void format_str(const char *str, int count,
 
     put_padding(!(flags & FL_MINUS), ' ', width, count);
 
-    while (i < count) {
+    while (i < count)
         putchar(str[i++]);
-    }
 
     put_padding((flags & FL_MINUS), ' ', width, count);
 }
@@ -178,7 +198,7 @@ int printf(const char *format, ...)
     va_list ap;
     va_start(ap, format);
 
-    /* * ''%[parameter][flags][width][.precision][length or modifier]type''. * */
+    /* * ''%[parameter][flags][width][.precision][length or modifier]type''. */
 
     int ret = 0;
 
@@ -202,7 +222,7 @@ int printf(const char *format, ...)
                 if (format[p] != '%') {
                     state = ST_FLAGS;
                     flags = 0;
-                    rank = rank_int;
+                    rank = RANK_INT;
                     width = 0;
                     precision = -1;
 
@@ -238,7 +258,7 @@ int printf(const char *format, ...)
             break;
 
         case ST_WIDTH:
- st_width:
+st_width:
 
             if (ch >= '0' && ch <= '9')
                 width = width * 10 + (ch - '0');
@@ -264,14 +284,14 @@ int printf(const char *format, ...)
             break;
 
         case ST_MODIFIERS:
- st_modifiers:
+st_modifiers:
 
-            if ((ch == 'h') && (rank > rank_char))
+            if ((ch == 'h') && (rank > RANK_CHAR))
                 rank--;
-            else if ((ch == 'l') && (rank < rank_long))
+
+            else if ((ch == 'l') && (rank < RANK_LONG))
                 rank++;
-            else if (ch == 'z')
-                rank = rank_size_t;
+
             else {
                 state = ST_NORMAL;
 
@@ -281,13 +301,13 @@ int printf(const char *format, ...)
 
                 case 'p':
                     flags |= FL_HASH;
-                    format_int((unsigned long)(va_arg(ap, void *)),
-                        16, flags, width, (sizeof(void *) >> 2));
+                    format_int(USTTOLL(va_arg(ap, void *)), 16, flags, width,
+                        sizeof(void *) >> 2);
                     break;
 
                 case 'd':
                 case 'i':
-                    flags |= FL_SIGN;
+                    flags |= FL_SIGNED;
 
                 case 'u':
                     ap_format_int(10, flags, width, precision, rank, &ap);
@@ -304,21 +324,21 @@ int printf(const char *format, ...)
                     ap_format_int(16, flags, width, precision, rank, &ap);
                     break;
 
-                case 'c':{
-                        char char_arg = (signed char)(va_arg(ap, int));
+                case 'c': {
+                    char char_arg = (signed char)(va_arg(ap, int));
 
-                        format_str(&char_arg, 1, flags, width, precision);
-                        break;
-                    }
+                    format_str(&char_arg, 1, flags, width, precision);
+                    break;
+                }
 
-                case 's':{
-                        const char *str_arg = va_arg(ap, const char *);
-                        str_arg = str_arg ? str_arg : "(null)";
+                case 's': {
+                    const char *str_arg = va_arg(ap, const char *);
+                    str_arg = str_arg ? str_arg : "(null)";
 
-                        format_str(str_arg, strlen(str_arg), flags, width,
-                            precision);
-                        break;
-                    }
+                    format_str(str_arg, strlen(str_arg), flags, width,
+                        precision);
+                    break;
+                }
 
                 default:
                     ret = -1;
@@ -329,7 +349,7 @@ int printf(const char *format, ...)
         }
     }
 
- out:
+out:
     va_end(ap);
 
     return ret;

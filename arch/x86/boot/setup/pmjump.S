@@ -1,8 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <asm/desc_defs.h>
-#include <asm/segment.h>
-#include <asm/cpu_registers.h>
+#include <asm/desc_types.h>
+#include <asm/cpu.h>
 
     .code16
 

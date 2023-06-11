@@ -4,19 +4,17 @@
 #define __CYANEA_MEMBLOCK_H__
 
 #include <cyanea/types.h>
+#include <cyanea/stddef.h>
 
 enum memblock_flags {
     MEMBLOCK_NONE = 0x0,
-
-    /* Internal Flags. */
-
-    __MEMBLOCK_RESERVED = 0x1,
+    MEMBLOCK_RESERVED = 0xFFFF,
 };
 
 struct memblock_region {
     enum memblock_flags flags;
 
-    unsigned long base;
+    phys_addr_t base;
     size_t size;
 
     int nid;
@@ -27,18 +25,25 @@ struct memblock {
     size_t size;
 
     struct memblock_region *regions;
+    const char *name;
 };
 
-extern int memblock_add(unsigned long, size_t, int, enum memblock_flags);
-extern int memblock_remove(unsigned long, size_t);
-extern int memblock_set_node(unsigned long, size_t, int);
-extern int memblock_setclr_flag(unsigned long, size_t, int,
-    enum memblock_flags);
+int memblock_add(phys_addr_t, size_t, int, enum memblock_flags);
+int memblock_remove(phys_addr_t, size_t);
+int memblock_set_node(phys_addr_t, size_t, int);
+int memblock_setclr_flag(phys_addr_t, size_t, int, enum memblock_flags);
 
 /* ''ALLOCATION API''. */
 
-extern void memblock_free(unsigned long, size_t);
-extern unsigned long memblock_alloc(size_t, unsigned long, unsigned long,
-    unsigned long, int, bool);
+void __next_mem_pfn_range(int *, int, unsigned long *, unsigned long *, int *);
+void memblock_free(phys_addr_t, size_t);
+phys_addr_t memblock_alloc(size_t, unsigned long, phys_addr_t, phys_addr_t, int,
+    bool);
+int memblock_reserve(phys_addr_t, size_t);
+void memblock_dump(void);
+
+#define for_each_mem_pfn_range(i, n, start_pfn, end_pfn, nid) \
+    for (i = -1, __next_mem_pfn_range(&i, n, start_pfn, end_pfn, nid); \
+        i >= 0; __next_mem_pfn_range(&i, n, start_pfn, end_pfn, nid))
 
 #endif /* __CYANEA_MEMBLOCK_H__ */

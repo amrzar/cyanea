@@ -68,15 +68,13 @@ static const uint32_t crctab32[] = {
     0x2d02ef8d
 };
 
-/*
- * The real-mode code consists of the boot-sector (always one sector) plus the
+/* The real-mode code consists of the boot-sector (always one sector) plus the
  * setup code (at least 4 sectors), i.e. 'SETUP_SECT_MIN' is 5. The maximum size
  * of real-mode code is 32KiB so that there is enough space for stack and heap
  * in a 64KiB segment.
  *
  * See 'setup_sects' and 'setup_move_size' in 'header.S'.
- *
- * */
+ */
 
 #define SETUP_SECT_MIN 5
 #define SETUP_SECT_MAX 64
@@ -98,12 +96,10 @@ static uint8_t buffer[SETUP_SECT_MAX * 512] = { 0 };
 
 #ifdef CONFIG_EFI_STUB
 
-/*
- * 'PECOFF_COMPAT_RESERVE' is default '.compat' size. EFI stub version 1.0 allows
+/* 'PECOFF_COMPAT_RESERVE' is default '.compat' size. EFI stub version 1.0 allows
  * the firmware that targets a diffrent machine type to start the kernel via the
  * entry point exposed in the '.compat' PE/COFF section.
- *
- * */
+ */
 
 #ifdef CONFIG_EFI_MIXED
 #define PECOFF_COMPAT_RESERVE 0x20
@@ -111,11 +107,9 @@ static uint8_t buffer[SETUP_SECT_MAX * 512] = { 0 };
 #define PECOFF_COMPAT_RESERVE 0x0
 #endif /* CONFIG_EFI_MIXED */
 
-/*
- * 'PECOFF_RELOC_RESERVE' is default '.reloc' size. The EFI application loader
+/* 'PECOFF_RELOC_RESERVE' is default '.reloc' size. The EFI application loader
  * requires a relocation section as EFI applications must be relocatable.
- *
- * */
+ */
 
 #define PECOFF_RELOC_RESERVE 0x20
 
@@ -132,7 +126,7 @@ static void update_pecoff_section_header(char *section_name,
     int num_sections =
         read_le32(&buffer[pe_header + OFFSET_PECOFF_NR_SECTIONS]);
     uintptr_t section =
-        (uintptr_t) (&buffer[pe_header + OFFSET_PECOFF_SECTION_TABLE]);
+        (uintptr_t)(&buffer[pe_header + OFFSET_PECOFF_SECTION_TABLE]);
 
     while (num_sections > 0) {
         if (strncmp((char *)section, section_name, 8) == 0) {
@@ -167,7 +161,8 @@ static void update_pecoff_reloc(size_t size)
         reloc_offset, PECOFF_RELOC_RESERVE);
 
     /* '.reloc' section contains single dummy relocation entry.
-     * The relocation is applied to offset 10 of the relocation section. */
+     * The relocation is applied to offset 10 of the relocation section.
+     */
 
     store_le32(&buffer[reloc_offset], reloc_offset + 10);
     store_le32(&buffer[reloc_offset + 0x4], 10);
@@ -180,9 +175,10 @@ static void update_pecoff_compat(size_t size)
     update_pecoff_section_header(".compat", compat_offset,
         PECOFF_COMPAT_RESERVE, compat_offset, PECOFF_COMPAT_RESERVE);
 
-    /* ... and store the IA-32 machine type (0x14c) and the associated entry point.
-     * The boot-loader uses '.compat' to figure out suppoeted execution modes in
-     * the image. */
+    /* Store the IA-32 machine type (0x14c) and the associated entry point.
+     * The boot-loader uses '.compat' to figure out supported execution modes in
+     * the image.
+     */
 
     buffer[compat_offset] = 0x1;
     buffer[compat_offset + 0x1] = 0x8;
@@ -199,14 +195,12 @@ static void update_pecoff_text(uintptr_t text_start,
 #define OFFSET_PECOFF_ADDRESS_OF_ENTRY_POINT 0x28
 #define OFFSET_PECOFF_SIZE_OF_IMAGE 0x50
 
-    /*
-     * The PE/COFF loader can load 'ukernel.bin' at an address which is misaligned
+    /* The PE/COFF loader can load 'ukernel.bin' at an address which is misaligned
      * with respect to the 'kernel_alignment' in the setup header.
      *
      * Add 'CONFIG_PHYSICAL_ALIGN' so that 'ukernel.bin' can be aligned within the
      * declared size of the buffer.
-     *
-     * */
+     */
 
     init_sz += CONFIG_PHYSICAL_ALIGN;
 
@@ -360,20 +354,17 @@ int main(int argc, char **argv)
 
 #ifdef CONFIG_EFI_STUB
 
-    /*
-     * Here, end of the PE/COFF executable is 16-byte aligned. However, the PE/COFF
+    /* Here, end of the PE/COFF executable is 16-byte aligned. However, the PE/COFF
      * header in 'header.S' specifies 'FileAlignment' as 32 bytes, and when adding
      * an EFI signature to the file it must first be padded to this alignment.
-     *
-     * */
+     */
 
     sys_size = align_mask(sys_size, 0x1);
 #endif /* CONFIG_EFI_STUB */
 
     store_le32(&buffer[OFFSET_SYSSIZE], sys_size);
 
-    /*
-     * Calculate 'init_size' for 'ukernel.bin' in 'compressed directory'
+    /* Calculate 'init_size' for 'ukernel.bin' in 'compressed directory'
      *
      * The compressed file consists of a short header and an arbitrary number of
      * compressed blocks. Three different block encoding are currently used in
@@ -386,7 +377,7 @@ int main(int argc, char **argv)
      * two cases should be considered:
      *
      *    (1) compressed data 'ZO_z_input_len' is larger than uncompressed data
-     *        'ZO_z_output_len' or equal ''OFSSET = 18 + 5 bytes-per-32KiB + 32KiB''.
+     *        'ZO_z_output_len' or equal ''OFFSET = 18 + 5 bytes-per-32KiB + 32KiB''.
      *        Last 32KiB is added so after decompression of a block, it does not
      *        overrun the compressed data.
      *
@@ -395,8 +386,7 @@ int main(int argc, char **argv)
      *
      * See https://www.rfc-editor.org/rfc/rfc1952.txt
      * See https://www.rfc-editor.org/rfc/rfc1951.txt
-     *
-     * */
+     */
 
 #define ZO_z_extra_bytes (18 + (ZO_z_output_len >> 15 << 3) + 32768)
 #if ZO_z_output_len > ZO_z_input_len
@@ -405,8 +395,7 @@ int main(int argc, char **argv)
 #define ZO_z_extract_offset ZO_z_extra_bytes
 #endif
 
-    /*
-     * The boot-loader reserves 'init_size' linear contiguous memory starting at
+    /* The boot-loader reserves 'init_size' linear contiguous memory starting at
      * the runtime start address of the 'ukernel.bin'.
      *
      * This buffer is used for in-place decompression of the ukernel. The code
@@ -417,8 +406,7 @@ int main(int argc, char **argv)
      *
      * 'init_size' should be large enough so that the copy operation running form
      * the head does not overwrite the head ''itself''.
-     *
-     * */
+     */
 
 #if (ZO__ehead - ZO_startup_32) > ZO_z_extract_offset
 #define ZO_z_min_extract_offset (ZO__ehead - ZO_startup_32)
@@ -438,8 +426,7 @@ int main(int argc, char **argv)
 
 #ifdef CONFIG_EFI_STUB
 
-    /*
-     * There are two types of bootable image for 'zukernel':
+    /* There are two types of bootable image for 'zukernel':
      *
      *    (1) standard Linux image. 'setup_sectors' is not part of the 'init_size'.
      *        'init_size' defines the static footprint of the 'ukernel.bin' in
@@ -449,25 +436,22 @@ int main(int argc, char **argv)
      *    (2) PE/COFF executable. 'setup_sectors' is part of the 'init_size'.
      *        '.setup' and '.text' section are loaded by UEFI as part of the
      *        PE/COFF execution.
-     *
-     * */
+     */
 
     init_size += setup_len;
 #endif /* CONFIG_EFI_STUB */
 
-    /* 
-     * Here, page align 'init_size' so that when calculating the relocation address
+    /* Here, page align 'init_size' so that when calculating the relocation address
      * in 'head_64.S', the result remains page aligned. It is required for initialising
-     * 'ident-mapping' page-table.
-     * 
-     * */
+     * identity mappings.
+     */
 
     init_size = align_mask(init_size, 0xFFF);
 
     store_le32(&buffer[OFFSET_INIT_SIZE], init_size);
     store_le32(&buffer[OFFSET_KERNEL_INFO_OFFSET], ZO_kernel_info);
 
-    /* ... start of '.text' section is after '.setup' section. */
+    /* Start of '.text' section is after '.setup' section. */
     update_pecoff_text(setup_len, sys_size * 16, init_size);
 
     if (update_setup_handover() == -1)
@@ -475,15 +459,13 @@ int main(int argc, char **argv)
 
     uint32_t crc = 0xFFFFFFFFUL;
 
-    /*
-     * Store 'OUTPUT' ...
+    /* Store 'OUTPUT' ...
      *
      * CRC-32 is created over 'SETUP' and 'KERNEL' files.
      * End of 'OUTPUT' is padded with '\0' after 'kernel_size' and CRC is stored
      * in the last 4 bytes. Therefore, CRC of the 'OUTPUT' up to the limit specified
      * in the 'sys_size' is always 0.
-     *
-     * */
+     */
 
     FILE *file = fopen(argv[3], "w");
 

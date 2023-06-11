@@ -73,8 +73,8 @@ void uart_poll_put_char(unsigned int index, int ch)
     struct uart_port *up = &uart_ports[index];
 
     if (ch == '\n')
-        up->__poll_putchar(up, '\r');
-    up->__poll_putchar(up, ch);
+        up->poll_putchar(up, '\r');
+    up->poll_putchar(up, ch);
 }
 
 int register_uart_port(struct uart_port *up)
@@ -100,7 +100,7 @@ int register_uart_port(struct uart_port *up)
     uart_ports[i].io_type = up->io_type;
     uart_ports[i].io = up->io;
     uart_ports[i].uart_clock = up->uart_clock;
-    uart_ports[i].__poll_putchar = up->__poll_putchar;
+    uart_ports[i].poll_putchar = up->poll_putchar;
     strcpy(uart_ports[i].up_name, up->up_name);
 
     return SUCCESS;

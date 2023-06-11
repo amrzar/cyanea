@@ -1,29 +1,30 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/compiler.h>
-#include <asm/desc.h>
+
+#include <asm/desc_types.h>
 
 #include "setup.h"
 
 static void realmode_switch_hook(void)
 {
 
-    /*
-     * 'realmode_swtch' is a real-mode far subroutine set by boot-loader.
-     * 'realmode_swtch' is invoked immediately before entering protected mode.
-     * As the default subroutine disables NMI, we do the the same if
-     * 'realmode_swtch' is not set.
-     *
-     * */
+    /* 'realmode_swtch' is a real-mode far subroutine set by boot-loader.
+     * It must be invoked immediately before entering the protected mode.
+     */
 
     if (boot_params.hdr.realmode_swtch) {
-        asm volatile ("lcallw *%0"::"m" (boot_params.hdr.realmode_swtch)
-            :"eax", "ebx", "ecx", "edx");
+        asm volatile("lcallw *%0"
+            : : "m" (boot_params.hdr.realmode_swtch)
+            : "eax", "ebx", "ecx", "edx");
     } else {
-        asm volatile ("cli");
 
-        /* * See: https://wiki.osdev.org/CMOS. * */
-        outb(0x80, 0x70);       /* ... disable NMI. */
+        /* As the default subroutine disables NMI, we do the the same here! */
+
+        asm volatile("cli");
+
+        /* See: https://wiki.osdev.org/CMOS. */
+        outb(0x80, 0x70);       /* Disable NMI. */
         slow_down_io();
     }
 }
@@ -49,19 +50,19 @@ static void setup_gdt(void)
         [GDT_ENTRY_BOOT_DS] = GDT_ENTRY_INIT(0xC092, 0, 0xFFFFF),
     };
 
-    struct gdt_ptr gdt = {
+    struct dt_ptr gdt = {
         .size = sizeof(boot_gdt) - 1,
         .base_address = ADDR(ds, boot_gdt)
     };
 
-    asm volatile ("lgdtl %0"::"m" (gdt));
+    asm volatile("lgdtl %0" : : "m" (gdt));
 }
 
 static void setup_idt(void)
 {
-    struct gdt_ptr null_idt = { 0 };
+    struct dt_ptr idt = { 0 };  /* NULL IDR. */
 
-    asm volatile ("lidtl %0"::"m" (null_idt));
+    asm volatile("lidtl %0" : : "m" (idt));
 }
 
 void go_to_protected_mode(void)

@@ -2,6 +2,7 @@
 
 #include <cyanea/pgtable.h>
 #include <asm/cache.h>
+#include <asm/ukernel.lds.h>
 
 OUTPUT_FORMAT("elf64-x86-64")
 OUTPUT_ARCH(i386:x86-64)
@@ -10,11 +11,12 @@ ENTRY(phys_startup_64)
 #define LOAD_OFFSET __START_KERNEL_map
 
 PHDRS {
-    text PT_LOAD;
+    text   PT_LOAD;
     rodata PT_LOAD;
-    data PT_LOAD;
-    init PT_LOAD;
-    note PT_NOTE;
+    data   PT_LOAD;
+    pcpu   PT_LOAD;
+    init   PT_LOAD;
+    note   PT_NOTE;
 }
 
 SECTIONS
@@ -46,6 +48,8 @@ SECTIONS
     .data : AT(ADDR(.data) - LOAD_OFFSET) {
         _sdata = .;
 
+        /* Keep start and end of stack aligned. */
+        . = ALIGN(STACK_SIZE);
         __init_utask_stack = .;
         . = __init_utask_stack + STACK_SIZE;
         __end_utask_init = .;
@@ -84,14 +88,22 @@ SECTIONS
         __setup_end = .;
     }
 
-    . = ALIGN(PAGE_SIZE);
-    .data..percpu : AT(ADDR(.data..percpu) - LOAD_OFFSET) {
+    __per_cpu_load = .;
+
+    /* Use address 0; We want to calculate offset for variable in this esction. */
+    .data..percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {
         __per_cpu_start = .;
+        *(.data..percpu..head)
+
+        . = ALIGN(PAGE_SIZE);
         *(.data..percpu..page_aligned)
+
         . = ALIGN(L1_CACHE_BYTES);
         *(.data..percpu)
         __per_cpu_end = .;
-    }
+    } : pcpu
+
+    . = __per_cpu_load + SIZEOF(.data..percpu);
 
     /* Init: ends here!   */
     . = ALIGN(PAGE_SIZE);
@@ -110,15 +122,15 @@ SECTIONS
         __bss_stop = .;
     } : data
    
+       . = ALIGN(PAGE_SIZE);
     __end_of_kernel_reserve = .;
 
-    . = ALIGN(PAGE_SIZE);
     .brk : AT(ADDR(.brk) - LOAD_OFFSET) {
         __brk_base = .;
-        . += 64 * 1024;
+        . = . + (CONFIG_BRK_ALLOC_PAGES * PAGE_SIZE);
         __brk_limit = .;
     }
-
+    
     . = ALIGN(PAGE_SIZE);
     _end = .;
 
@@ -144,16 +156,16 @@ SECTIONS
 
     /* Sections that we need them if they exist, e.g. debug sections. */
 
-    /* DWARF 1.1 and DWARF 2. **/
+    /* DWARF 1.1 and DWARF 2. */
     .debug_aranges  0 : { *(.debug_aranges) }
 
-    /* DWARF 2. **/
+    /* DWARF 2. */
     .debug_info     0 : { *(.debug_info) }
     .debug_abbrev   0 : { *(.debug_abbrev) }
     .debug_line     0 : { *(.debug_line) }
     .debug_frame    0 : { *(.debug_frame) }
     .debug_str      0 : { *(.debug_str) }
 
-    /* DWARF 3. **/
+    /* DWARF 3. */
     .debug_ranges   0 : { *(.debug_ranges) }
 }

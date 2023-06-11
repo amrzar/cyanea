@@ -3,19 +3,19 @@
 #ifndef __CYANEA_CTYPE_H__
 #define __CYANEA_CTYPE_H__
 
-extern int isupper(int);
-extern int islower(int);
-extern int isdigit(int);
-extern int isspace(int);
-extern int isprint(int);
-extern int ispunct(int);
-extern int iscntrl(int);
+int isupper(int);
+int islower(int);
+int isdigit(int);
+int isspace(int);
+int isprint(int);
+int ispunct(int);
+int iscntrl(int);
 
-extern int isalnum(int);
-extern int isalpha(int);
-extern int isgraph(int);
+int isalnum(int);
+int isalpha(int);
+int isgraph(int);
 
-extern int isxdigit(int);
+int isxdigit(int);
 
 static inline int tolower(int c)
 {

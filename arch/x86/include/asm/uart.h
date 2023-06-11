@@ -3,7 +3,7 @@
 #ifndef __X86_ASM_UART_H__
 #define __X86_ASM_UART_H__
 
-#define BASE_BAUD (1843200 / 16)        /* ''1.8432 MHz''. * */
+#define BASE_BAUD (1843200 / 16)        /* ''1.8432 MHz''. */
 
 #define UART_PORTS \
     { BASE_BAUD, 0x3F8 }, /* ''ttyS0'' */ \

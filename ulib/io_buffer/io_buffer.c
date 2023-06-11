@@ -2,17 +2,16 @@
 
 #include <cyanea/string.h>
 #include <cyanea/minmax.h>
-#include <cyanea/errno.h>
 
 #include "../io_buffer.h"
 
-static size_t wbuffer_noflush(_IO_BUFFER io, const char *buffer, size_t count)
+static size_t wbuffer_no_flush(_IO_BUFFER io, const char *buffer, size_t count)
 {
     size_t n, written = 0;
 
     if (io->in != 0) {
         if (io->flush(io))
-            return SUCCESS;
+            return 0;
     }
 
     while (count != 0) {
@@ -22,11 +21,21 @@ static size_t wbuffer_noflush(_IO_BUFFER io, const char *buffer, size_t count)
         }
 
         if (io->out == 0 && io->buf_size <= count) {
-            if ((n = io->write(io, buffer, count)) == 0)
+
+            /* Buffer is empty. However, the requested size is greater then the buffer. */
+            /* Bypass the buffer. */
+
+            n = io->write(io, buffer, count);
+            if (!n)
                 break;
 
         } else {
+
+            /* Buffer is not empty. We need to fill it before calling 'write' callback. */
+            /* Buffer is empty. However, the requested size is smaller than the buffer. */
+
             n = min(count, io->buf_size - io->out);
+
             memcpy(&io->buffer[io->out], buffer, n);
 
             io->out += n;
@@ -56,6 +65,7 @@ size_t __iob_write(_IO_BUFFER io, const char *buffer, size_t count)
         f_len = count;
         u_len = 0;
 
+        /* Flush up to new line. */
         while ((f_len != 0) && (buffer[f_len - 1] != '\n')) {
             f_len--;
             u_len++;
@@ -63,22 +73,27 @@ size_t __iob_write(_IO_BUFFER io, const char *buffer, size_t count)
 
         break;
 
+    /*case _IONBF: */
     default:
         f_len = count;
         u_len = 0;
     }
 
     if (f_len != 0) {
-        written = wbuffer_noflush(io, buffer, f_len);
+        written = wbuffer_no_flush(io, buffer, f_len);
 
-        if ((written != f_len) || io->flush(io))
+        if (written != f_len)
+            return written;
+
+        /* We have written 'f_len' byte, let's flush it. */
+        if (io->flush(io))
             return written;
 
         buffer += written;
     }
 
     if (u_len != 0)
-        written += wbuffer_noflush(io, buffer, u_len);
+        written += wbuffer_no_flush(io, buffer, u_len);
 
     return written;
 }
@@ -90,13 +105,13 @@ size_t __iob_read(_IO_BUFFER io, char *buffer, size_t count)
 
     if (io->out != 0) {
         if (io->flush(io))
-            return SUCCESS;
+            return 0;
     }
 
     while (count != 0) {
         while (io->in == 0) {
 
-            /* ... check if we should bypass buffering. */
+            /* Check if we should bypass buffering. */
             int buffered = (count < io->buf_size);
             if (buffered) {
                 buffer_ptr = io->buffer + io->io_unget_slop;

@@ -12,9 +12,9 @@
 #include "../uart.h"
 #include "uart_regs.h"
 
-#define ARRAY_SIZE(arr)  (sizeof(arr) / sizeof((arr)[0]))
+# define ARRAY_SIZE(arr)  (sizeof(arr) / sizeof((arr)[0]))
 
-#define __DRIVER_ID__ "ttyS"
+# define __DRIVER_ID__ "ttyS"
 
 static const struct {
     unsigned int baud_base;
@@ -23,7 +23,7 @@ static const struct {
     UART_PORTS
 };
 
-#define get_divisor(up, s) ((up)->uart_clock / ((s) * 16))
+# define get_divisor(up, s) ((up)->uart_clock / ((s) * 16))
 
 static unsigned int uart_in(struct uart_port *up, int offset)
 {
@@ -90,7 +90,8 @@ static int setup_port(struct uart_port *up, unsigned int speed)
 
     uart_out(up, UART_MCR, 0x0);        /* Reset 'DTR' and 'RTS'. */
     uart_out(up, UART_FCR, 0x0);        /* Disable FIFOs. */
-    uart_out(up, UART_LCR, UART_LCR_WLEN8);     /* '8n1' 8-bits word, no parity, 1 stop bit. */
+    uart_out(up, UART_LCR,
+        UART_LCR_WLEN8);     /* '8n1' 8-bits word, no parity, 1 stop bit. */
 
     set_speed(up, speed);
     uart_out(up, UART_MCR, UART_MCR_DTR | UART_MCR_RTS);
@@ -114,7 +115,7 @@ static void __init init_ports(void)
         .up_name = __DRIVER_ID__,
         .type = PORT_8250,
         .io_type = UART_IO_PORT,
-        .__poll_putchar = putchar
+        .poll_putchar = putchar
     };
 
     for (i = 0; i < ARRAY_SIZE(serial_ports); i++) {
@@ -140,6 +141,11 @@ static int console_setup(struct console *con, char *options)
 
     return err;
 }
+
+/* 'console_match' is called for matching preferred console of
+ * ''console=uart,io,<addr>,<options>'' or ''console=uart,0x<addr>,<options>''
+ * with registered UART ports.
+ */
 
 static int console_match(struct console *con, char *name, char *options)
 {
@@ -187,12 +193,10 @@ static struct console console_8250 = {
     .setup = console_setup,
     .match = console_match,
     .exit = console_exit,
-    .flags = CON_IO_BUFFER,
     .index = -1
 };
 
-void __attribute__((constructor(101)))
-__init console_init(void)
+static void __pure_constructor console_init(void)
 {
     init_ports();
     register_console(&console_8250);

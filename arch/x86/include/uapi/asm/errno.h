@@ -5,8 +5,4 @@
 
 #include <uapi/asm-generic/errno.h>
 
-enum {
-    __errno_asm_end = __errno_asm_generic_end
-};
-
 #endif /* __X86_UAPI_ASM_ERRNO_H__ */

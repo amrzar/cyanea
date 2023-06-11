@@ -54,8 +54,25 @@
 
 #ifndef __ASSEMBLY__
 
-#define __PG_PFN_MASK (PHYSICAL_PAGE_MASK)      /* PFN of page-table structure page. */
-#define __PG_FLAGS_MASK (~__PG_PFN_MASK)        /* Flags of page-table structure entry. */
+/* ''Intel 64 and IA-32 Architectures Software Developer's Manual'' */
+/* See: 12.3 METHODS OF CACHING AVAILABLE. */
+
+enum page_cache_mode {
+    _PAGE_CACHE_MODE_WB = 0,
+    _PAGE_CACHE_MODE_WT = 1,
+    _PAGE_CACHE_MODE_UC_MINUS = 2,
+    _PAGE_CACHE_MODE_UC = 3,
+    _PAGE_CACHE_MODE_WC = 4,
+    _PAGE_CACHE_MODE_WP = 5,
+
+    _PAGE_CACHE_MODE_NUM = 8
+};
+
+#define _PAGE_CACHE_MASK (_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)
+#define _PAGE_LARGE_CACHE_MASK (_PAGE_PWT | _PAGE_PCD | _PAGE_PAT_LARGE)
+
+#define PG_PFN_MASK (PHYSICAL_PAGE_MASK)        /* PFN of page-table structure page. */
+#define PG_FLAGS_MASK (~PG_PFN_MASK)    /* Flags of page-table structure entry. */
 
 typedef unsigned long pgdval_t;
 typedef struct {
@@ -64,7 +81,7 @@ typedef struct {
 
 #define pgd_val(x) ((x).pgd)
 #define __pgd_t(x) ((pgd_t) { (x) })
-#define pgd_flags(x) (pgd_val(x) & __PG_FLAGS_MASK)
+#define pgd_flags(x) (pgd_val(x) & PG_FLAGS_MASK)
 
 typedef unsigned long pteval_t;
 typedef struct {
@@ -73,7 +90,7 @@ typedef struct {
 
 #define pte_val(x) ((x).pte)
 #define __pte_t(x) ((pte_t) { (x) })
-#define pte_flags(x) (pte_val(x) & __PG_FLAGS_MASK)
+#define pte_flags(x) (pte_val(x) & PG_FLAGS_MASK)
 
 typedef unsigned long pgprotval_t;
 typedef struct pgprot {
@@ -83,11 +100,13 @@ typedef struct pgprot {
 #define pgprot_val(x) ((x).pgprot)
 #define __pgprot_t(x) ((pgprot_t) { (x) })
 
+unsigned long cachemode2protval(enum page_cache_mode pcm);
+
 #include <asm-generic/nolevel.h>
 
 static inline pudval_t pud_pfn_mask(pud_t pud)
 {
-    return (pud_val(pud) & _PAGE_PSE) ? PHYSICAL_PUD_PAGE_MASK : __PG_PFN_MASK;
+    return (pud_val(pud) & _PAGE_PSE) ? PHYSICAL_PUD_PAGE_MASK : PG_PFN_MASK;
 }
 
 static inline pudval_t pud_flags(pud_t pud)
@@ -97,7 +116,7 @@ static inline pudval_t pud_flags(pud_t pud)
 
 static inline pmdval_t pmd_pfn_mask(pmd_t pmd)
 {
-    return (pmd_val(pmd) & _PAGE_PSE) ? PHYSICAL_PMD_PAGE_MASK : __PG_PFN_MASK;
+    return (pmd_val(pmd) & _PAGE_PSE) ? PHYSICAL_PMD_PAGE_MASK : PG_PFN_MASK;
 }
 
 static inline pmdval_t pmd_flags(pmd_t pmd)
@@ -105,10 +124,27 @@ static inline pmdval_t pmd_flags(pmd_t pmd)
     return pmd_val(pmd) & ~pmd_pfn_mask(pmd);
 }
 
+#define pte_pgprot(x) __pgprot(pte_flags(x))
+#define pmd_pgprot(x) __pgprot(pmd_flags(x))
+#define pud_pgprot(x) __pgprot(pud_flags(x))
+
+#define _PAGE_NOCACHE (cachemode2protval(_PAGE_CACHE_MODE_UC))
+
+#define __PAGE_KERNEL_NOCACHE (__PAGE_KERNEL | _PAGE_NOCACHE)
+
 #define PAGE_KERNEL             __pgprot_t(__PAGE_KERNEL)
+#define PAGE_KERNEL_NOCACHE     __pgprot_t(__PAGE_KERNEL_NOCACHE)
 #define PAGE_KERNEL_EXEC        __pgprot_t(__PAGE_KERNEL_EXEC)
 #define PAGE_KERNEL_LARGE       __pgprot_t(__PAGE_KERNEL_LARGE)
 #define PAGE_KERNEL_LARGE_EXEC  __pgprot_t(__PAGE_KERNEL_LARGE_EXEC)
+
+enum page_size {
+    PAGE_SIZE_NONE,
+    PAGE_SIZE_4K,
+    PAGE_SIZE_2M,
+    PAGE_SIZE_1G,
+    PAGE_SIZE_NUM,
+};
 
 #endif /* __ASSEMBLY__ */
 

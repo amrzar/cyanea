@@ -3,6 +3,6 @@
 
 #include <cyanea/string.h>
 
-extern unsigned long long simple_strtoull(const char *, char **, unsigned int);
+unsigned long long simple_strtoull(const char *, char **, unsigned int);
 
 #endif /* __X86_BOOT_SETUP_STRING_H__ */

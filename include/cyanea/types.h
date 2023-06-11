@@ -10,6 +10,8 @@
 
 typedef _Bool bool;
 
+typedef u64 phys_addr_t;
+
 #ifndef __UINTPTR_TYPE__
 #  error '__UINTPTR_TYPE__' is not defined.
 #endif
@@ -21,18 +23,6 @@ typedef __UINTPTR_TYPE__ uintptr_t;
 #endif
 
 typedef __SIZE_TYPE__ size_t;
-
-typedef struct list_head {
-    struct list_head *next, *prev;
-} *LIST, *LIST_NODE;
-
-typedef struct hlist_head {
-    struct hlist_node *first;
-} *HLIST;
-
-typedef struct hlist_node {
-    struct hlist_node *next, **pprev;
-} *HLIST_NODE;
 
 #endif /*  __ASSEMBLY__ */
 

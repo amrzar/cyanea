@@ -40,13 +40,11 @@ int main(int argc, char **argv)
 
     uint32_t orig_len;
 
-    /*
-     * For ''GZIP'' file the size of original (uncompressed) 'orig_len' data stored
+    /* For ''GZIP'' file the size of original (uncompressed) 'orig_len' data stored
      * as little-endian value at ''ISIZE'' field.
      *
      * See https://www.rfc-editor.org/rfc/rfc1952.txt
-     *
-     * */
+     */
 
     if ((fseek(file, -4L, SEEK_END) != 0) ||
         (fread(&orig_len, sizeof(uint32_t), 1, file) != 1)) {
@@ -68,8 +66,7 @@ int main(int argc, char **argv)
     printf(".incbin \"%s\"\n", argv[1]);
     printf("input_data_end:\n");
 
-    /*
-     * The 'head_{32,64}.S' in compressed directory needs size of original and
+    /* The 'head_{32,64}.S' in compressed directory needs size of original and
      * compressed files. However, using 'z_input_len' and 'z_output_len' directy
      * in the assembly may cause the linker -- BFD linker -- to generate runtime
      * relocation entry in '.rel.dyn', even though they are absolute symbols.
@@ -79,8 +76,7 @@ int main(int argc, char **argv)
      * to eliminate any runtime relocations.
      *
      * See 'head_{32,64}.S' in compressed directory.
-     *
-     * */
+     */
 
     printf(".section \".rodata\",\"a\",@progbits\n");
     printf(".global input_len\n");
@@ -90,7 +86,7 @@ int main(int argc, char **argv)
 
     retval = 0;
 
- out:
+out:
 
     if (file != NULL) {
         fclose(file);

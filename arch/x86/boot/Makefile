@@ -21,18 +21,19 @@ build-zukernel: compressed/ setup/ build
 CLEAN_FILES += zukernel
 
 setup/: zoffset.h FORCE
-	@$(call cmd-info, DESCEND, $@)
+	@printf '%-8s%s\n' DESCEND $@
 	$(call descend-make, $@)
 
 compressed/: voffset.h FORCE
-	@$(call cmd-info, DESCEND, $@)
+	@printf '%-8s%s\n' DESCEND $@
 	$(call descend-make, $@)
 
 CLEAN_FILES += voffset.h zoffset.h
 
-clean: rm-files
+define clean-all
 	$(call descend-make, setup rm-files)
 	$(call descend-make, compressed rm-files)
+endef
 
 include $(srctree)/scripts/makefile.build
 .DEFAULT_GOAL := build-zukernel

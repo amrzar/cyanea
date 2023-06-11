@@ -24,7 +24,7 @@ struct boot_params boot_params __aligned(16);
 void __noreturn cpu_hlt(void)
 {
     while (1) {
-        asm volatile ("hlt");
+        asm volatile("hlt");
     }
 }
 
@@ -39,7 +39,7 @@ void __c_setup(void)
     early_console_init();
 
     if (!(boot_params.hdr.loadflags & CAN_USE_HEAP)) {
-        puts("''CAN_USE_HEAP'' not set, no heap for setup code.\n");
+        puts("'CAN_USE_HEAP' not set, no heap for setup code.\n");
     }
 
     /* 'KASLR_FLAG' is solely for in-kernel use, clear it. */

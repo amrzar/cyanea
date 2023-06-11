@@ -10,8 +10,7 @@
 
 typedef u16 symbol_t;
 
-/*
- * The Huffman codes used for each alphabet in the "deflate" format
+/* The Huffman codes used for each alphabet in the "deflate" format
  * have two additional rules:
  *
  *   - All codes of a given bit length have lexicographically
@@ -28,8 +27,7 @@ typedef u16 symbol_t;
  * The code represents a Huffman tree using 'tree_t' where 'bl_count'
  * counts the number of symbols for each code length and 'sorted_symbols'
  * is sorted symbols based on code length.
- *
- * */
+ */
 
 typedef struct tree {
     unsigned short bl_count[MAX_BITS];
@@ -46,12 +44,10 @@ typedef struct deflate {
 #define ERR_UNDEFINED 3
     int error;
 
-    /*
-     * 'bit_accum' accumulates minimum bits to satisfy the next request.
+    /* 'bit_accum' accumulates minimum bits to satisfy the next request.
      * 'u32' because the maximum request size is not larger than 'MAX_BITS'
      * and maximum of 23 bits ''15 + 8'' is enough to satisfy this request.
-     *
-     * */
+     */
 
     u32 bit_accum;
     size_t nr_bits, dest_size;
@@ -97,7 +93,7 @@ static u32 get_bits(deflate_t d, size_t nr_bits)
             return SUCCESS;
         }
 
-        d->bit_accum |= ((u32) (*d->in_ptr++) << d->nr_bits);
+        d->bit_accum |= ((u32)(*d->in_ptr++) << d->nr_bits);
         d->nr_bits += 8;
     }
 
@@ -120,8 +116,7 @@ static symbol_t decode_symbol(deflate_t d, tree_t tree)
     int it;
     unsigned short sum = 0, offs = 0;
 
-    /*
-     * In Huffman tree, each level adds one bit to the code length, i.e.
+    /* In Huffman tree, each level adds one bit to the code length, i.e.
      * leaves on the first level have code length of single bit, leaves
      * on the second level have code length of two bits, etc.
      *
@@ -131,8 +126,7 @@ static symbol_t decode_symbol(deflate_t d, tree_t tree)
      *
      * So, to convert the code to symbol, we go down the tree, one level
      * at a time looking only at the leaves.
-     *
-     * */
+     */
 
     for (it = 1; it < MAX_BITS; it++) {
         offs = 2 * offs + get_bits(d, 1);
@@ -142,16 +136,14 @@ static symbol_t decode_symbol(deflate_t d, tree_t tree)
 
         if (offs < tree->bl_count[it]) {
 
-            /*
-             * Here, 'offs' is an index to a code with length 'it', and
+            /* Here, 'offs' is an index to a code with length 'it', and
              * 'sum' is total number of codes with length less than 'it',
              * 'sorted_symbols[sum + offs]' is the current symbol.
              *
              * we assume 'sum + offs' is in range, i.e. it is less than
              * the index in 'sorted_symbols' of last symbols that participate
              * in Huffman code generation.
-             *
-             * */
+             */
 
             return tree->sorted_symbols[sum + offs];
         }
@@ -224,13 +216,11 @@ static int huffman_dynamic_tree(deflate_t d, tree_t lt, tree_t dt)
 
     it = 0;
 
-    /*
-     * The Huffman codes for the two alphabets appear in the block immediately
+    /* The Huffman codes for the two alphabets appear in the block immediately
      * after the header bits and before the actual compressed data, first the
      * ''literal/length code'' and then the ''distance code''.
      * ... retrieve and build appropriate trees.
-     *
-     * */
+     */
 
     while (it < hlit + hdist) {
 #define SYM_CL_COPY_3_6 16
@@ -244,7 +234,7 @@ static int huffman_dynamic_tree(deflate_t d, tree_t lt, tree_t dt)
             goto out;
 
         switch (symbol) {
-            /* Copy previous code length ''3 .. 6'' times. */
+        /* Copy previous code length ''3 .. 6'' times. */
         case SYM_CL_COPY_3_6:
 
             if (it == 0) {
@@ -253,19 +243,19 @@ static int huffman_dynamic_tree(deflate_t d, tree_t lt, tree_t dt)
             }
 
             symbol = lengths[it - 1];
-            length = get_extra_bits(d, 2, 3);   /* ... read 2 bits. */
+            length = get_extra_bits(d, 2, 3);   /* Read 2 bits. */
             break;
 
-            /* Repeat code length 0 for ''3 .. 10'' times. */
+        /* Repeat code length 0 for ''3 .. 10'' times. */
         case SYM_CL_REPEAT_3_10:
             symbol = 0;
-            length = get_extra_bits(d, 3, 3);   /* ... read 3 bits. */
+            length = get_extra_bits(d, 3, 3);   /* Read 3 bits. */
             break;
 
-            /* Repeat code length 0 for ''11 .. 138'' times. */
+        /* Repeat code length 0 for ''11 .. 138'' times. */
         case SYN_CL_REPEAT_11_138:
             symbol = 0;
-            length = get_extra_bits(d, 7, 11);  /* ... read 7 bits. */
+            length = get_extra_bits(d, 7, 11);  /* Read 7 bits. */
             break;
 
         default:
@@ -283,7 +273,7 @@ static int huffman_dynamic_tree(deflate_t d, tree_t lt, tree_t dt)
     huffman_tree(lt, lengths, hlit);
     huffman_tree(dt, lengths + hlit, hdist);
 
- out:
+out:
     return SUCCESS;
 }
 
@@ -340,7 +330,7 @@ static int deflate_block(deflate_t d)
             /* Read ''[ length, backward offset ]'' pairs. */
 
             length = get_extra_bits(d, length_bits[symbol - SYM_LL_LENGTH],
-                length_base[symbol - SYM_LL_LENGTH]);
+                    length_base[symbol - SYM_LL_LENGTH]);
 
             distance = decode_symbol(d, &d->distance);
             offset =
@@ -356,7 +346,7 @@ static int deflate_block(deflate_t d)
         }
     }
 
- out:
+out:
     return SUCCESS;
 }
 
@@ -371,7 +361,7 @@ static int deflate_uncompressed_block(deflate_t d)
 
     u16 length = get_unaligned_le16(d->in_ptr);
 
-    /* ... skip 'LEN' and 'NLEN'. */
+    /* Skip 'LEN' and 'NLEN'. */
     d->in_ptr += 4;
 
     if (d->in_end - d->in_ptr < length) {
@@ -386,7 +376,7 @@ static int deflate_uncompressed_block(deflate_t d)
     d->bit_accum = 0;
     d->nr_bits = 0;
 
- out:
+out:
     return SUCCESS;
 }
 

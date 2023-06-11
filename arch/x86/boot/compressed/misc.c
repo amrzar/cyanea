@@ -8,46 +8,49 @@
 
 #include "compressed.h"
 #include "string.h"
+#include "elf.h"
 #include "../boot.h"
 
 struct boot_params *boot_params __aligned(16);
 
 void __noreturn cpu_hlt(void)
 {
-    while (1) {
-        asm volatile ("hlt");
-    }
+    while (1)
+        asm volatile("hlt");
 }
 
-static unsigned long HEAP;
+/* BASIC malloc. */
+
+static char boot_heap[BOOT_HEAP_SIZE] __aligned(4);
+
 static int malloc_count = 0;
-static unsigned long malloc_buffer = 0;
+static char *malloc_buffer = NULL;
 
 void *malloc(size_t size)
 {
     void *ptr;
 
-    if (malloc_buffer == 0)
-        malloc_buffer = HEAP;
+    if (!malloc_buffer)
+        malloc_buffer = boot_heap;
 
-    malloc_buffer = __ALIGN_KERNEL(malloc_buffer, 4);
+    malloc_buffer = PTR_ALIGN(malloc_buffer, 4);
 
-    ptr = (void *)(malloc_buffer);
+    ptr = (void *) malloc_buffer;
     malloc_buffer += size;
 
-    if (malloc_buffer >= HEAP + BOOT_HEAP_SIZE)
+    if (malloc_buffer >= boot_heap + BOOT_HEAP_SIZE)
         return NULL;
 
     malloc_count++;
+
     return ptr;
 }
 
 void free(void *ptr)
 {
     malloc_count--;
-
-    if (malloc_count == 0)
-        malloc_buffer = HEAP;
+    if (!malloc_count)
+        malloc_buffer = boot_heap;
 }
 
 static const u32 crctab32[] = {
@@ -74,7 +77,9 @@ static u32 update_crc32(const u8 buffer[], size_t buf_size)
     return (crc ^ 0xFFFFFFFF);
 }
 
-extern int deflate_buffer(char *, size_t *, const char *, size_t);
+/* GZIP decompress support. */
+
+int deflate_buffer(char *, size_t *, const char *, size_t);
 static int decompress_gzip(unsigned char *dest, size_t *dest_len,
     const unsigned char *source, size_t source_len)
 {
@@ -128,9 +133,9 @@ static int decompress_gzip(unsigned char *dest, size_t *dest_len,
             return -1;
 
         u16 crc16 = update_crc32(source, start - source) & 0xFFFF;
-
         if (crc16 != get_unaligned_le16(start)) {
             printf("Invalid header CRC for compressed file.\n");
+
             return -1;
         }
 
@@ -141,14 +146,15 @@ static int decompress_gzip(unsigned char *dest, size_t *dest_len,
         return -1;
 
     input_size = get_unaligned_le32(&source[source_len - 4]);
-
     if (input_size > *dest_len) {
-        printf("Not enough space %zu needs %zu.\n", *dest_len, input_size);
+        printf("Not enough space %lu needs %lu.\n", *dest_len, input_size);
+
         return -1;
     }
 
     if ((ret = deflate_buffer(dest, dest_len, start, end - start - 8)) != 0) {
-        printf("''deflate_buffer'' failed (ret = %d).\n", ret);
+        printf("'deflate_buffer' failed (ret = %d).\n", ret);
+
         return -1;
     }
 
@@ -156,13 +162,14 @@ static int decompress_gzip(unsigned char *dest, size_t *dest_len,
         (update_crc32(dest, input_size) !=
             get_unaligned_le32(&source[source_len - 8]))) {
         printf("Invalid CRC for compressed file.\n");
+
         return -1;
     }
 
     return SUCCESS;
 }
 
-static void parse_elf(void *output)
+static size_t parse_elf(void *output)
 {
     Elf64_Ehdr ehdr;
     Elf64_Phdr *phdrs, *phdr;
@@ -174,37 +181,41 @@ static void parse_elf(void *output)
 
     if (ehdr.e_ident[EI_MAG0] != ELFMAG0 ||
         ehdr.e_ident[EI_MAG1] != ELFMAG1 ||
-        ehdr.e_ident[EI_MAG2] != ELFMAG2 || ehdr.e_ident[EI_MAG3] != ELFMAG3)
-        error("Kernel is not a valid ELF file");
+        ehdr.e_ident[EI_MAG2] != ELFMAG2 ||
+        ehdr.e_ident[EI_MAG3] != ELFMAG3) {
+
+        error("invalid ELF file.\n");
+    }
 
     printf("Parsing ELF ...\n");
 
-    phdrs = malloc(sizeof(*phdr) * ehdr.e_phnum);
-
+    phdrs = malloc(sizeof(*phdrs) * ehdr.e_phnum);
     if (phdrs == NULL)
-        error("''parse_elf'' failed.\n");
+        error("not enough memory.\n");
 
-    memcpy(phdrs, output + ehdr.e_phoff, sizeof(*phdr) * ehdr.e_phnum);
+    memcpy(phdrs, output + ehdr.e_phoff, sizeof(*phdrs) * ehdr.e_phnum);
 
     for (i = 0; i < ehdr.e_phnum; i++) {
-        switch (phdrs[i].p_type) {
-        case PT_LOAD:
-            dest = (void *)(phdrs[i].p_paddr);
+        phdr = &phdrs[i];
 
-            /*
-             * If 'CONFIG_RELOCATABLE' is set the 'output' can be different from
+        switch (phdr->p_type) {
+        case PT_LOAD:
+            if ((phdr->p_align % 0x200000) != 0)
+                error("'PT_LOAD' segment should be 2 MiB aligned.\n");
+
+            /* If 'CONFIG_RELOCATABLE' is set the 'output' can be different from
              * 'CONFIG_PHYSICAL_START'. We move segments with 'PT_LOAD' flag set.
              *
              * The ELF file is linked at physical address 'CONFIG_PHYSICAL_START'.
              * So for the initial segment 'p_paddr' is 'CONFIG_PHYSICAL_START' and,
              * 'memmove' copies the segment to 'p_paddr + output - CONFIG_PHYSICAL_START',
              * i.e. 'output'. There is ELF header at 'output'.
-             *
-             * */
+             */
 
-            dest += ((uintptr_t) (output) - CONFIG_PHYSICAL_START);
-            memmove(dest, output + phdrs[i].p_offset, phdrs[i].p_filesz);
+            dest = output;
+            dest += (phdr->p_paddr - CONFIG_PHYSICAL_START);
 
+            memmove(dest, output + phdr->p_offset, phdr->p_filesz);
             break;
 
         default:
@@ -213,51 +224,46 @@ static void parse_elf(void *output)
     }
 
     free(phdrs);
+
+    return 0;
 }
 
-__attribute__((regparm(0)))
-void *decompress_ukernel(void *bp, void *heap,
-    unsigned char *input, unsigned long input_len,
-    unsigned char *output, unsigned long output_len)
+/* 'output_len', 'input_len', and 'input_data' are defined in 'piggy.S'. */
+
+extern unsigned char input_data[];
+extern unsigned int input_len, output_len;
+
+void *decompress_ukernel(void *bp, unsigned char *output)
 {
     int ret;
 
     boot_params = bp;
-    HEAP = (unsigned long)(heap);
 
     early_console_init();
 
 #ifdef CONFIG_X86_64
 #ifdef CONFIG_RELOCATABLE
 
-    /*
-     * For x86_64 if we do not relocate the virtual addresses then we rely on
+    /* For x86_64 if we do not relocate the virtual addresses then we rely on
      * page-table updates in order to keep virtual address unmodified after the
      * boot-loader physical address relocation.
-     *
-     * This requires mapping '__START_KERNEL_map' to an offset -- rather than
-     * the beginning of the physical memory -- which is the relocation offset,
-     * i.e. 'output - CONFIG_PHYSICAL_START'. Offset should be positive!
-     *
-     * */
-
-    if ((unsigned long)(output) < CONFIG_PHYSICAL_START) {
-        error("We are loaded bellow CONFIG_PHYSICAL_START (%p:%#x)\n",
-            output, CONFIG_PHYSICAL_START);
-    }
+     */
 
 #endif /* CONFIG_RELOCATABLE */
 #endif /* CONFIG_X86_64 */
 
     printf("Decompressing ukernel ...\n");
-    ret = decompress_gzip(output, (size_t *)(&output_len), input, input_len);
 
+    ret = decompress_gzip(output, (size_t *) &output_len, input_data, input_len);
     if (ret != SUCCESS)
-        error("''decompress_gzip'' failed (ret = %d).\n", ret);
+        error("'decompress_gzip' failed (ret = %d).\n", ret);
 
-    parse_elf((void *)(output));
+    parse_elf(output);
 
-    printf("Done.\nBooting the ukernel (output = %p).\n", output);
+    if ((unsigned long)output != CONFIG_PHYSICAL_START)
+        printf("ukernel relocated at %p.\n", output);
+
+    printf("Done.\nBooting the ukernel.\n");
 
     return output;
 }

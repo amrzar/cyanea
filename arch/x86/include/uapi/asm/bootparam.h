@@ -3,27 +3,40 @@
 #ifndef __X86_UAPI_ASM_BOOTPARAM_H__
 #define __X86_UAPI_ASM_BOOTPARAM_H__
 
+#include <uapi/cyanea/const.h>
+
 #define SETUP_NONE 0
+#define SETUP_E820_EXT 1
+#define SETUP_DTB 2
+#define SETUP_PCI 3
+#define SETUP_EFI 4
+#define SETUP_APPLE_PROPERTIES 5
+#define SETUP_JAILHOUSE 6
+#define SETUP_CC_BLOB 7
+#define SETUP_IMA 8
+#define SETUP_RNG_SEED 9
+#define SETUP_MAX SETUP_RNG_SEED
+
 #define SETUP_INDIRECT (1 << 31)
 
 /* 'SETUP_INDIRECT | max(SETUP_*)'. */
-#define SETUP_TYPE_MAX (SETUP_INDIRECT | SETUP_NONE)
+#define SETUP_TYPE_MAX (SETUP_INDIRECT | SETUP_MAX)
 
 /* 'loadflags'. */
-#define LOADED_HIGH   (1 << 0)
-#define KASLR_FLAG    (1 << 1)
-#define QUIET_FLAG    (1 << 5)
-#define KEEP_SEGMENTS (1 << 6)
-#define CAN_USE_HEAP  (1 << 7)
+#define LOADED_HIGH         _BITUL(0)
+#define KASLR_FLAG          _BITUL(1)
+#define QUIET_FLAG          _BITUL(5)
+#define KEEP_SEGMENTS       _BITUL(6)
+#define CAN_USE_HEAP        _BITUL(7)
 
 /* 'xloadflags'. */
-#define XLF_KERNEL_64 (1 << 0)
-#define XLF_CAN_BE_LOADED_ABOVE_4G (1 << 1)
-#define XLF_EFI_HANDOVER_32 (1 << 2)
-#define XLF_EFI_HANDOVER_64 (1 << 3)
-#define XLF_EFI_KEXEC (1 << 4)
-#define XLF_5LEVEL    (1 << 5)
-#define XLF_5LEVEL_ENABLED  (1 << 6)
+#define XLF_KERNEL_64       _BITUL(0)
+#define XLF_CAN_BE_LOADED_ABOVE_4G _BITUL(1)
+#define XLF_EFI_HANDOVER_32 _BITUL(2)
+#define XLF_EFI_HANDOVER_64 _BITUL(3)
+#define XLF_EFI_KEXEC       _BITUL(4)
+#define XLF_5LEVEL          _BITUL(5)
+#define XLF_5LEVEL_ENABLED  _BITUL(6)
 
 #ifndef __ASSEMBLY__
 
@@ -85,34 +98,28 @@ struct setup_header {
     __u32 kernel_info_offset;
 } __attribute__((__packed__));
 
-/* '__E820_MAX_ENTRIES' is the maximum number of entries in 'boot_params''s
- * 'e820_table', which is part of the x86 boot protocol. * */
-
-#define __E820_MAX_ENTRIES 128
-struct __e820_entry {
+/* 'BIOS_E820_MAX_ENTRIES' is the maximum number of entries in  'e820_table'. */
+#define BIOS_E820_MAX_ENTRIES 128
+struct bios_e820_entry {
     __u64 addr;
     __u64 size;
     __u32 type;
 } __attribute__((__packed__));
 
 struct boot_params {
-    __u8 _pad[0x0C8];           /* 0x000 */
+    __u8 _pad[0x0C0];           /* 0x000 */
+    __u32 ext_ramdisk_image;    /* 0x0C0 */
+    __u32 ext_ramdisk_size;     /* 0x0C4 */
     __u32 ext_cmd_line_ptr;     /* 0x0C8 */
     __u8 _pad1[0x118];          /* 0x0CC */
     __u32 scratch;              /* 0x1E4 */
     __u8 e820_entries;          /* 0x1E8 */
     __u8 _pad2[6];              /* 0x1E9 */
 
-    /*
-     * 'sentinel' is set to a nonzero value (0xFF) in header.S.
-     *
-     * The purpose of this field is to guarantee compliance with the x86
-     * boot spec. The 'boot_params' structure should be cleared by the
-     * boot-loader before it updates the 'setup_header' portion of the
-     * 'boot_param'. The fact that this field is nonzero means other fields
-     * in ''boot_params'' may be invalid and should be initialised.
-     *
-     * */
+    /* This structure should be cleared by the boot-loader. */
+    /* 'sentinel' is set to a nonzero value (0xFF) in header.S. */
+
+    /* TODO. Check if the structure has been cleared. */
 
     __u8 sentinel;              /* 0x1EF */
     __u8 _pad3[1];              /* 0x1F0 */
@@ -120,7 +127,7 @@ struct boot_params {
     struct setup_header hdr;    /* 0x1F1 */
     __u8 _pad4[0x2D0 - 0x1F1 - sizeof(struct setup_header)];
 
-    struct __e820_entry e820_table[__E820_MAX_ENTRIES]; /* 0x2D0 */
+    struct bios_e820_entry e820_table[BIOS_E820_MAX_ENTRIES];   /* 0x2D0 */
     __u8 _pad5[0x330];          /* 0xCD0 */
 } __attribute__((__packed__));
 

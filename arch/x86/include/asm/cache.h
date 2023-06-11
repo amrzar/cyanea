@@ -5,14 +5,17 @@
 
 #if defined(CONFIG_L1_CACHE_4_SHIFT)
 # define L1_CACHE_SHIFT 4
-#elif  defined(CONFIG_L1_CACHE_5_SHIFT)
+#elif defined(CONFIG_L1_CACHE_5_SHIFT)
 # define L1_CACHE_SHIFT 5
-#elif  defined(CONFIG_L1_CACHE_6_SHIFT)
+#elif defined(CONFIG_L1_CACHE_6_SHIFT)
 # define L1_CACHE_SHIFT 6
-#elif  defined(CONFIG_L1_CACHE_7_SHIFT)
+#elif defined(CONFIG_L1_CACHE_7_SHIFT)
 # define L1_CACHE_SHIFT 7
 #else
-# error "Cache Line is not supported!"
+
+/* Cache Line is not defined. Let's guess something !!! */
+
+# define L1_CACHE_SHIFT 6
 #endif /* CONFIG_L1_CACHE_X_SHIFT */
 
 #define L1_CACHE_BYTES  (1 << L1_CACHE_SHIFT)

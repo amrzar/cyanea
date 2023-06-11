@@ -7,8 +7,9 @@ srctree := $(CURDIR)
 $(shell mkdir -p include/generated)
 
 uconfig = ../tools/uconfig
+scripts = ../tools/scripts
 sysconfig = $(srctree)/include/sys.config.h
-ulibs = $(srctree)/ulib
+ulib = $(srctree)/ulib
 
 -include .sys.config.in # ... try building '.sys.config.in'
 
@@ -27,11 +28,12 @@ HOSTCFLAGS = -Wall -Wstrict-prototypes -Wno-unused-function -O2
 export CROSS_COMPILE CPP AS LD CC NM AR OBJCOPY
 export NOSTDINC_FLAGS OBJCOPYFLAGS
 export HOSTCC HOSTCFLAGS
-export srctree sysconfig ulib Q
+export srctree sysconfig ulib scripts Q
 
 UAPIINCLUDE := -I$(srctree)/arch/$(ARCH)/include/uapi \
 			   -I$(srctree)/include/uapi \
-			   -include $(sysconfig)
+			   -include $(sysconfig) \
+			   -include $(srctree)/include/ulog.h
 
 UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 			   -I$(srctree)/include/generated \
@@ -78,7 +80,7 @@ include $(srctree)/scripts/makefile.build
 LDFLAGS-ukernel.elf += --orphan-handling=error
 
 menuconfig silentoldconfig defconfig: FORCE
-	$(call descend-make,$(uconfig) $@)
+	$(call descend-make, $(uconfig) $@)
 
 .sys.config.in: $(sysconfig)
 	@$(call cmd-info, GEN, $@)
@@ -86,11 +88,10 @@ menuconfig silentoldconfig defconfig: FORCE
 
 clean: rm-files
 	@echo "CLEAN"
-	$(archclean)
 	$(Q)find . \( -name '*.o' -o -name '*.d' \) -delete
 
 mrproper: clean
-	$(call descend-make,$(uconfig) clean)
+	$(call descend-make, $(uconfig) clean)
 	$(Q)rm -rf include/generated
 	$(Q)rm -f $(sysconfig)
 	$(Q)rm -f .old.config
@@ -112,10 +113,13 @@ help:
 
 .SILENT: help
 
+# Uncommnet if use astyle.
+export USE_ASTYLE = 1
+
 style:
 	$(Q)find $(srctree) \
 		\( -name '*.c' -o -name '*.h' \) \
-		-exec $(srctree)/scripts/style.sh {} ';'
+		\( -exec $(scripts)/style.sh {} .style \; -o -quit \)
 
 .PHONY: help style
 .DEFAULT_GOAL := ukernel

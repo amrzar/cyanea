@@ -99,8 +99,12 @@ static int a20_test_long(void)
 
 static void enable_a20_bios(void)
 {
-    asm volatile ("pushfl\n" "int $0x15\n" "popfl"::"a" (0x2401)
-        );
+    asm volatile(
+        "pushfl         ;"
+        "int    $0x15   ;"
+        "popfl          ;"
+        : : "a" (0x2401)
+    );
 }
 
 #define A20_FAST_PORT 0x92
@@ -110,8 +114,8 @@ static void enable_a20_fast(void)
     u8 port;
 
     port = inb(A20_FAST_PORT);
-    port |= 0x02;               /* ... enable A20.           */
-    port &= ~0x01;              /* ... do not reset machine. */
+    port |= 0x02;               /* Enable A20.           */
+    port &= ~0x01;              /* Do not reset machine. */
     outb(port, A20_FAST_PORT);
 }
 
@@ -132,7 +136,7 @@ int enable_a20(void)
 
         empty_8042();
 
-        /* ... check if BIOS worked, again. */
+        /* Check if BIOS worked, again. */
         if (a20_test_short())
             return 0;
 

@@ -10,8 +10,6 @@
 
 extern struct boot_params boot_params;
 
-extern unsigned long _brk_start, _brk_end;
-
 #endif /* __ASSEMBLY__ */
 
 #endif /* __X86_ASM_SETUP_H__ */

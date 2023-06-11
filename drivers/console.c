@@ -16,7 +16,7 @@ static struct preferred_console {
     char name[8];
     int index;
     int user_specified;         /* Requested on command-line. */
-    char *options;
+    char options[64];
 } pcs[MAX_CONSOLE] = { 0 };
 
 static struct console *active_console = NULL;
@@ -42,12 +42,12 @@ static int __add_preferred_console(char *name, int index, char *options,
     strncpy(pc->name, name, sizeof(pc->name));
     pc->index = index;
     pc->user_specified = user_specified;
-    pc->options = options;
+    strncpy(pc->options, options, sizeof(pc->options));
 
     return SUCCESS;
 }
 
-static int __init console_setup(char *p)
+static int __init console_setup(char *arg)
 {
     unsigned long index;
     char buf[16] = { '\0' };
@@ -55,11 +55,11 @@ static int __init console_setup(char *p)
     /* ''console=<name><index>,<options>''. */
     /* ''console=<name>,<options>''. */
 
-    char *s, *options = strchr(p, ',');
+    char *s, *options = strchr(arg, ',');
     if (options)
         *(options++) = '\0';
 
-    strncpy(buf, p, sizeof(buf) - 1);   /* Keep '\0' for ending. */
+    strncpy(buf, arg, sizeof(buf) - 1);   /* Keep '\0' for ending. */
     for (s = buf; *s; s++)
         if (isdigit(*s))
             break;
@@ -67,10 +67,12 @@ static int __init console_setup(char *p)
     strtoul(s, 0, &index);
     *s = '\0';
 
+    /* Passing <name>, <index>, and <option>. */
+
     return __add_preferred_console(buf, index, options, 1);
 }
 
-__setup_early("console", console_setup);
+early_param("console", console_setup);
 
 int add_preferred_console(char *name, int index, char *options)
 {

@@ -57,7 +57,7 @@ dkms.conf
 .sys.config.in
 sys.config.h
 
-# Cyanea ukernel built files
+# Cyanea ukernel generated files and symlinks
 voffset.h
 zoffset.h
 asm-offsets.s

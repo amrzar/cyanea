@@ -6,34 +6,41 @@
 #include <cyanea/errno.h>
 #include <cyanea/init.h>
 
-#include <asm/pgtable_types.h>
+#include <asm/page_types.h>
+
+static int memblock_debug = 0;
+
+#define memblock_dbg(...) do { \
+        if (memblock_debug) \
+            ulog_info(__VA_ARGS__); \
+        ulog_info(" (%s)\n", __func__); \
+    } while(0)
 
 #define NR_REGIONS CONFIG_MEMBLOCK_MEMORY_REGIONS
 
-/* [base .. base + size] can not exceed the maximum physical memory. */
-
-#define cap_size(base, size) min(size, BIT_ULL(__PHYSICAL_MASK_SHIFT) - base)
-
-static struct memblock_region region_lst[NR_REGIONS];
+static struct memblock_region regions[NR_REGIONS];
 static struct memblock memory = {
-    .regions = region_lst,
-    .max = NR_REGIONS
+    .regions = regions,
+    .max = NR_REGIONS,
+    .name = "memory"
 };
 
-#define for_each_region(i, reg) \
-    for (i = 0, reg = &memory.regions[0]; i < memory.n; reg = &memory.regions[++i])
+#define for_each_memblock_region(i, reg) \
+    for (i = 0, reg = memory.regions; i < memory.n; i++, reg = &memory.regions[i])
 
-static int insert_region(int i, unsigned long base, size_t size, int nid,
+static int insert_region(int i, phys_addr_t base, size_t size, int nid,
     enum memblock_flags flags)
 {
-    struct memblock_region *region = &memory.regions[i];
+    struct memblock_region *region;
 
     if (memory.n + 1 > memory.max) {
 
-        /* TODO. Support to extend 'region_lst'. */
+        /* TODO. Support to extend 'regions'. */
 
         return -ENOSPC;
     }
+
+    region = &memory.regions[i];
 
     /* Free up an entry in the region array, move everything one up. */
 
@@ -43,6 +50,7 @@ static int insert_region(int i, unsigned long base, size_t size, int nid,
     region->size = size;
     region->flags = flags;
     region->nid = nid;
+
     memory.n++;
     memory.size += size;
 
@@ -75,17 +83,17 @@ static void merge_regions(int start_region, int end_region)
     }
 
     while (i < end_region) {
-        struct memblock_region *this = &memory.regions[i];
+        struct memblock_region *curr = &memory.regions[i];
         struct memblock_region *next = &memory.regions[i + 1];
 
-        if ((this->base + this->size != next->base) ||
-            (this->nid != next->nid) || (this->flags != next->flags)) {
+        if ((curr->base + curr->size != next->base) ||
+            (curr->nid != next->nid) || (curr->flags != next->flags)) {
             i++;
 
             continue;
         }
 
-        this->size += next->size;
+        curr->size += next->size;
 
         /* Get rid of 'next' and move every region after 'next' to replace it. */
 
@@ -98,17 +106,16 @@ static void merge_regions(int start_region, int end_region)
     }
 }
 
-static int __add_range(unsigned long base, size_t size, int nid,
+static int add_range(phys_addr_t base, size_t size, int nid,
     enum memblock_flags flags)
 {
     int i, start_region = -1, end_region;
     struct memblock_region *region;
 
-    size = cap_size(base, size);
-    unsigned long end = base + size;
-
     if (!size)
         return SUCCESS;
+
+    phys_addr_t end = base + size;
 
     /* First region! */
 
@@ -124,9 +131,9 @@ static int __add_range(unsigned long base, size_t size, int nid,
         return SUCCESS;
     }
 
-    for_each_region(i, region) {
-        unsigned long r_base = region->base;
-        unsigned long r_end = r_base + region->size;
+    for_each_memblock_region(i, region) {
+        phys_addr_t r_base = region->base;
+        phys_addr_t r_end = r_base + region->size;
 
         if (r_base >= end)
             break;              /* 'region' is already after new region. */
@@ -153,7 +160,8 @@ static int __add_range(unsigned long base, size_t size, int nid,
         }
 
         /* else, add the area after 'region' [r_end .. end] if exist.
-         * Here, 'base' == 'end' if this area is empty. */
+         * Here, 'base' == 'end' if this area is empty.
+         */
 
         base = min(r_end, end);
     }
@@ -169,7 +177,7 @@ static int __add_range(unsigned long base, size_t size, int nid,
         }
     }
 
- out:
+out:
 
     /* Try to merge [start_region .. end_region]. */
 
@@ -179,34 +187,31 @@ static int __add_range(unsigned long base, size_t size, int nid,
     return SUCCESS;
 }
 
-static int __isolate_range(unsigned long base, size_t size, int *start_range,
+static int isolate_range(phys_addr_t base, size_t size, int *start_range,
     int *end_range)
 {
     int i;
     struct memblock_region *region;
 
-    size = cap_size(base, size);
-    unsigned long end = base + size;
-
     /* Index of first and last (noninclusive) regions inside requested range. */
-
     *start_range = *end_range = 0;
 
     if (!size)
         return SUCCESS;
 
-    /* We require two extra regions. */
+    phys_addr_t end = base + size;
 
+    /* We require two extra regions. */
     if (memory.n + 2 > memory.max) {
 
-        /* TODO. Support to extend 'region_lst'. */
+        /* TODO. Support to extend 'regions'. */
 
         return -ENOSPC;
     }
 
-    for_each_region(i, region) {
-        unsigned long r_base = region->base;
-        unsigned long r_end = r_base + region->size;
+    for_each_memblock_region(i, region) {
+        phys_addr_t r_base = region->base;
+        phys_addr_t r_end = r_base + region->size;
 
         if (r_base >= end)
             break;              /* 'region' is already after new region. */
@@ -227,7 +232,8 @@ static int __isolate_range(unsigned long base, size_t size, int *start_range,
 
             /* 'region' has overlap with the end of [base .. base + size].
              * '--i' so next iteration, the new region will be fully contained,
-             * See 'else' bellow. */
+             * See 'else' bellow.
+             */
 
             region->base = end;
             region->size -= end - r_base;
@@ -248,19 +254,19 @@ static int __isolate_range(unsigned long base, size_t size, int *start_range,
     return SUCCESS;
 }
 
-static unsigned long __find_in_range_node(size_t size, unsigned long align,
-    unsigned long start, unsigned long end, int nid, enum memblock_flags flags)
+static phys_addr_t find_in_range_node(size_t size, unsigned long align,
+    phys_addr_t start, phys_addr_t end, int nid, enum memblock_flags flags)
 {
     int i;
     struct memblock_region *region;
-    unsigned long base, r_base, r_end;
+    phys_addr_t base, r_base, r_end;
 
     /* Avoid allocating the first page. */
 
-    start = max(start, PAGE_SIZE);
+    start = max(start, (phys_addr_t)(PAGE_SIZE));
     end = max(start, end);
 
-    for_each_region(i, region) {
+    for_each_memblock_region(i, region) {
         if ((region->flags & flags) == flags) {
 
             if (nid != -1 && nid != region->nid)
@@ -268,13 +274,13 @@ static unsigned long __find_in_range_node(size_t size, unsigned long align,
 
             /* 'region' with 'nid' and EXACT 'flags' set. */
 
-            r_base = clamp(r_base, start, end);
-            r_end = clamp(r_end, start, end);
+            r_base = clamp(region->base, start, end);
+            r_end = clamp(region->base + region->size, start, end);
 
-            base = __KERNEL_DIV_ROUND_UP(r_base, align) * align;
-            if (base < r_base && r_end - base >= size)
+            base = ALIGN_KERNEL(r_base, align);
+
+            if (base < r_end && r_end - base >= size)
                 return base;
-
         }
     }
 
@@ -283,20 +289,59 @@ static unsigned long __find_in_range_node(size_t size, unsigned long align,
 
 /* ''EXTERNAL API''. */
 
-int memblock_add(unsigned long base, size_t size, int nid,
-    enum memblock_flags flags)
-{
-    /* User can not directly pass '__MEMBLOCK_RESERVED' as flag.
-     * 'memblock_alloc' and 'memblock_free' do that! */
+# define PFN_UP(x) (ROUND_UP(x, PAGE_SIZE) >> PAGE_SHIFT)
+# define PFN_DOWN(x) (ROUND_DOWN(x, PAGE_SIZE) >> PAGE_SHIFT)
 
-    return __add_range(base, size, nid, flags & ~__MEMBLOCK_RESERVED);
+void __next_mem_pfn_range(int *i, int nid, unsigned long *start_pfn,
+    unsigned long *end_pfn, int *out_nid)
+{
+    struct memblock_region *reg;
+
+    while (++*i < memory.n) {
+        reg = &memory.regions[*i];
+
+        /* Make sure after alignment, there is at least a page. */
+        if (PFN_UP(reg->base) >= PFN_DOWN(reg->base + reg->size))
+            continue;
+
+        if (nid == -1 || nid == reg->nid)
+            break;
+    }
+
+    if (*i < memory.n) {
+        if (start_pfn)
+            *start_pfn = PFN_UP(reg->base);
+
+        if (end_pfn)
+            *end_pfn = PFN_DOWN(reg->base + reg->size);
+
+        if (out_nid)
+            *out_nid = reg->nid;
+
+    } else {
+        /* End-of-Region. */
+        *i = -1;
+    }
 }
 
-int memblock_remove(unsigned long base, size_t size)
+int memblock_add(phys_addr_t base, size_t size, int nid,
+    enum memblock_flags flags)
+{
+    /* User can not directly pass 'MEMBLOCK_RESERVED' as flag. */
+    /* Used by 'memblock_alloc' and 'memblock_free' to flag the reserved memory !! */
+
+    flags &= ~MEMBLOCK_RESERVED;
+
+    memblock_dbg("[mem %#018llx .. %#018llx]", base, base + size - 1);
+
+    return add_range(base, size, nid, flags);
+}
+
+int memblock_remove(phys_addr_t base, size_t size)
 {
     int i, err, start, end;
 
-    err = __isolate_range(base, size, &start, &end);
+    err = isolate_range(base, size, &start, &end);
     if (err)
         return err;
 
@@ -308,12 +353,12 @@ int memblock_remove(unsigned long base, size_t size)
     return SUCCESS;
 }
 
-int memblock_setclr_flag(unsigned long base, size_t size, int set,
+int memblock_setclr_flag(phys_addr_t base, size_t size, int set,
     enum memblock_flags flag)
 {
     int i, err, start, end;
 
-    err = __isolate_range(base, size, &start, &end);
+    err = isolate_range(base, size, &start, &end);
     if (err)
         return err;
 
@@ -329,11 +374,11 @@ int memblock_setclr_flag(unsigned long base, size_t size, int set,
     return SUCCESS;
 }
 
-int memblock_set_node(unsigned long base, size_t size, int nid)
+int memblock_set_node(phys_addr_t base, size_t size, int nid)
 {
     int i, err, start, end;
 
-    err = __isolate_range(base, size, &start, &end);
+    err = isolate_range(base, size, &start, &end);
     if (err)
         return err;
 
@@ -345,22 +390,23 @@ int memblock_set_node(unsigned long base, size_t size, int nid)
     return SUCCESS;
 }
 
-unsigned long memblock_alloc(size_t size, unsigned long align,
-    unsigned long start, unsigned long end, int nid, bool exact_nid)
+phys_addr_t memblock_alloc(size_t size, unsigned long align,
+    phys_addr_t start, phys_addr_t end, int nid, bool exact_nid)
 {
-    unsigned long found;
+    phys_addr_t found;
 
- again:
+again:
 
-    found = __find_in_range_node(size, align, start, end, nid, MEMBLOCK_NONE);
+    found = find_in_range_node(size, align, start, end, nid, MEMBLOCK_NONE);
 
-    if (found && !memblock_setclr_flag(found, size, 1, __MEMBLOCK_RESERVED))
+    if (found && !memblock_setclr_flag(found, size, 1, MEMBLOCK_RESERVED)) {
+        memblock_dbg("[mem %#018llx .. %#018llx]", found, found + size - 1);
+
         return found;
+    }
 
+    /* Retry without 'nid'. */
     if (nid != -1 && !exact_nid) {
-
-        /* Retry without 'nid'. */
-
         nid = -1;
 
         goto again;
@@ -369,9 +415,44 @@ unsigned long memblock_alloc(size_t size, unsigned long align,
     return 0;
 }
 
-void memblock_free(unsigned long base, size_t size)
+void memblock_free(phys_addr_t base, size_t size)
 {
     /* Ignore the return value; On failure the area remains reserved. */
 
-    memblock_setclr_flag(base, size, 0, __MEMBLOCK_RESERVED);
+    memblock_setclr_flag(base, size, 0, MEMBLOCK_RESERVED);
 }
+
+int memblock_reserve(phys_addr_t base, size_t size)
+{
+    return memblock_setclr_flag(base, size, 1, MEMBLOCK_RESERVED);
+}
+
+void memblock_dump(void)
+{
+    int i;
+    struct memblock_region *region;
+
+    for_each_memblock_region(i, region) {
+        ulog("%s[%d]\t[%#018llx .. %#018llx] %#llx bytes, %x flag",
+            memory.name, i, region->base, region->base + region->size - 1,
+            region->size, region->flags);
+
+        if (region->nid != -1)
+            ulog(" on node %d\n", region->nid);
+        else
+            ulog("\n");
+    }
+}
+
+static int __init early_memblock(char *arg)
+{
+    if (strstr(arg, "debug")) {
+        memblock_debug = 1;
+
+        return SUCCESS;
+    }
+
+    return -EINVAL;
+}
+
+early_param("memblock", early_memblock);

@@ -30,14 +30,13 @@ static size_t iob_read(_IO_BUFFER io, char *buffer, size_t count)
 
 int strtoull(const char *str, int base, unsigned long long *result_ret)
 {
-    struct strtox x;
+    struct strtox x = { 0 };
     char scratch_buf[32];
     unsigned long long result;
     int ret;
 
     x.io.buffer = scratch_buf;
     x.io.buf_size = 32;
-    x.io.io_unget_slop = 0;
     x.io.read = iob_read;
     x.str = str;
     x.n = strlen(str);
@@ -66,14 +65,13 @@ int strtoul(const char *str, int base, unsigned long *result_ret)
 
 int strtoll(const char *str, int base, long long *result_ret)
 {
-    struct strtox x;
+    struct strtox x = { 0 };
     char scratch_buf[32];
     long long result;
     int ret;
 
     x.io.buffer = scratch_buf;
     x.io.buf_size = 32;
-    x.io.io_unget_slop = 0;
     x.io.read = iob_read;
     x.str = str;
     x.n = strlen(str);

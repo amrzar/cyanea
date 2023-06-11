@@ -270,7 +270,7 @@ section_table:
 #endif /* CONFIG_EFI_STUB */
 
     .section ".header", "a"
-    .byte   0xFF
+    .byte   0xFF            # sentinel.
     .byte   0xFF
 
     #

@@ -4,7 +4,7 @@
 #define __X86_ASM_E820_H__
 
 #include <cyanea/types.h>
-#include <cyanea/init.h>
+
 #include <uapi/asm/bootparam.h>
 
 enum e820_type {
@@ -16,15 +16,12 @@ enum e820_type {
 };
 
 struct e820_entry {
-    u64 start;
-    u64 size;
+    phys_addr_t start;
+    size_t size;
     enum e820_type type;
 };
 
-/* We assume legacy E820 BIOS memory as reported in 'boot_params.e820_table'. */
-/* 'boot_params' is defined in 'x86/ukernel/setup.c'. */
-
-#define E820_MAX_ENTRIES __E820_MAX_ENTRIES
+#define E820_MAX_ENTRIES BIOS_E820_MAX_ENTRIES
 
 struct e820_table {
     int nr_entries;
@@ -32,6 +29,9 @@ struct e820_table {
     struct e820_entry entries[E820_MAX_ENTRIES];
 };
 
-extern void __init e820__memory_setup(void);
+unsigned long __init e820_end_pfn(unsigned long, enum e820_type);
+void __init e820__range_add(phys_addr_t, size_t, enum e820_type);
+void __init e820__memory_setup(void);
+void __init e820__memblock_setup(void);
 
 #endif /* __X86_ASM_E820_H__ */

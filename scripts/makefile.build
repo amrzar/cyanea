@@ -4,24 +4,23 @@ include $(srctree)/scripts/makefile.lib
 
 #
 # 'obj-y'     List objects and directories that should be built for '.builtin.o'.
-# 'extra-y    List of targets should be built before '.builtin.o'.
 # 'subdir-y'  List of directories should be built before '.builtin.o'.
 #
 
 targets-for-builtin := $(filter %.o, $(obj-y))
-subdir-for-builtin  := $(sort $(filter %/, $(obj-y)))
+targets := $(targets-for-builtin)
 
-all-targets := $(targets-for-builtin) $(extra-y)
+subdir-for-builtin  := $(sort $(filter %/, $(obj-y)))
 subdir := $(subdir-y) $(subdir-for-builtin)
 
-dep-files := $(foreach a-path, $(all-targets), $(call dot-file, $(a-path)).d)
+dep-files := $(foreach a-path, $(targets), $(call dot-file, $(a-path)).d)
 
 #
 # 'CPPFLAGS', 'cppflags' Global and directory preprocessor flags.
 # 'LDFLAGS', 'ld-flags'  Global and directory linker flags for '.builtin.o'.
-# 'CFLAGS', 'cflags', CFLAGS-$(@F)  Global, directory, and per-file compiler flags.
-# 'AFLAGS', 'aflags', AFLAGS-$(@F)  Global, directory, and per-file assembler flags.
-# 'OBJCOPYFLAGS', 'OBJCOPYFLAGS-$(@F)'  Global and per-file 'objcopy' flags.
+# 'CFLAGS', 'cflags', CFLAGS-$(@F) Global, directory, and per-file compiler flags.
+# 'AFLAGS', 'aflags', AFLAGS-$(@F) Global, directory, and per-file assembler flags.
+# 'OBJCOPYFLAGS', 'OBJCOPYFLAGS-$(@F)' Global and per-file 'objcopy' flags.
 #
 
 -include $(dep-files)
@@ -51,10 +50,9 @@ cpp_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
 	@$(call cmd-info, LDS, $<)
 	$(Q)$(CPP) $(cpp_flags) -Wp,-MT,$@ -P -D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
 
-#
-#
+##
 
-.builtin.o: $(extra-y) $(subdir-for-builtin) $(targets-for-builtin)
+.builtin.o: $(subdir-for-builtin) $(targets-for-builtin)
 	@$(call cmd-info, LD, $@)
 	$(Q)$(LD) $(LDFLAGS) $(ld-flags) $(targets-for-builtin) \
 		$(patsubst %/,%/.builtin.o,$(subdir-for-builtin)) -r -o $@
@@ -68,14 +66,15 @@ cpp_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
 
 # Descending ...
 $(subdir): FORCE
-	@$(call cmd-info, DESCEND, $@)
+	@printf '%-8s%s\n' DESCEND $@
 	$(call descend-make, $@)
 
 rm-files: FORCE
-	$(foreach a-subdir, $(subdir), $(call descend, $(a-subdir) rm-files))
-	$(Q)rm -f $(all-targets) $(dep-files)
+	$(Q)$(foreach a-subdir, $(subdir), $(MAKE) -C $(a-subdir) rm-files &&) true
+	$(Q)rm -f $(targets) $(dep-files)
 	$(Q)rm -rf $(CLEAN_FILES)
 	$(Q)rm -f .builtin.o
+	$(clean-all)
 
 .DEFAULT_GOAL := .builtin.o
 .SECONDARY:

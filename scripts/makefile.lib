@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-cmd-info = printf '%-8s%s\n' $1 $2
+cmd-info = printf '%-8s%s\n' $1 $(notdir $2)
 dot-file = $(dir $1).$(notdir $1)
 
 #
@@ -24,10 +24,6 @@ endef
 
 #
 # 'asm-offset.h' header generation.
-#
-# extra-y += arch/$(ARCH)/asm-offsets.s
-# include/generated/asm-offsets.h: arch/$(ARCH)/asm-offsets.s FORCE
-#	  $(call if-changed,$(asm-offset))
 #
 
 define sed-offsets

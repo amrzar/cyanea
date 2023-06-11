@@ -20,7 +20,17 @@ menu "Architecture dependant configurations" # arch-dep-config
 				"This allows you to specify the maximum number of CPUs which
 				this kernel will support."
 
-		.include "arch/x86/configs.in.cpu"
+		choice "Processor family"
+			CONFIG_PROCESSOR
+			option "Generic"
+			option "Broadwell:QEMU" [default]
+			help
+				"This is the processor types of your CPU."
+
+		config
+			CONFIG_L1_CACHE_6_SHIFT BOOL
+			depends CONFIG_PROCESSOR == "Generic"
+
 	endmenu # x86-processor
 
 	menu "ukernel image ''ukernel'' configurations" # ukernel-image-config
@@ -48,8 +58,14 @@ menu "Architecture dependant configurations" # arch-dep-config
 			CONFIG_RELOCATABLE BOOL
 			help
 				"This builds a ukernel image that retains relocation information
-				so it can be loaded at different places. The relocations tend
-				to make the ukernel binary larger, but are discarded at runtime."
+				(if necessary) so it can be loaded at different places."
+
+		config "boot break size"
+			CONFIG_BRK_ALLOC_PAGES
+			INTEGER 256
+			help
+				"Reserved pages used for direct mapping of ukernel during boot
+				(Default to 1MiB)."
 
 	endmenu # ukernel-image-config
 
@@ -75,5 +91,11 @@ menu "Architecture dependant configurations" # arch-dep-config
 				protocol must be used."
 	
 	endmenu # efi-support
+
+	config "NUMA (Non-Uniform Memory Access) support"
+		CONFIG_NUMA
+		BOOL false
+		help
+			"Enable NUMA (Non-Uniform Memory Access) support."
 
 endmenu # arch-dep-config

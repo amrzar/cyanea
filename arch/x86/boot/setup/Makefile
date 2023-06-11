@@ -14,7 +14,7 @@ obj-y += version.o
 obj-y += memory.o
 obj-y += a20.o pm.o pmjump.o
 
-LDFLAGS-setup.elf := -z noexecstack -T setup.lds
+LDFLAGS-setup.elf := -T setup.lds
 
 OBJCOPYFLAGS-setup.bin := -O binary
 CLEAN_FILES += setup.elf setup.bin

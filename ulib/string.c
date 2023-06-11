@@ -68,7 +68,7 @@ char *strstr(const char *str1, const char *str2)
 #endif
 
 #ifndef __HAVE_ARCH_STRNSTR
-extern char *strnstr(const char *str1, const char *str2, size_t n)
+char *strnstr(const char *str1, const char *str2, size_t n)
 {
     size_t n2;
 
@@ -162,16 +162,14 @@ void *memset(void *str, int c, size_t n)
 #ifndef __HAVE_ARCH_MEMMOVE
 void *memmove(void *dest, const void *src, size_t n)
 {
-    const char *p = src;
-    char *q = dest;
+    unsigned char *d = dest;
+    const unsigned char *s = src;
 
-    if (q < p) {
-        while (n--)
-            *q++ = *p++;
-    } else {
-        while (n--)
-            *--q = *--p;
-    }
+    if (d <= s || d - s >= n)
+        return memcpy(dest, src, n);
+
+    while (n-- > 0)
+        d[n] = s[n];
 
     return dest;
 }

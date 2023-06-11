@@ -9,18 +9,21 @@ static void detect_memory_e820(void)
     u8 error;
     u32 eax, ecx, ebx = 0;
     int count = 0;
-    struct __e820_entry buf = { 0 };
+    struct bios_e820_entry buf = { 0 };
 
     do {
         ecx = sizeof(buf);
 
-        asm volatile ("int $0x15\n"
-            "setc %0":"=d" (error), "+b"(ebx), "=a"(eax), "+c"(ecx), "=m"(buf)
-            :"D"(&buf), "d"(SMAP), "a"(0xe820)
-            );
+        asm volatile(
+            "int    $0x15   ;"
+            "setc   %0      ;"
+            : "=d" (error), "+b" (ebx), "=a" (eax), "+c" (ecx), "=m" (buf)
+            : "D" (&buf), "d" (SMAP), "a" (0xe820)
+        );
 
         /* BIOSes which terminate the chain with 'CF' set instead of '!EBX'
-         * do not always report the ''SMAP'' on the final iteration. */
+         * do not always report the ''SMAP'' on the final iteration.
+         */
 
         if (error != 0)
             break;
@@ -32,7 +35,7 @@ static void detect_memory_e820(void)
         }
 
         boot_params.e820_table[count++] = buf;
-    } while (ebx && count < __E820_MAX_ENTRIES);
+    } while (ebx && count < BIOS_E820_MAX_ENTRIES);
 
     boot_params.e820_entries = count;
 }

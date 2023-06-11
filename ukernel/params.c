@@ -51,7 +51,10 @@ int __param_get_option(const char *cmdline, int size,
 
                     break;
                 } else if ((ch == ' ') || (ch == '\0')) {
-                    return -2;  /* ... found a boolean option. */
+
+                    /* It is a boolean option. */
+
+                    return -2;
                 }
             } else if (ch == *opptr++)
                 break;

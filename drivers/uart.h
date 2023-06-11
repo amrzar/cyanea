@@ -23,15 +23,14 @@ struct uart_port {
     int index;                  /* Port index, e.g. '0' for ttyS0 */
     unsigned int uart_clock;    /* Base UART clock. */
 
-    void (*__poll_putchar)(struct uart_port *, int);
+    void (*poll_putchar)(struct uart_port *, int);
 };
 
 extern struct uart_port uart_ports[UART_NR];
 
-extern struct uart_port *__find_match_port(const struct uart_port *);
-extern int register_uart_port(struct uart_port *);
-extern void uart_poll_put_char(unsigned int, int);
-extern int uart_io_parse_option(char *, unsigned char *, unsigned long *,
-    char **);
+struct uart_port *__find_match_port(const struct uart_port *);
+int register_uart_port(struct uart_port *);
+void uart_poll_put_char(unsigned int, int);
+int uart_io_parse_option(char *, unsigned char *, unsigned long *, char **);
 
 #endif /* __UART_H__ */

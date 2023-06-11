@@ -6,8 +6,7 @@
 static unsigned long get_cmd_line(void)
 {
     unsigned long cmd_line_ptr = boot_params->hdr.cmd_line_ptr;
-
-    cmd_line_ptr |= ((unsigned long)(boot_params->ext_cmd_line_ptr)) << 32;
+    cmd_line_ptr |= ((unsigned long) boot_params->ext_cmd_line_ptr) << 32;
 
     return cmd_line_ptr;
 }
@@ -15,5 +14,5 @@ static unsigned long get_cmd_line(void)
 int early_param_parse(const char *option, char *buf, int buf_size)
 {
     return __param_get_option((const char *)(get_cmd_line()), 0x10000,
-        option, buf, buf_size, NULL);
+            option, buf, buf_size, NULL);
 }

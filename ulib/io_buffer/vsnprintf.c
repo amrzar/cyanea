@@ -25,9 +25,7 @@ enum ranks {
 
 static void io_buffer_put_char(_IO_BUFFER io, char c)
 {
-    char char_arg = c;
-
-    __iob_write(io, &char_arg, 1);
+    __iob_write(io, &c, 1);
 }
 
 static void put_padding(_IO_BUFFER io, int condition, char c, int width,
@@ -54,12 +52,15 @@ static void format_int(_IO_BUFFER io, unsigned long long value,
 
     int minus = 0, ndigits = 0, nchar = 0;
 
-    if ((flags & FL_SIGNED) && (long long)(value) < 0) {
-        value = (unsigned long long)(-(long long)(value));
-        minus = 1;
+    if (flags & FL_SIGNED) {
+        if ((long long)(value) < 0) {
+            value = (unsigned long long)(-(long long)(value));
+            minus = 1;
+        }
     }
 
     unsigned long long t_value = value;
+    int t_ndigit;
 
     do {
         ndigits++;
@@ -71,7 +72,8 @@ static void format_int(_IO_BUFFER io, unsigned long long value,
 
     /* 'ndigits' is number of digits to represent the 'value'.
      * 'nchar' is number of character including sign and preceding string, e.g. '0x'.
-     * 'width' is minimum number of character for this field. * */
+     * 'width' is minimum number of character for this field.
+     */
 
     nchar = ndigits;
 
@@ -108,8 +110,9 @@ static void format_int(_IO_BUFFER io, unsigned long long value,
 
     char t_str[64] = { '\0' };
 
-    while (ndigits > 0) {
-        t_str[--ndigits] = digits(flags)[value % base];
+    t_ndigit = ndigits;
+    while (t_ndigit > 0) {
+        t_str[--t_ndigit] = digits(flags)[value % base];
         value /= base;
     }
 
@@ -117,34 +120,64 @@ static void format_int(_IO_BUFFER io, unsigned long long value,
     put_padding(io, (flags & FL_MINUS), ' ', width, nchar);
 }
 
+#define USTTOLL(x) ((unsigned long long)(x))
+#define STTOLL(x)  ((unsigned long long)(long long)(x))
+
 static void ap_format_int(_IO_BUFFER io, int base, unsigned long flags,
-    int width, int precision, int rank, va_list * ap)
+    int width, int precision, int rank, va_list *ap)
 {
     unsigned long long value = 0;
 
-    switch (rank) {
-    case RANK_CHAR:
-        value = (unsigned char)(va_arg(*ap, int));
-        break;
+    /* Do some type casting to extend signed value for 'long long'. */
 
-    case RANK_SHORT:
-        value = (unsigned short)(va_arg(*ap, int));
-        break;
+    if (flags & FL_SIGNED) {
+        switch (rank) {
+        case RANK_CHAR:
+            value = STTOLL((unsigned char)(va_arg(*ap, int)));
+            break;
 
-    case RANK_INT:
-        value = va_arg(*ap, unsigned int);
-        break;
+        case RANK_SHORT:
+            value = STTOLL((unsigned short)(va_arg(*ap, int)));
+            break;
 
-    case RANK_LONG:
-        value = va_arg(*ap, unsigned long);
-        break;
+        case RANK_INT:
+            value = STTOLL(va_arg(*ap, int));
+            break;
 
-    case RANK_LLONG:
-        value = va_arg(*ap, unsigned long long);
-        break;
+        case RANK_LONG:
+            value = STTOLL(va_arg(*ap, long));
+            break;
+
+        case RANK_LLONG:
+            value = STTOLL(va_arg(*ap, long long));
+            break;
+        }
+
+    } else {
+        switch (rank) {
+        case RANK_CHAR:
+            value = USTTOLL((unsigned char)(va_arg(*ap, int)));
+            break;
+
+        case RANK_SHORT:
+            value = USTTOLL((unsigned short)(va_arg(*ap, int)));
+            break;
+
+        case RANK_INT:
+            value = USTTOLL(va_arg(*ap, int));
+            break;
+
+        case RANK_LONG:
+            value = USTTOLL(va_arg(*ap, long));
+            break;
+
+        case RANK_LLONG:
+            value = USTTOLL(va_arg(*ap, long long));
+            break;
+        }
     }
 
-    format_int(io, value, base, flags, width, precision);
+    format_int(io, value, flags, base, width, precision);
 }
 
 static void format_str(_IO_BUFFER io, const char *str, int count,
@@ -162,7 +195,7 @@ static void format_str(_IO_BUFFER io, const char *str, int count,
 int iob_vsnprintf(_IO_BUFFER io, const char *format, va_list _ap)
 {
 
-    /* * ''%[parameter][flags][width][.precision][length or modifier]type''. * */
+    /* ''%[parameter][flags][width][.precision][length or modifier]type''. */
 
     enum {
         ST_NORMAL,
@@ -174,7 +207,7 @@ int iob_vsnprintf(_IO_BUFFER io, const char *format, va_list _ap)
 
     va_list ap;
 
-    /* ... 'va_list' may be an array, 'va_copy' to pass 'va_list *'. * */
+    /* 'va_list' may be an array, 'va_copy' to pass 'va_list *'. */
 
     va_copy(ap, _ap);
 
@@ -196,7 +229,7 @@ int iob_vsnprintf(_IO_BUFFER io, const char *format, va_list _ap)
 
                 } else {
                     io_buffer_put_char(io, ch);
-                    /* ... ignore next '%'. */
+                    /* Ignore next '%'. */
                     p++;
                 }
             } else
@@ -234,7 +267,7 @@ int iob_vsnprintf(_IO_BUFFER io, const char *format, va_list _ap)
             break;
 
         case ST_WIDTH:
- st_width:
+st_width:
 
             if (isdigit(ch))
                 width = width * 10 + (ch - '0');
@@ -277,7 +310,7 @@ int iob_vsnprintf(_IO_BUFFER io, const char *format, va_list _ap)
             break;
 
         case ST_MODIFIERS:
- st_modifiers:
+st_modifiers:
 
             if ((ch == 'h') && (rank > RANK_CHAR))
                 rank--;
@@ -292,16 +325,18 @@ int iob_vsnprintf(_IO_BUFFER io, const char *format, va_list _ap)
                 case 'P':
                     flags |= FL_UPPER;
 
+                    fallthrough;
                 case 'p':
                     flags |= FL_HASH;
-                    format_int(io, (unsigned long)(va_arg(ap, void *)),
-                        16, flags, width, (sizeof(void *) >> 2));
+                    format_int(io, USTTOLL(va_arg(ap, void *)), 16, flags,
+                        width, sizeof(void *) >> 2);
                     break;
 
                 case 'd':
                 case 'i':
                     flags |= FL_SIGNED;
 
+                    fallthrough;
                 case 'u':
                     ap_format_int(io, 10, flags, width, precision, rank, &ap);
                     break;
@@ -313,25 +348,26 @@ int iob_vsnprintf(_IO_BUFFER io, const char *format, va_list _ap)
                 case 'X':
                     flags |= FL_UPPER;
 
+                    fallthrough;
                 case 'x':
                     ap_format_int(io, 16, flags, width, precision, rank, &ap);
                     break;
 
-                case 'c':{
-                        char char_arg = (signed char)(va_arg(ap, int));
+                case 'c': {
+                    char char_arg = (signed char)(va_arg(ap, int));
 
-                        format_str(io, &char_arg, 1, flags, width, precision);
-                        break;
-                    }
+                    format_str(io, &char_arg, 1, flags, width, precision);
+                    break;
+                }
 
-                case 's':{
-                        const char *str_arg = va_arg(ap, const char *);
-                        str_arg = str_arg ? str_arg : "(null)";
+                case 's': {
+                    const char *str_arg = va_arg(ap, const char *);
+                    str_arg = str_arg ? str_arg : "(null)";
 
-                        format_str(io, str_arg, strlen(str_arg), flags, width,
-                            precision);
-                        break;
-                    }
+                    format_str(io, str_arg, strlen(str_arg), flags, width,
+                        precision);
+                    break;
+                }
 
                 default:
                     return -1;
