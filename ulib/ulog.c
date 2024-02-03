@@ -23,7 +23,7 @@ static int iob_flush(_IO_BUFFER io)
     return SUCCESS;
 }
 
-void __attribute__((format(printf, 1, 2))) ulog(const char *fmt, ...)
+void __va_ulog(const char *fmt, va_list ap)
 {
     static char buffer[128];
     static struct io_buffer io = {
@@ -34,9 +34,14 @@ void __attribute__((format(printf, 1, 2))) ulog(const char *fmt, ...)
         .flush = iob_flush
     };
 
+    iob_vsnprintf(&io, fmt, ap);
+} 
+
+void __attribute__((format(printf, 1, 2))) ulog(const char *fmt, ...)
+{
     va_list ap;
 
     va_start(ap, fmt);
-    iob_vsnprintf(&io, fmt, ap);
+    __va_ulog(fmt, ap);
     va_end(ap);
 }
