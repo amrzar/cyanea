@@ -37,6 +37,10 @@ char *strchr(const char *, int);
 char *strcpy(char *, const char *);
 #endif
 
+#ifndef __HAVE_ARCH_STRCAT
+char *strcat(char *, const char *);
+#endif
+
 #ifndef __HAVE_ARCH_STRNCPY
 char *strncpy(char *, const char *, size_t);
 #endif
@@ -51,6 +55,10 @@ void *memset(void *, int, size_t);
 
 #ifndef __HAVE_ARCH_MEMMOVE
 void *memmove(void *, const void *, size_t);
+#endif
+
+#ifndef __HAVE_ARCH_MEMCMP
+int memcmp(const void *, const void *, size_t);
 #endif
 
 #endif /* __CYANEA_STRING_H__ */

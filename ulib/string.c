@@ -116,6 +116,15 @@ char *strcpy(char *dest, const char *src)
 }
 #endif
 
+#ifndef __HAVE_ARCH_STRCAT
+char *strcat(char *dest, const char *src)
+{
+    strcpy(strchr(dest, '\0'), src);
+
+    return dest;
+}
+#endif
+
 #ifndef __HAVE_ARCH_STRNCPY
 char *strncpy(char *dest, const char *src, size_t n)
 {
@@ -172,5 +181,21 @@ void *memmove(void *dest, const void *src, size_t n)
         d[n] = s[n];
 
     return dest;
+}
+#endif
+
+#ifndef __HAVE_ARCH_MEMCMP
+int memcmp(const void *str1, const void *str2, size_t n)
+{
+    const unsigned char *s1, *s2;
+    int res = 0;
+
+    for (s1 = str1, s2 = str2; n > 0; ++s1, ++s2, n--) {
+        res = *s1 - *s2;
+        if (!res)
+            break;
+    }
+
+    return res;
 }
 #endif
