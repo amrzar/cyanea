@@ -35,7 +35,7 @@ void __va_ulog(const char *fmt, va_list ap)
     };
 
     iob_vsnprintf(&io, fmt, ap);
-} 
+}
 
 void __attribute__((format(printf, 1, 2))) ulog(const char *fmt, ...)
 {
