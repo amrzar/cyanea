@@ -127,13 +127,11 @@ static bool __init do_early_map(unsigned long address)
         pud = (pud_t *) __va_symbol((pgd_val(pgd[i]) & PG_PFN_MASK));
     else {
 
-        /* 'PUD' is not present for 'address', allocate and map. */
+        /* We do not expect a PUD allocation during early boot. */
+        /* Everything should fit in a PUD allocated in '__startup_64'. */
 
-        pud = get_free_zero_page();
-        if (!pud)
-            return false;
-
-        pgd[i] = __pgd_t((pgdval_t) __pa_symbol(pud) | _KERNPG_TABLE);
+        while (1)
+            halt();
     }
 
     i = pud_index(address);
