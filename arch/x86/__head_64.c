@@ -174,8 +174,7 @@ void __init do_boot_exception(struct utask_regs *regs, int exp)
         ulog_err("exp %d (HLT.).", exp);
 hlt_loop:
 
-        while (1)
-            halt();
+        HALT;
     }
 }
 
@@ -249,7 +248,7 @@ void __head __startup_64(phys_addr_t load_phys_addr)
      */
 
     if (!IS_ALIGNED(load_delta, PMD_SHIFT))
-        while (1) ;
+        HALT;
 
     /* PGD [511]. */
     pgd[pgd_index(__START_KERNEL_map)] =

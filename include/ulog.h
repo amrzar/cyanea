@@ -49,11 +49,14 @@ void ulog(const char *, ...);
 # define ulog_debug(...)
 #endif
 
+#define HALT do { \
+        halt(); \
+    } while (1)
+
 #define assert(cond, ...) do { \
         if (!(cond)) { \
             ulog_err(__VA_ARGS__); \
-            while (1) \
-                halt(); \
+            HALT; \
         } \
     } while(0)
 
