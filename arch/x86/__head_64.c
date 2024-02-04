@@ -123,16 +123,11 @@ static bool __init do_early_map(unsigned long address)
 
     i = pgd_index(address);
 
-    if (pgd_val(pgd[i]))
-        pud = (pud_t *) __va_symbol((pgd_val(pgd[i]) & PG_PFN_MASK));
-    else {
+    /* Everything should fit in a PUD allocated in '__startup_64'. */
 
-        /* We do not expect a PUD allocation during early boot. */
-        /* Everything should fit in a PUD allocated in '__startup_64'. */
+    assert(pgd_val(pgd[i]), "out-of-bound memory access during boot.");
 
-        while (1)
-            halt();
-    }
+    pud = (pud_t *) __va_symbol((pgd_val(pgd[i]) & PG_PFN_MASK));
 
     i = pud_index(address);
 
