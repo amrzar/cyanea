@@ -130,10 +130,15 @@ int register_console(struct console *con)
     return SUCCESS;
 }
 
-void console_write(const char *s, size_t count)
+int console_write(const char *s, size_t count)
 {
     int i;
 
+    if (!active_console)
+        return -EINVAL;
+
     for (i = 0; i < count; i++, s++)
         uart_poll_put_char(active_console->index, *s);
+
+    return SUCCESS;
 }

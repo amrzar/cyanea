@@ -20,6 +20,6 @@ struct console {
 
 int add_preferred_console(char *, int, char *);
 int register_console(struct console *);
-void console_write(const char *, size_t);
+int console_write(const char *, size_t);
 
 #endif /* __CYANEA_CONSOLE_H__ */
