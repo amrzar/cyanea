@@ -29,7 +29,7 @@ case ${ARCH} in
                 -smp ${NR_CPUS} \
                 -cpu ${PROCESSOR%:*} \
                 -nographic \
-                -append "console=uart,io,0x3f8,9600 memblock=debug acpi=off" \
+                -append "console=uart,io,0x3f8,9600 memblock=debug" \
                 "$@" "${DEBUG_OPTIONS[@]}" &> /dev/null &
         else
             qemu-system-${QEMU} \
@@ -39,7 +39,7 @@ case ${ARCH} in
                 -smp ${NR_CPUS} \
                 -cpu ${PROCESSOR%:*} \
                 -nographic \
-                -append "console=uart,io,0x3f8,9600 memblock=debug acpi=off" \
+                -append "console=uart,io,0x3f8,9600 memblock=debug" \
                 "$@"            
         fi
         ;;
