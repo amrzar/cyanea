@@ -22,17 +22,20 @@ menu "Hardware setting" # hardware-setting
 
 endmenu # hardware-setting
 
-config "Build debug version"
-	CONFIG_DEBUG BOOL
-	help
-		"Build a ukernel for debugging purposes."
+menu "Debugging settings"
+	config "Build debug version"
+		CONFIG_DEBUG BOOL
+		help
+			"Build a ukernel for debugging purposes."
 
-choice "ulog Log Level"
-	CONFIG_LOG_LEVEL
-	option 0
-	option 1 [default]
-	help
-		"Set the default log level [0 : error] [1 : info]"
+	choice "ulog Log Level"
+		CONFIG_LOG_LEVEL
+		option 0
+		option 1 [default]
+		help
+			"Set the default log level [0 : error] [1 : info]"
+
+endmenu # debugging-setting
 
 config "ukernel version"
 	CONFIG_VERSION
