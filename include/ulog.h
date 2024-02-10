@@ -60,6 +60,13 @@ void ulog(const char *, ...);
         } \
     } while(0)
 
+#define warning_on(cond) ({ \
+        if (cond) \
+            ulog(BOLDYELLOW "[%s][%d]: warning on %s\n" RESET, \
+                __FUNCTION__, __LINE__, #cond); \
+        (cond); \
+    })
+
 #endif /*  __ASSEMBLY__ */
 
 #endif /* __ULOG_H__ */
