@@ -114,3 +114,10 @@ void __init idt_setup_pf(void)
 {
     idt_setup_from_table(idt_table, pf_idt, ARRAY_SIZE(pf_idt));
 }
+
+/**/
+
+DEFINE_IDTENTRY_IRQ(common_interrupt)
+{
+
+}
