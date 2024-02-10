@@ -4,14 +4,14 @@ relocs: relocs.c
 	@$(call cmd-info, HOSTCC, $<)
 	$(Q)$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-piggy.S: relocs kernel/
+rm-piggy.S: relocs kernel/
 	@./relocs kernel/kernel.elf > kernel.reloc
 
 CLEAN_FILES += relocs
 CLEAN_FILES += kernel.reloc
 
 obj-y += init.o
-obj-y += piggy.o
+obj-y += rm-piggy.o
 
 # Build the real-mode kernel (.elf and .bin).
 

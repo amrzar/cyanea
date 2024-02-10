@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-.section ".header", "a"
+    .section ".header", "a"
 
 #
 # Header to export details of the real-mode kernel 'struct real_mode_header { ... }'.
