@@ -11,9 +11,10 @@
 static int memblock_debug = 0;
 
 #define memblock_dbg(...) do { \
-        if (memblock_debug) \
+        if (memblock_debug) {  \
             ulog_info(__VA_ARGS__); \
-        ulog_info(" (%s)\n", __func__); \
+            ulog_info(" (%s)\n", __func__); \
+        } \
     } while(0)
 
 #define NR_REGIONS CONFIG_MEMBLOCK_MEMORY_REGIONS
