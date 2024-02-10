@@ -71,8 +71,8 @@ enum page_cache_mode {
 #define _PAGE_CACHE_MASK (_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)
 #define _PAGE_LARGE_CACHE_MASK (_PAGE_PWT | _PAGE_PCD | _PAGE_PAT_LARGE)
 
-#define PG_PFN_MASK (PHYSICAL_PAGE_MASK)        /* PFN of page-table structure page. */
-#define PG_FLAGS_MASK (~PG_PFN_MASK)    /* Flags of page-table structure entry. */
+#define PG_PFN_MASK (PHYSICAL_PAGE_MASK)    /* PFN in page-table structure entry. */
+#define PG_FLAGS_MASK (~PG_PFN_MASK)        /* Flags in page-table structure entry. */
 
 typedef unsigned long pgdval_t;
 typedef struct {
@@ -124,9 +124,9 @@ static inline pmdval_t pmd_flags(pmd_t pmd)
     return pmd_val(pmd) & ~pmd_pfn_mask(pmd);
 }
 
-#define pte_pgprot(x) __pgprot(pte_flags(x))
-#define pmd_pgprot(x) __pgprot(pmd_flags(x))
-#define pud_pgprot(x) __pgprot(pud_flags(x))
+#define pte_pgprot(x) __pgprot_t(pte_flags(x))
+#define pmd_pgprot(x) __pgprot_t(pmd_flags(x))
+#define pud_pgprot(x) __pgprot_t(pud_flags(x))
 
 #define _PAGE_NOCACHE (cachemode2protval(_PAGE_CACHE_MODE_UC))
 
