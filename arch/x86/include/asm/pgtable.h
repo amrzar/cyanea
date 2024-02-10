@@ -67,13 +67,6 @@ static inline pgprotval_t check_pgprot(pgprot_t pgprot)
     return protval;
 }
 
-static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot)
-{
-    unsigned long phys_addr = pfn << PAGE_SHIFT;
-
-    return __pte_t((phys_addr & PG_PFN_MASK) | check_pgprot(pgprot));
-}
-
 #else /* !__ASSEMBLY__ */
 
 #endif /* __ASSEMBLY__ */
