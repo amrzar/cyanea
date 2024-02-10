@@ -12,6 +12,5 @@ obj-y += irq.o
 obj-y += entry_64.o
 obj-y += __entry_64.o
 obj-$(NUMA) += numa.o
-obj-y += early_ioremap.o
 
 include $(srctree)/scripts/makefile.build
