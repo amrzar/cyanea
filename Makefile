@@ -39,7 +39,7 @@ UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 			   -I$(srctree)/ulib/include \
 			   $(UAPIINCLUDE) \
 			   -include $(sysconfig) \
-			   -include $(srctree)/include/ulog.h
+			   -include $(ulib)/include/ulib/ulog.h
 
 #
 # The '-nostdlib' forces GCC not to use standard system startup files or
