@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <cyanea/limits.h>
 #include <cyanea/errno.h>
 
+#include <ulib/limits.h>
 #include <ulib/ctype.h>
 
 #include "../io_buffer.h"
