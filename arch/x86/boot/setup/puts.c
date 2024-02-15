@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <cyanea/stddef.h>
 #include <asm/io.h>
+
+#include <ulib/stddef.h>
 
 #include "string.h"
 #include "setup.h"

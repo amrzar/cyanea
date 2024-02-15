@@ -2,9 +2,10 @@
 
 #include <cyanea/types.h>
 #include <cyanea/errno.h>
-#include <cyanea/stddef.h>
 
 #include <asm-generic/unaligned.h>
+
+#include <ulib/stddef.h>
 
 #include "compressed.h"
 #include "string.h"

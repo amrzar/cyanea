@@ -4,7 +4,8 @@
 #define __CYANEA_MEMBLOCK_H__
 
 #include <cyanea/types.h>
-#include <cyanea/stddef.h>
+
+#include <ulib/stddef.h>
 
 enum memblock_flags {
     MEMBLOCK_NONE = 0x0,

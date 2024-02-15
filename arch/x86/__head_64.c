@@ -3,7 +3,6 @@
 #include <cyanea/init.h>
 #include <cyanea/init_utask.h>
 #include <cyanea/pgtable.h>
-#include <cyanea/stddef.h>
 #include <cyanea/irq.h>
 #include <asm/page.h>
 #include <asm/ukernel.lds.h>
@@ -12,6 +11,7 @@
 #include <asm/desc_types.h>
 #include <asm/utask.h>
 
+#include <ulib/stddef.h>
 #include <ulib/string.h>
 
 void __init x86_64_start_kernel(phys_addr_t);
