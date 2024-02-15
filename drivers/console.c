@@ -4,8 +4,8 @@
 #include <cyanea/stddef.h>
 #include <cyanea/errno.h>
 #include <cyanea/init.h>
-#include <cyanea/ctype.h>
 
+#include <ulib/ctype.h>
 #include <ulib/strtox.h>
 #include <ulib/string.h>
 

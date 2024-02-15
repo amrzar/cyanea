@@ -2,8 +2,8 @@
 
 #include <cyanea/stdarg.h>
 #include <cyanea/errno.h>
-#include <cyanea/ctype.h>
 
+#include <ulib/ctype.h>
 #include <ulib/string.h>
 
 #include "../io_buffer.h"

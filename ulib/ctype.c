@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <cyanea/ctype.h>
+#include <ulib/ctype.h>
 
 enum {
 #define UPPER (print | upper)
