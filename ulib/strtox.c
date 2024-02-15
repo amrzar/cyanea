@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <cyanea/strtox.h>
 #include <cyanea/stddef.h>
 #include <cyanea/container_of.h>
 #include <cyanea/minmax.h>
 #include <cyanea/errno.h>
 
+#include <ulib/strtox.h>
 #include <ulib/string.h>
 
 #include "io_buffer.h"

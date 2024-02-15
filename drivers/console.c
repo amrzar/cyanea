@@ -5,8 +5,8 @@
 #include <cyanea/errno.h>
 #include <cyanea/init.h>
 #include <cyanea/ctype.h>
-#include <cyanea/strtox.h>
 
+#include <ulib/strtox.h>
 #include <ulib/string.h>
 
 #include "uart.h"
