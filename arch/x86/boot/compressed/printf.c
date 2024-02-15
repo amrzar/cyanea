@@ -1,8 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <asm/io.h>
-#include <cyanea/stdarg.h>
 #include <cyanea/stddef.h>
+
+#include <ulib/stdarg.h>
 
 #include "string.h"
 #include "compressed.h"
