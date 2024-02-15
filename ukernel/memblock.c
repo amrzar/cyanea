@@ -2,11 +2,12 @@
 
 #include <cyanea/memblock.h>
 #include <cyanea/minmax.h>
-#include <cyanea/string.h>
 #include <cyanea/errno.h>
 #include <cyanea/init.h>
 
 #include <asm/page_types.h>
+
+#include <ulib/string.h>
 
 static int memblock_debug = 0;
 

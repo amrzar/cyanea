@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <cyanea/string.h>
 #include <cyanea/stddef.h>
+
+#include <ulib/string.h>
 
 #ifndef __HAVE_ARCH_STRCMP
 int strcmp(const char *str1, const char *str2)

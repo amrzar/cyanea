@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef __CYANEA_STRING_H__
-#define __CYANEA_STRING_H__
+#ifndef __ULIB_STRING_H__
+#define __ULIB_STRING_H__
 
 #include <cyanea/types.h>
 
@@ -61,4 +61,4 @@ void *memmove(void *, const void *, size_t);
 int memcmp(const void *, const void *, size_t);
 #endif
 
-#endif /* __CYANEA_STRING_H__ */
+#endif /* __ULIB_STRING_H__ */

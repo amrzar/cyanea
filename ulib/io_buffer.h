@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef __ULIBS_IO_BUFFER_H__
-#define __ULIBS_IO_BUFFER_H__
+#ifndef __IO_BUFFER_H__
+#define __IO_BUFFER_H__
 
 #include <cyanea/types.h>
 #include <cyanea/stdarg.h>
@@ -50,4 +50,4 @@ int iob_strtoll(_IO_BUFFER, int, long long *);
 int iob_vsnprintf(_IO_BUFFER, const char *, va_list);
 int iob_vsscanf(_IO_BUFFER, const char *, va_list);
 
-#endif /* __ULIBS_IO_BUFFER_H__ */
+#endif /* __IO_BUFFER_H__ */

@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/acpi.h>
-#include <cyanea/string.h>
 #include <cyanea/errno.h>
+#include <ulib/string.h>
 
 static int acpi_disabled;
 

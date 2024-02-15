@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <cyanea/string.h>
 #include <cyanea/minmax.h>
+
+#include <ulib/string.h>
 
 #include "../io_buffer.h"
 

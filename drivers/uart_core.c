@@ -1,9 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/stddef.h>
-#include <cyanea/string.h>
 #include <cyanea/strtox.h>
 #include <cyanea/errno.h>
+
+#include <ulib/string.h>
 
 #include "uart.h"
 

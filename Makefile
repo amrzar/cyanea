@@ -36,6 +36,7 @@ UAPIINCLUDE := -I$(srctree)/arch/$(ARCH)/include/uapi \
 UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 			   -I$(srctree)/include/generated \
 			   -I$(srctree)/include \
+			   -I$(srctree)/ulib/include \
 			   $(UAPIINCLUDE) \
 			   -include $(sysconfig) \
 			   -include $(srctree)/include/ulog.h

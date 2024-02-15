@@ -1,13 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/console.h>
-#include <cyanea/string.h>
 #include <cyanea/errno.h>
 #include <cyanea/const.h>
 #include <cyanea/init.h>
 
 #include <asm/io.h>
 #include <asm/uart.h>
+
+#include <ulib/string.h>
 
 #include "../uart.h"
 #include "uart_regs.h"

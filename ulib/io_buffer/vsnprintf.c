@@ -1,9 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/stdarg.h>
-#include <cyanea/string.h>
 #include <cyanea/errno.h>
 #include <cyanea/ctype.h>
+
+#include <ulib/string.h>
 
 #include "../io_buffer.h"
 
