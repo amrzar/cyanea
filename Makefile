@@ -31,14 +31,14 @@ export HOSTCC HOSTCFLAGS
 export srctree sysconfig ulib scripts Q
 
 UAPIINCLUDE := -I$(srctree)/arch/$(ARCH)/include/uapi \
-			   -I$(srctree)/include/uapi \
-			   -include $(sysconfig) \
-			   -include $(srctree)/include/ulog.h
+			   -I$(srctree)/include/uapi
 
 UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 			   -I$(srctree)/include/generated \
 			   -I$(srctree)/include \
-			   $(UAPIINCLUDE)
+			   $(UAPIINCLUDE) \
+			   -include $(sysconfig) \
+			   -include $(srctree)/include/ulog.h
 
 #
 # The '-nostdlib' forces GCC not to use standard system startup files or
