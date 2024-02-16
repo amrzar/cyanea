@@ -4,7 +4,6 @@ acpica = acpica
 components = $(acpica)/source/components
 
 cflags := -I$(acpica)/source/include
-cflags += -DACPI_USE_BUILTIN_STDARG
 cflags += -U__linux__
 cflags += -Wno-unused-but-set-variable
 
