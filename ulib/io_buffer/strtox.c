@@ -2,8 +2,8 @@
 
 #include <cyanea/errno.h>
 
-#include <ulib/limits.h>
-#include <ulib/ctype.h>
+#include <limits.h>
+#include <ctype.h>
 
 #include "../io_buffer.h"
 

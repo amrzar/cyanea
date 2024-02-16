@@ -5,7 +5,7 @@
 
 #include <cyanea/types.h>
 
-#include <ulib/stdarg.h>
+#include <stdarg.h>
 
 enum io_bufmode { _IONBF, _IOLBF, _IOFBF };
 #define _IONBF _IONBF           /* Unbuffered. */

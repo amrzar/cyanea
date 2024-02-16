@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <ulib/stddef.h>
-#include <ulib/string.h>
+#include <stddef.h>
+#include <string.h>
 
 #ifndef __HAVE_ARCH_STRCMP
 int strcmp(const char *str1, const char *str2)

@@ -11,7 +11,7 @@
 #include <uapi/asm/bootparam.h>
 #include <asm/current.h>
 
-#include <ulib/stddef.h>
+#include <stddef.h>
 
 static void __always_unused unused_common_function(void)
 {

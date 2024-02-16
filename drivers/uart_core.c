@@ -2,9 +2,9 @@
 
 #include <cyanea/errno.h>
 
-#include <ulib/stddef.h>
-#include <ulib/strtox.h>
-#include <ulib/string.h>
+#include <stddef.h>
+#include <strtox.h>
+#include <string.h>
 
 #include "uart.h"
 

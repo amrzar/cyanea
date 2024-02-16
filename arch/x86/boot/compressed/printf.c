@@ -2,8 +2,8 @@
 
 #include <asm/io.h>
 
-#include <ulib/stddef.h>
-#include <ulib/stdarg.h>
+#include <stddef.h>
+#include <stdarg.h>
 
 #include "string.h"
 #include "compressed.h"

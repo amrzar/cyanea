@@ -96,7 +96,7 @@
 
 #ifndef __ASSEMBLY__
 
-#include <ulib/string.h>
+#include <string.h>
 
 union desc_struct {
     struct {

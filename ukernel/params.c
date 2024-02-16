@@ -2,7 +2,7 @@
 
 #include <cyanea/compiler.h>
 
-#include <ulib/stddef.h>
+#include <stddef.h>
 
 static char default_param_read_char(const char *cmdline, int n)
 {

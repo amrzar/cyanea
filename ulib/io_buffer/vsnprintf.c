@@ -2,9 +2,9 @@
 
 #include <cyanea/errno.h>
 
-#include <ulib/stdarg.h>
-#include <ulib/ctype.h>
-#include <ulib/string.h>
+#include <stdarg.h>
+#include <ctype.h>
+#include <string.h>
 
 #include "../io_buffer.h"
 

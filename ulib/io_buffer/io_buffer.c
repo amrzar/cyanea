@@ -2,7 +2,7 @@
 
 #include <cyanea/minmax.h>
 
-#include <ulib/string.h>
+#include <string.h>
 
 #include "../io_buffer.h"
 

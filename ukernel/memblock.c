@@ -7,7 +7,7 @@
 
 #include <asm/page_types.h>
 
-#include <ulib/string.h>
+#include <string.h>
 
 static int memblock_debug = 0;
 

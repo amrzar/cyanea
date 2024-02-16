@@ -5,7 +5,7 @@
 
 #include <asm-generic/unaligned.h>
 
-#include <ulib/stddef.h>
+#include <stddef.h>
 
 #include "compressed.h"
 #include "string.h"

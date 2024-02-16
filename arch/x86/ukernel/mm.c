@@ -16,8 +16,8 @@
 #include <asm/entry_64.h>
 #include <asm/page.h>
 
-#include <ulib/stddef.h>
-#include <ulib/string.h>
+#include <stddef.h>
+#include <string.h>
 
 void __init idt_setup_pf(void);
 

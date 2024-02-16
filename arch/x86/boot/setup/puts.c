@@ -2,7 +2,7 @@
 
 #include <asm/io.h>
 
-#include <ulib/stddef.h>
+#include <stddef.h>
 
 #include "string.h"
 #include "setup.h"

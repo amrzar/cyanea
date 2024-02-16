@@ -11,8 +11,8 @@
 #include <asm/desc_types.h>
 #include <asm/utask.h>
 
-#include <ulib/stddef.h>
-#include <ulib/string.h>
+#include <stddef.h>
+#include <string.h>
 
 void __init x86_64_start_kernel(phys_addr_t);
 void __init start_kernel(void);

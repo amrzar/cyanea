@@ -3,7 +3,7 @@
 #include <cyanea/console.h>
 #include <cyanea/errno.h>
 
-#include <ulib/stdarg.h>
+#include <stdarg.h>
 
 #include "io_buffer.h"
 
