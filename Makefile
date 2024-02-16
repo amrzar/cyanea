@@ -47,7 +47,7 @@ UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 # Here, we do not set '-nostdlib' as $(LD) is always called explicitly.
 #
 
-CPPFLAGS := -D__UKERNEL__
+CPPFLAGS := -D__UKERNEL__ -D__CYANEA__
 CFLAGS   := -std=gnu11 -fno-common -fno-PIE -ffreestanding -fno-strict-aliasing \
 	-Wall -Wundef -Wstrict-prototypes -ftls-model=local-exec -Wnested-externs   \
 	-Werror
