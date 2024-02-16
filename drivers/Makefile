@@ -6,5 +6,6 @@ obj-y += console.o
 # Platform specific driver objects.
 
 obj-y += uart/8250.o
+obj-y += acpi/
 
 include $(srctree)/scripts/makefile.build

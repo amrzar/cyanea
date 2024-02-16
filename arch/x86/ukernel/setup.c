@@ -86,7 +86,5 @@ static void __arch_constructor setup_arch(void)
 
     init_mem_mapping();
 
-    acpi_boot_table_init();
-
     init_numa();
 }
