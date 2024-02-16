@@ -15,6 +15,7 @@ struct boot_params boot_params;
 void __init early_cpuinfo_init(void);
 int __init reserve_real_mode(void);
 void __init init_mem_mapping(void);
+void __init acpi_x86_table_init(void);
 
 # ifndef CONFIG_NUMA
 static void __init init_numa(void)
@@ -85,6 +86,8 @@ static void __arch_constructor setup_arch(void)
     reserve_real_mode();
 
     init_mem_mapping();
+
+    acpi_x86_table_init();
 
     init_numa();
 }
