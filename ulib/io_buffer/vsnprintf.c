@@ -121,7 +121,6 @@ static void format_int(_IO_BUFFER io, unsigned long long value,
     put_padding(io, (flags & FL_MINUS), ' ', width, nchar);
 }
 
-#define USTTOLL(x) ((unsigned long long)(x))
 #define STTOLL(x)  ((unsigned long long)(long long)(x))
 
 static void ap_format_int(_IO_BUFFER io, int base, unsigned long flags,
@@ -157,23 +156,23 @@ static void ap_format_int(_IO_BUFFER io, int base, unsigned long flags,
     } else {
         switch (rank) {
         case RANK_CHAR:
-            value = USTTOLL((unsigned char)(va_arg(*ap, int)));
+            value = (unsigned char)(va_arg(*ap, unsigned int));
             break;
 
         case RANK_SHORT:
-            value = USTTOLL((unsigned short)(va_arg(*ap, int)));
+            value = (unsigned short)(va_arg(*ap, unsigned int));
             break;
 
         case RANK_INT:
-            value = USTTOLL(va_arg(*ap, int));
+            value = va_arg(*ap, unsigned int);
             break;
 
         case RANK_LONG:
-            value = USTTOLL(va_arg(*ap, long));
+            value = va_arg(*ap, unsigned long);
             break;
 
         case RANK_LLONG:
-            value = USTTOLL(va_arg(*ap, long long));
+            value = va_arg(*ap, unsigned long long);
             break;
         }
     }
@@ -329,7 +328,7 @@ st_modifiers:
                     fallthrough;
                 case 'p':
                     flags |= FL_HASH;
-                    format_int(io, USTTOLL(va_arg(ap, void *)), 16, flags,
+                    format_int(io, (unsigned long long)(va_arg(ap, void *)), 16, flags,
                         width, sizeof(void *) >> 2);
                     break;
 
