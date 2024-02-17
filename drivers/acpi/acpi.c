@@ -37,7 +37,8 @@ int __init acpi_table_init(void)
     return 0;
 }
 
-int __init acpi_table_parse(char *signature, int (*handler)(struct acpi_table_header *table))
+int __init acpi_table_parse(char *signature,
+    int (*handler)(struct acpi_table_header *table))
 {
     ACPI_STATUS status;
     struct acpi_table_header *table;
