@@ -3,9 +3,8 @@
 #ifndef __IO_BUFFER_H__
 #define __IO_BUFFER_H__
 
-#include <cyanea/types.h>
-
 #include <stdarg.h>
+#include <stddef.h>
 
 enum io_bufmode { _IONBF, _IOLBF, _IOFBF };
 #define _IONBF _IONBF           /* Unbuffered. */

@@ -4,6 +4,8 @@
 #include <cyanea/errno.h>
 #include <asm-generic/unaligned.h>
 
+#include <stddef.h>
+
 #define MAX_BITS 16
 #define MAX_SYMBOLS 288
 #define MAX_DISTANCE 32

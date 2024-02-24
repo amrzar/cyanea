@@ -4,7 +4,6 @@
 #include <cyanea/minmax.h>
 #include <cyanea/errno.h>
 
-#include <stddef.h>
 #include <strtox.h>
 #include <string.h>
 

@@ -2,7 +2,6 @@
 
 #include <cyanea/errno.h>
 
-#include <stdarg.h>
 #include <ctype.h>
 #include <string.h>
 

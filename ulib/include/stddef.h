@@ -3,6 +3,18 @@
 #ifndef __ULIB_STDDEF_H__
 #define __ULIB_STDDEF_H__
 
+#ifndef __UINTPTR_TYPE__
+#  error '__UINTPTR_TYPE__' is not defined.
+#endif
+
+typedef __UINTPTR_TYPE__ uintptr_t;
+
+#ifndef __SIZE_TYPE__
+#  error '__SIZE_TYPE__' is not defined.
+#endif
+
+typedef __SIZE_TYPE__ size_t;
+
 #  undef NULL
 #define NULL ((void *)(0))
 

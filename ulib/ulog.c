@@ -3,8 +3,6 @@
 #include <cyanea/console.h>
 #include <cyanea/errno.h>
 
-#include <stdarg.h>
-
 #include "io_buffer.h"
 
 static size_t iob_write(_IO_BUFFER io, const char *buffer, size_t count)
