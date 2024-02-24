@@ -16,8 +16,9 @@
 #define ALIGN_KERNEL(x, a) __ALIGN_KERNEL(x, a)
 #define PTR_ALIGN(p, a) ((typeof(p))ALIGN_KERNEL((unsigned long)(p), (a)))
 
-/* Round up and down to next specified power of 2.  */
-#define ROUND_UP(x, y)   __ALIGN_KERNEL(x, y)
-#define ROUND_DOWN(x, y) ((x) & ~((__typeof__(x))((y) - 1)))
+/* Use 'ROUND_UP/DOWN' only if 'p' is power of two; otherwise, use '__KERNEL_DIV_ROUND_UP'. */
+
+#define ROUND_UP(x, p)  __ALIGN_KERNEL(x, p)
+#define ROUND_DOWN(x, p) ((x) & ~((__typeof__(x))((p) - 1)))
 
 #endif /* __CYANEA_CONST_H__ */
