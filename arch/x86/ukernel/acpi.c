@@ -5,8 +5,6 @@
 
 #include <string.h>
 
-static int acpi_disabled;
-
 void __init acpi_x86_table_init(void)
 {
     if (acpi_disabled)

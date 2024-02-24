@@ -3,6 +3,8 @@
 #include <cyanea/acpi.h>
 #include <cyanea/errno.h>
 
+int acpi_disabled;
+
 # define ACPI_MAX_INIT_TABLES 128
 static struct acpi_table_desc initial_tables[ACPI_MAX_INIT_TABLES];
 
@@ -34,7 +36,7 @@ int __init acpi_table_init(void)
 
     acpi_table_init_complete();
 
-    return 0;
+    return SUCCESS;
 }
 
 int __init acpi_table_parse(char *signature,
