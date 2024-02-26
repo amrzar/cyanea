@@ -84,18 +84,24 @@ menu "Architecture dependant configurations" # arch-dep-config
 			depends CONFIG_EFI_STUB && CONFIG_64BIT
 			help
 				"Allow a 64-bit ukernel to be booted on a 32-bit firmware, provided
-				that your CPU supports 64-bit mode.
-
-				Note: It is not possible to boot a mixed-mode enabled ukernel
-				via the EFI boot stub, a boot-loader that supports the EFI handover
-				protocol must be used."
+				that your CPU supports 64-bit mode."
 	
 	endmenu # efi-support
 
-	config "NUMA (Non-Uniform Memory Access) support"
-		CONFIG_NUMA
-		BOOL false
-		help
-			"Enable NUMA (Non-Uniform Memory Access) support."
+	menu "NUMA (Non-Uniform Memory Access) support"
+		config "Enable NUMA Memory Allocation and Scheduler Support "
+			CONFIG_NUMA
+			BOOL false
+			help
+				"Enable NUMA (Non-Uniform Memory Access) support."
+
+		config "Maximum NUMA Nodes (as a power of 2)"
+			CONFIG_NODES_SHIFT
+			INTEGER 6
+			depends CONFIG_NUMA
+			help
+				"Specify the maximum number of NUMA Nodes available on the target system."
+
+	endmenu # numa-support
 
 endmenu # arch-dep-config
