@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef __ULIB_ULOG_H__
-#define __ULIB_ULOG_H__
+#ifndef __ULOG_H__
+#define __ULOG_H__
 
 #define DEBUG
 
@@ -69,4 +69,4 @@ void ulog(const char *, ...);
 
 #endif /*  __ASSEMBLY__ */
 
-#endif /* __ULIB_ULOG_H__ */
+#endif /* __ULOG_H__ */
