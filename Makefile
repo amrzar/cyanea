@@ -30,14 +30,11 @@ export NOSTDINC_FLAGS OBJCOPYFLAGS
 export HOSTCC HOSTCFLAGS
 export srctree sysconfig ulib scripts Q
 
-UAPIINCLUDE := -I$(srctree)/arch/$(ARCH)/include/uapi \
-			   -I$(srctree)/include/uapi
-
 UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 			   -I$(srctree)/include/generated \
 			   -I$(srctree)/include \
-			   -I$(srctree)/ulib/include \
-			   $(UAPIINCLUDE) \
+			   -I$(ulib)/arch/$(ARCH)/include \
+			   -I$(ulib)/include \
 			   -include $(sysconfig) \
 			   -include $(srctree)/include/ulog.h
 
@@ -53,7 +50,7 @@ CFLAGS   := -std=gnu11 -fno-common -fno-PIE -ffreestanding -fno-strict-aliasing 
 	-Werror
 AFLAGS   := -D__ASSEMBLY__ -fno-PIE
 
-export CPPFLAGS CFLAGS AFLAGS LDFLAGS ARFLAGS UKERINCLUDE UAPIINCLUDE
+export CPPFLAGS CFLAGS AFLAGS LDFLAGS ARFLAGS UKERINCLUDE
 
 CFLAGS += -fno-stack-protector
 CFLAGS += -Wimplicit-fallthrough=5
