@@ -3,8 +3,6 @@
 #ifndef __X86_ASM_IRQ_H__
 #define __X86_ASM_IRQ_H__
 
-#include <cyanea/compiler.h>
-
 #include <asm/desc_types.h>
 #include <uapi/asm/eflags.h>
 
@@ -45,15 +43,17 @@
 /* VECTORS LAYOUT. */
 /* The allowable range for vector numbers is 0 to 255. */
 
-/*  - Vectors 0   .. IDT_EXCEPTION_ENTRIES - 1
- *   Reserved for architecture-defined exceptions and interrupts.
- *  - Vectors IDT_EXCEPTION_ENTRIES  .. IDT_ENTRIES - 1
- *   User-defined interrupts.
+/*  - Vectors 0 .. IDT_EXCEPTION_ENTRIES - 1
+ *    Reserved for architecture-defined exceptions and interrupts.
+ *  - Vectors IDT_EXCEPTION_ENTRIES .. IDT_ENTRIES - 1
+ *    User-defined and special interrupts.
  */
 
 #define FIRST_EXTERNAL_VECTOR IDT_EXCEPTION_ENTRIES
 
 #define NR_EXTERNAL_VECTORS (IDT_ENTRIES - FIRST_EXTERNAL_VECTOR)
+
+#define SPURIOUS_APIC_VECTOR 255
 
 #ifndef __ASSEMBLY__
 
@@ -111,8 +111,6 @@ static always_inline void halt(void)
     asm volatile("hlt" : : : "memory");
 }
 
-#else /* !__ASSEMBLY__ */
-
-#endif /* __ASSEMBLY__ */
+#endif /* !__ASSEMBLY__ */
 
 #endif /* __X86_ASM_IRQ_H__ */

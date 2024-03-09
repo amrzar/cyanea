@@ -8,10 +8,12 @@
 #include <asm-generic/int-ll64.h>
 #include <uapi/cyanea/types.h>
 
+#define DECLARE_BITMAP(name, bits) \
+    unsigned long name[BITS_TO_ULONGS(bits)]
+
 typedef _Bool bool;
 
 typedef u64 phys_addr_t;
 
 #endif /*  __ASSEMBLY__ */
-
 #endif /* __CYANEA_TYPES_H__ */

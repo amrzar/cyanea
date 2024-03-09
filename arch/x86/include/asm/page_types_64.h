@@ -2,7 +2,8 @@
 
 #ifndef __X86_ASM_PAGE_TYPES_64_H__
 #define __X86_ASM_PAGE_TYPES_64_H__
-#ifndef __PAGE_TYPES__
+
+#ifndef __X86_ASM_PAGE_TYPES_H__
 #  error use 'page_types.h' instead.
 #endif
 
@@ -24,9 +25,5 @@
  */
 
 #define __PHYSICAL_MASK_SHIFT 52
-
-#ifndef __ASSEMBLY__
-
-#endif /* __ASSEMBLY__ */
 
 #endif /* __X86_ASM_PAGE_TYPES_64_H__ */

@@ -2,7 +2,6 @@
 
 #ifndef __X86_ASM_PGTABLE_TYPES_H__
 #define __X86_ASM_PGTABLE_TYPES_H__
-#define __PGTABLE_TYPES__
 
 #include <asm/page_types.h>
 
@@ -148,5 +147,4 @@ enum page_size {
 
 #endif /* __ASSEMBLY__ */
 
-#  undef  __PGTABLE_TYPES__
 #endif /* __X86_ASM_PGTABLE_TYPES_H__ */

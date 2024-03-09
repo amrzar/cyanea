@@ -2,7 +2,6 @@
 
 #ifndef __X86_ASM_PAGE_TYPES_H__
 #define __X86_ASM_PAGE_TYPES_H__
-#define __PAGE_TYPES__
 
 #include <cyanea/const.h>
 
@@ -27,5 +26,4 @@
 #define PHYSICAL_PUD_PAGE_MASK (__PHYSICAL_MASK & PUD_MASK)
 #endif /* __ASSEMBLY__ */
 
-#  undef  __PAGE_TYPES__
 #endif /* __X86_ASM_PAGE_TYPES_H__ */

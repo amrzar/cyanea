@@ -2,7 +2,7 @@
 
 #include <asm/io.h>
 
-#include <stddef.h>
+#include <cyanea/stddef.h>
 
 #include "string.h"
 #include "setup.h"

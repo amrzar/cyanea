@@ -3,7 +3,7 @@
 #ifndef __CYANEA_CONSOLE_H__
 #define __CYANEA_CONSOLE_H__
 
-#include <stddef.h>
+#include <cyanea/stddef.h>
 
 struct console {
     char name[8];               /* Console port name, e.g. 'ttyS' */

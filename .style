@@ -1,3 +1,7 @@
 
-# DO NOT STYLE SUBMODULES
-drivers/acpi/acpica
+#
+# DO NOT STYLE.
+#
+
+drivers/acpi/acpica/source/components/
+drivers/acpi/acpica/source/include/

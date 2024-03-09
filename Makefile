@@ -33,10 +33,9 @@ export srctree sysconfig ulib scripts Q
 UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 			   -I$(srctree)/include/generated \
 			   -I$(srctree)/include \
-			   -I$(ulib)/arch/$(ARCH)/include \
-			   -I$(ulib)/include \
 			   -include $(sysconfig) \
-			   -include $(srctree)/include/ulog.h
+			   -include $(srctree)/include/ulog.h \
+			   -include $(srctree)/include/compiler.h
 
 #
 # The '-nostdlib' forces GCC not to use standard system startup files or

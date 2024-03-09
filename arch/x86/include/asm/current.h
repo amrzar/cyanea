@@ -4,26 +4,24 @@
 #define __X86_ASM_CURRENT_H__
 
 #include <cyanea/percpu.h>
-#include <cyanea/compiler.h>
+#include <cyanea/cache.h>
 
 #include <asm/utask.h>
-#include <asm/cache.h>
 
 struct percpu_hot {
     union {
+        char __area__[SMP_CACHE_BYTES];
         struct {
             struct utask *current_task;
+            int cpu_number;
 
             /* Current stack used on kernel entry: set on context switch. */
             unsigned long top_of_stack;
         };
-
-        /* Let's keep everything in a single cache line. */
-        char pad[L1_CACHE_BYTES];
     };
 };
 
-static_assert(sizeof(struct percpu_hot) == L1_CACHE_BYTES,
+static_assert(sizeof(struct percpu_hot) == SMP_CACHE_BYTES,
     "percpu_hot is larger than a cache line!");
 
 extern struct percpu_hot percpu_hot __percpu_cache_aligned;

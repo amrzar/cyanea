@@ -4,7 +4,6 @@
 #define __X86_ASM_PAGE_H__
 
 #include <cyanea/types.h>
-#include <cyanea/compiler.h>
 
 #include <asm/page_types.h>
 

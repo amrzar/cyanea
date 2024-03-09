@@ -3,7 +3,9 @@
 #ifndef __X86_ASM_PGTABLE_H__
 #define __X86_ASM_PGTABLE_H__
 
-#include <cyanea/compiler.h>
+#ifndef __CYANEA_PGTABLE_H__
+#  error use 'cyanea/pgtable.h' instead.
+#endif
 
 #include <asm/pgtable_types.h>
 
@@ -66,8 +68,6 @@ static inline pgprotval_t check_pgprot(pgprot_t pgprot)
 
     return protval;
 }
-
-#else /* !__ASSEMBLY__ */
 
 #endif /* __ASSEMBLY__ */
 

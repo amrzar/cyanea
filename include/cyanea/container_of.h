@@ -3,10 +3,6 @@
 #ifndef __CYANEA_CONTAINER_OF_H__
 #define __CYANEA_CONTAINER_OF_H__
 
-#include <cyanea/compiler.h>
-
-#include <stddef.h>
-
 #define container_of(ptr, type, member) ({ \
         static_assert( \
             __same_type(*(ptr), ((type *)(0))->member) || \

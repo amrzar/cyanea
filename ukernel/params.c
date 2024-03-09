@@ -1,8 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <cyanea/compiler.h>
-
-#include <stddef.h>
+#include <cyanea/stddef.h>
 
 static char default_param_read_char(const char *cmdline, int n)
 {

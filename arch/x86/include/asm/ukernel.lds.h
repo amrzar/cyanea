@@ -3,9 +3,6 @@
 #ifndef __X86_ASM_UKERNEL_LDS_H__
 #define __X86_ASM_UKERNEL_LDS_H__
 
-/* Header that matches 'ukernel.lds.S'. */
-/* Make sure to reflect any changes in 'ukernel.lds.S'. */
-
 #ifndef __ASSEMBLY__
 
 extern char _text[], _stext[], __end_text[];

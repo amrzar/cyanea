@@ -38,15 +38,16 @@ static void __init early_set_fixmap(enum fixed_addresses idx,
 {
     pte_t *ptep;
     pgprotval_t pgprot;
+    unsigned long addr;
 
     assert(((idx >= FIX_BITMAP_END) && (idx <= FIX_BITMAP_BEGIN)),
         "%d out of %d to %d.\n", idx, FIX_BITMAP_BEGIN, FIX_BITMAP_END);
 
-    unsigned long addr = fix_to_virt(idx);
+    addr = fix_to_virt(idx);
 
     ptep = &level1_fixmap_pgt[0][pte_index(addr)];
-    pgprot = pgprot_val(prot) & __supported_pte_mask;
 
+    pgprot = pgprot_val(prot) & __supported_pte_mask;
     if (pgprot)
         pte_set(ptep, __pte_t(phys_addr | pgprot));
     else
@@ -65,7 +66,7 @@ void __init *early_ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
     end = phys_addr + size - 1;
 
     /* Wraparound?! */
-    if (warning_on(!size || end < phys_addr))
+    if (!size || end < phys_addr)
         return NULL;
 
     offset = offset_in_page(phys_addr);
@@ -73,11 +74,11 @@ void __init *early_ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
     size = PAGE_ALIGN(end + 1) - phys_addr;
 
     nrpages = size >> PAGE_SHIFT;
-    if (warning_on(nrpages > TOTAL_FIX_BITMAPS))
+    if (nrpages > TOTAL_FIX_BITMAPS)
         return NULL;
 
     slot = find_free_range(nrpages);
-    if (warning_on(slot == -1))
+    if (slot == -1)
         return NULL;
 
     for (i = slot; nrpages > 0; nrpages--, i--) {
@@ -96,15 +97,15 @@ void __init early_iounmap(void *__addr, size_t size)
     unsigned long offset;
     unsigned long addr = (unsigned long)__addr;
 
-    if (warning_on((addr < fix_to_virt(FIX_BITMAP_BEGIN)) ||
-            (addr > fix_to_virt(FIX_BITMAP_END))))
+    if ((addr < fix_to_virt(FIX_BITMAP_BEGIN)) ||
+        (addr > fix_to_virt(FIX_BITMAP_END)))
         return;
 
     slot = virt_to_fix(addr);
     offset = offset_in_page(addr);
     nrpages = PAGE_ALIGN(offset + size) >> PAGE_SHIFT;
 
-    if (warning_on(mapping[FIX_BITMAP_BEGIN - slot] != nrpages))
+    if (mapping[FIX_BITMAP_BEGIN - slot] != nrpages)
         return;
 
     for (i = slot; nrpages > 0; nrpages--, i--)

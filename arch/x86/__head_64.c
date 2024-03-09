@@ -11,8 +11,8 @@
 #include <asm/desc_types.h>
 #include <asm/utask.h>
 
-#include <stddef.h>
-#include <string.h>
+#include <cyanea/stddef.h>
+#include <cyanea/string.h>
 
 void __init x86_64_start_kernel(phys_addr_t);
 void __init start_kernel(void);
@@ -97,7 +97,7 @@ void __init x86_64_start_kernel(phys_addr_t bp)
     start_kernel();
 }
 
-/* Boot PAGEFAULT handler! */
+/* Boot PAGE FAULT handler! */
 
 static void __init *get_free_zero_page(void)
 {
@@ -170,7 +170,7 @@ void __init do_boot_exception(struct utask_regs *regs, int exp)
         ulog_err("exp %d (HLT.).", exp);
 hlt_loop:
 
-        HALT;
+        halt();
     }
 }
 
@@ -244,7 +244,7 @@ void __head __startup_64(phys_addr_t load_phys_addr)
      */
 
     if (!IS_ALIGNED(load_delta, PMD_SHIFT))
-        HALT;
+        halt();
 
     /* PGD [511]. */
     pgd[pgd_index(__START_KERNEL_map)] =
@@ -263,7 +263,11 @@ void __head __startup_64(phys_addr_t load_phys_addr)
      * we map '__START_KERNEL_map' to the 'load_delta'.
      */
 
-    /* However, the range 'load_delta' up to '_text' is not mapped. */
+    /* Note that the range between '__START_KERNEL_map' and '_text' is not mapped.
+     * This could be an issue for how '__phys_addr()' works.
+     * In 'physical_mapping_init', we make sure there is no symbol with virtual
+     * address in this range; or we refuse to boot.
+     */
 
     /* Use '__PAGE_KERNEL_LARGE_EXEC'. '_PAGE_XD' is not set. '_PAGE_GLOBAL' is set. */
     /* '_PAGE_GLOBAL' will be ignored if not supported by CPU. */

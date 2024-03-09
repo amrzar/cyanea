@@ -4,7 +4,6 @@
 #include <cyanea/types.h>
 #include <cyanea/memblock.h>
 #include <cyanea/minmax.h>
-#include <cyanea/compiler.h>
 #include <cyanea/pgtable.h>
 #include <cyanea/irq.h>
 #include <cyanea/errno.h>
@@ -16,10 +15,16 @@
 #include <asm/entry_64.h>
 #include <asm/page.h>
 
-#include <stddef.h>
-#include <string.h>
+#include <cyanea/stddef.h>
+#include <cyanea/string.h>
 
 void __init idt_setup_pf(void);
+
+/* Highest directly mapped pfn < 4 GiB. */
+unsigned long max_low_pfn_mapped;
+
+/* Highest directly mapped pfn > 4 GiB. */
+unsigned long max_pfn_mapped;
 
 /* Bits supported by hardware. */
 pgprotval_t __supported_pte_mask = -1;
@@ -27,10 +32,9 @@ pgprotval_t __supported_pte_mask = -1;
 /* Setup BRK. */
 
 /* The pages for initialising the page-tables are allocated form '__brk_alloc'
- * (i.e. at the end of the image). We do that to keep them close to ukernel.
+ * (i.e. at the end of the image), instead of 'memblock_alloc' as at this point NUMA
+ * is not enabled and we do that to keep them close to ukernel.
  */
-
-/* TODO. Support dynamic page allocation for 'alloc_pages'!? */
 
 typedef char page_array_t[CONFIG_BRK_ALLOC_PAGES][PAGE_SIZE];
 
@@ -200,21 +204,30 @@ static void __init physical_mapping_init(phys_addr_t start, phys_addr_t end,
     }
 }
 
+static void add_range_mapped(unsigned long start_pfn, unsigned long end_pfn)
+{
+    max_pfn_mapped = max(max_pfn_mapped, end_pfn);
+
+    if (start_pfn < (1UL << (32 - PAGE_SHIFT)))
+        max_low_pfn_mapped = max(max_low_pfn_mapped, min(end_pfn,
+                    1UL << (32 - PAGE_SHIFT)));
+}
+
 # define PFN_PHYS(x) ((phys_addr_t)(x) << PAGE_SHIFT)
 # define PFN_UP(x) (ROUND_UP(x, PAGE_SIZE) >> PAGE_SHIFT)
 # define PFN_DOWN(x) (ROUND_DOWN(x, PAGE_SIZE) >> PAGE_SHIFT)
 
 /* Setup the direct mapping of the physical memory at PAGE_OFFSET. */
 
-static void __init init_range_memory_mapping(phys_addr_t r_start,
-    phys_addr_t r_end)
+static void __init init_range_memory_mapping(phys_addr_t range_start,
+    phys_addr_t range_end)
 {
     int i;
     unsigned long start_pfn, end_pfn, limit_pfn, pfn;
 
     for_each_mem_pfn_range(i, -1, &start_pfn, &end_pfn, NULL) {
-        phys_addr_t start = clamp(PFN_PHYS(start_pfn), r_start, r_end);
-        phys_addr_t end = clamp(PFN_PHYS(end_pfn), r_start, r_end);
+        phys_addr_t start = clamp(PFN_PHYS(start_pfn), range_start, range_end);
+        phys_addr_t end = clamp(PFN_PHYS(end_pfn), range_start, range_end);
 
         if (start >= end)
             continue;
@@ -290,6 +303,7 @@ static void __init init_range_memory_mapping(phys_addr_t r_start,
                 PAGE_SIZE_4K);
         }
 
+        add_range_mapped(start >> PAGE_SHIFT, end >> PAGE_SHIFT);
     }
 }
 

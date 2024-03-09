@@ -8,7 +8,7 @@
 #include <asm/io.h>
 #include <asm/uart.h>
 
-#include <string.h>
+#include <cyanea/string.h>
 
 #include "../uart.h"
 #include "uart_regs.h"

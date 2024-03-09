@@ -7,7 +7,7 @@
 
 #include <asm/page_types.h>
 
-#include <string.h>
+#include <cyanea/string.h>
 
 static int memblock_debug = 0;
 
@@ -38,6 +38,8 @@ static int insert_region(int i, phys_addr_t base, size_t size, int nid,
     if (memory.n + 1 > memory.max) {
 
         /* TODO. Support to extend 'regions'. */
+
+        assert(0, "out-of-space.");
 
         return -ENOSPC;
     }
@@ -207,6 +209,8 @@ static int isolate_range(phys_addr_t base, size_t size, int *start_range,
     if (memory.n + 2 > memory.max) {
 
         /* TODO. Support to extend 'regions'. */
+
+        assert(0, "out-of-space.");
 
         return -ENOSPC;
     }
@@ -427,6 +431,11 @@ void memblock_free(phys_addr_t base, size_t size)
 int memblock_reserve(phys_addr_t base, size_t size)
 {
     return memblock_setclr_flag(base, size, 1, MEMBLOCK_RESERVED);
+}
+
+size_t memblock_phys_mem_size(void)
+{
+    return memory.size;
 }
 
 void memblock_dump(void)

@@ -15,7 +15,7 @@ menu "Architecture dependant configurations" # arch-dep-config
 		
 		config "Maximum number of CPUs"
 			CONFIG_NR_CPUS
-			INTEGER 8
+			INTEGER 16
 			help
 				"This allows you to specify the maximum number of CPUs which
 				this kernel will support."
@@ -29,8 +29,8 @@ menu "Architecture dependant configurations" # arch-dep-config
 
 		config
 			CONFIG_L1_CACHE_6_SHIFT BOOL
-			depends CONFIG_PROCESSOR == "Generic"
-
+			depends CONFIG_PROCESSOR == "Generic" ||
+					CONFIG_PROCESSOR == "Broadwell:QEMU"
 	endmenu # x86-processor
 
 	menu "ukernel image ''ukernel'' configurations" # ukernel-image-config
@@ -66,7 +66,6 @@ menu "Architecture dependant configurations" # arch-dep-config
 			help
 				"Reserved pages used for direct mapping of ukernel during boot
 				(Default to 1MiB)."
-
 	endmenu # ukernel-image-config
 
 	menu "Extensible Firmware Interface (EFI) support" # efi-support
@@ -85,7 +84,6 @@ menu "Architecture dependant configurations" # arch-dep-config
 			help
 				"Allow a 64-bit ukernel to be booted on a 32-bit firmware, provided
 				that your CPU supports 64-bit mode."
-	
 	endmenu # efi-support
 
 	menu "NUMA (Non-Uniform Memory Access) support"
@@ -101,7 +99,11 @@ menu "Architecture dependant configurations" # arch-dep-config
 			depends CONFIG_NUMA
 			help
 				"Specify the maximum number of NUMA Nodes available on the target system."
-
 	endmenu # numa-support
 
+	menu "Platform (PC99)" # pc99-platform
+		config "Maximum number of IO APICs"
+			CONFIG_NR_IOAPIC
+			INTEGER 16
+	endmenu # pc99-platform
 endmenu # arch-dep-config
