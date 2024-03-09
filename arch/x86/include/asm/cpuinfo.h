@@ -23,8 +23,9 @@ enum cpu_leafs {
 #define CPUID_7_ECX_0_ECX_BIT(x) CAP_BIT(CPUID_7_ECX_0_ECX, x)
 #define CPUID_7_ECX_0_EDX_BIT(x) CAP_BIT(CPUID_7_ECX_0_EDX, x)
 
-/* Basic CPUID Information, CPUID level 0x00000001 (ECX). */
+/* Basic CPUID Information. */
 
+/* CPUID level 0x00000001 (ECX). */
 #define _CPUID_BIT_SSE3 CPUID_1_ECX_BIT(0)      /* Streaming SIMD Extensions 3 (SSE3). */
 #define _CPUID_BIT_PCLMULQDQ CPUID_1_ECX_BIT(1) /* 'PCLMULQDQ'. */
 #define _CPUID_BIT_DTES64 CPUID_1_ECX_BIT(2)    /* 64-bit DS Area. */
@@ -56,8 +57,7 @@ enum cpu_leafs {
 #define _CPUID_BIT_F16C CPUID_1_ECX_BIT(29)     /* Supports 16-bit floating-point conversion instructions. */
 #define _CPUID_BIT_RDRAND CPUID_1_ECX_BIT(30)   /* Supports RDRAND instruction. */
 
-/* Basic CPUID Information, CPUID level 0x00000001 (EDX). */
-
+/* CPUID level 0x00000001 (EDX). */
 #define _CPUID_BIT_FPU CPUID_1_EDX_BIT(0)       /* Floating-Point Unit On-Chip. */
 #define _CPUID_BIT_VME CPUID_1_EDX_BIT(1)       /* Virtual 8086 Mode Enhancements. */
 #define _CPUID_BIT_DE CPUID_1_EDX_BIT(2)        /* Debugging Extensions. */
@@ -88,8 +88,9 @@ enum cpu_leafs {
 #define _CPUID_BIT_TM CPUID_1_EDX_BIT(29)       /* Thermal Monitor. */
 #define _CPUID_BIT_PBE CPUID_1_EDX_BIT(31)      /* Pending Break Enable. */
 
-/* Structured Extended Feature Flags Enumeration Leaf, CPUID level 0x00000007:0 (EBX). */
+/* Structured Extended Feature Flags. */
 
+/* CPUID level 0x00000007:0 (EBX). */
 #define _CPUID_BIT_FSGSBASE CPUID_7_ECX_0_EBX_BIT(0)    /* Supports RDFSBASE/RDGSBASE/WRFSBASE/WRGSBASE. */
 #define _CPUID_BIT_TSC_ADJUST CPUID_7_ECX_0_EBX_BIT(1)  /* IA32_TSC_ADJUST MSR is supported. */
 #define _CPUID_BIT_SGX  CPUID_7_ECX_0_EBX_BIT(2)        /* Supports Intel Software Guard Extensions (Intel® SGX Extensions). */
@@ -122,8 +123,7 @@ enum cpu_leafs {
 #define _CPUID_BIT_AVX512BW CPUID_7_ECX_0_EBX_BIT(30)   /* AVX-512 BW (Byte/Word granular) Instructions. */
 #define _CPUID_BIT_AVX512VL CPUID_7_ECX_0_EBX_BIT(31)   /* AVX-512 VL (128/256 Vector Length) Extensions. */
 
-/* Structured Extended Feature Flags Enumeration Leaf, CPUID level 0x00000007:0 (ECX). */
-
+/* CPUID level 0x00000007:0 (ECX). */
 #define _CPUID_BIT_AVX512VBMI CPUID_7_ECX_0_ECX_BIT(1)  /* AVX512 Vector Bit Manipulation instructions. */
 #define _CPUID_BIT_UMIP CPUID_7_ECX_0_ECX_BIT(2)        /* User Mode Instruction Protection . */
 #define _CPUID_BIT_PKU CPUID_7_ECX_0_ECX_BIT(3) /* Protection Keys for Userspace. */
@@ -147,8 +147,7 @@ enum cpu_leafs {
 #define _CPUID_BIT_ENQCMD CPUID_7_ECX_0_ECX_BIT(29)     /* ENQCMD and ENQCMDS instructions. */
 #define _CPUID_BIT_SGX_LC CPUID_7_ECX_0_ECX_BIT(30)     /* Software Guard Extensions Launch Control. */
 
-/* Structured Extended Feature Flags Enumeration Leaf, CPUID level 0x00000007:0 (EDX). */
-
+/* CPUID level 0x00000007:0 (EDX). */
 #define _CPUID_BIT_AVX512_4VNNIW CPUID_7_ECX_0_EDX_BIT(2)       /* AVX-512 Neural Network Instructions. */
 #define _CPUID_BIT_AVX512_4FMAPS CPUID_7_ECX_0_EDX_BIT(3)       /* AVX-512 Multiply Accumulation Single precision. */
 #define _CPUID_BIT_FSRM CPUID_7_ECX_0_EDX_BIT(4)        /* Fast Short Rep Mov. */

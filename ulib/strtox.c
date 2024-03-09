@@ -4,10 +4,9 @@
 #include <cyanea/minmax.h>
 #include <cyanea/errno.h>
 
-#include <strtox.h>
-#include <string.h>
-
-#include "io_buffer.h"
+#include <cyanea/strtox.h>
+#include <cyanea/string.h>
+#include <cyanea/io_buffer.h>
 
 struct strtox {
     struct io_buffer io;
@@ -28,6 +27,10 @@ static size_t iob_read(_IO_BUFFER io, char *buffer, size_t count)
     return count;
 }
 
+static struct io_buffer_operations strtox_ops = {
+    .read = iob_read,
+};
+
 int strtoull(const char *str, int base, unsigned long long *result_ret)
 {
     struct strtox x = { 0 };
@@ -37,7 +40,7 @@ int strtoull(const char *str, int base, unsigned long long *result_ret)
 
     x.io.buffer = scratch_buf;
     x.io.buf_size = 32;
-    x.io.read = iob_read;
+    x.io.ops = &strtox_ops;
     x.str = str;
     x.n = strlen(str);
 
@@ -72,7 +75,7 @@ int strtoll(const char *str, int base, long long *result_ret)
 
     x.io.buffer = scratch_buf;
     x.io.buf_size = 32;
-    x.io.read = iob_read;
+    x.io.ops = &strtox_ops;
     x.str = str;
     x.n = strlen(str);
 

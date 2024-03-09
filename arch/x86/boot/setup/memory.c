@@ -2,8 +2,6 @@
 
 #include "setup.h"
 
-#define SMAP 0x534d4150         /* ASCII ''SMAP'' */
-
 static void detect_memory_e820(void)
 {
     u8 error;
@@ -14,6 +12,7 @@ static void detect_memory_e820(void)
     do {
         ecx = sizeof(buf);
 
+#define SMAP 0x534d4150     /* ASCII ''SMAP'' */
         asm volatile(
             "int    $0x15   ;"
             "setc   %0      ;"

@@ -1,8 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <cyanea/compiler.h>
-
-#include <stddef.h>
+#include <cyanea/stddef.h>
 
 static char default_param_read_char(const char *cmdline, int n)
 {
@@ -15,7 +13,7 @@ int __param_get_option(const char *cmdline, int size,
 {
     char ch;
     int i = 0, n = -1;
-    const char *opptr = NULL;
+    const char *op = NULL;
     char *buffer = buf;
 
     enum {
@@ -40,11 +38,11 @@ int __param_get_option(const char *cmdline, int size,
                 break;
 
             state = ST_WORDCMP;
-            opptr = option;
+            op = option;
 
             fallthrough;
         case ST_WORDCMP:
-            if (*opptr == '\0') {
+            if (*op == '\0') {
                 if (ch == '=') {
                     n = 0;
                     buffer = buf;
@@ -52,12 +50,9 @@ int __param_get_option(const char *cmdline, int size,
 
                     break;
                 } else if ((ch == ' ') || (ch == '\0')) {
-
-                    /* It is a boolean option. */
-
                     return -2;
                 }
-            } else if (ch == *opptr++)
+            } else if (ch == *op++)
                 break;
 
             state = ST_WORDSKIP;
@@ -71,6 +66,7 @@ int __param_get_option(const char *cmdline, int size,
 
         case ST_BUFCOPY:
             if (ch == ' ')
+                /* Found, but continue till the end of 'cmdline' in case it is overridden. */
                 state = ST_WORDSTART;
             else {
                 if (++n < buf_size)

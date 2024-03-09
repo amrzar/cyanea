@@ -8,7 +8,7 @@ choice "Architecture"
 		"Choose the architecture for the the current build."
 
 menu "Hardware setting" # hardware-setting
-	config "Number of UART ports"
+	config "Maximum number of UART ports"
 		CONFIG_NR_UARTS
 		INTEGER 4
 		help
@@ -19,7 +19,6 @@ menu "Hardware setting" # hardware-setting
 		INTEGER 128
 		help
 			"Number of memory regions."
-
 endmenu # hardware-setting
 
 menu "Debugging settings"
@@ -34,7 +33,6 @@ menu "Debugging settings"
 		option 1 [default]
 		help
 			"Set the default log level [0 : error] [1 : info]"
-
 endmenu # debugging-setting
 
 config "ukernel version"

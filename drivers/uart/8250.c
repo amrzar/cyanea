@@ -8,7 +8,7 @@
 #include <asm/io.h>
 #include <asm/uart.h>
 
-#include <string.h>
+#include <cyanea/string.h>
 
 #include "../uart.h"
 #include "uart_regs.h"
@@ -129,7 +129,15 @@ static void __init init_ports(void)
 
 /* Console Callbacks. */
 
-static int console_setup(struct console *con, char *options)
+static void con_write(struct console *con, const char *s, size_t count)
+{
+    int i;
+
+    for (i = 0; i < count; i++, s++)
+        uart_poll_put_char(con->index, *s);
+}
+
+static int con_setup(struct console *con, char *options)
 {
     int err;
     struct uart_port *up = &uart_ports[con->index];
@@ -148,7 +156,7 @@ static int console_setup(struct console *con, char *options)
  * with registered UART ports.
  */
 
-static int console_match(struct console *con, char *name, char *options)
+static int con_match(struct console *con, char *name, char *options)
 {
     unsigned char io_type;
     unsigned long addr;
@@ -177,10 +185,10 @@ static int console_match(struct console *con, char *name, char *options)
     if ((p = __find_match_port(&up)))
         con->index = p->index;
 
-    return console_setup(con, options);
+    return con_setup(con, options);
 }
 
-static int console_exit(struct console *con)
+static int con_exit(struct console *con)
 {
     struct uart_port *up = &uart_ports[con->index];
 
@@ -191,13 +199,15 @@ static int console_exit(struct console *con)
 
 static struct console console_8250 = {
     .name = __DRIVER_ID__,
-    .setup = console_setup,
-    .match = console_match,
-    .exit = console_exit,
+    .write = con_write,
+    .setup = con_setup,
+    .match = con_match,
+    .exit = con_exit,
     .index = -1
 };
 
-static void __pure_constructor console_init(void)
+__PURE_CONSTRUCTOR__
+static void console_init(void)
 {
     init_ports();
     register_console(&console_8250);

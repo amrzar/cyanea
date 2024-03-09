@@ -4,7 +4,7 @@
 #include <cyanea/irq.h>
 
 #include <asm/tlb.h>
-#include <asm-generic/early_ioremap.h>
+#include <asm-generic/ioremap.h>
 #include <asm/fixmap.h>
 
 # define offset_in_page(p) ((unsigned long)(p) & ~PAGE_MASK)
@@ -33,29 +33,48 @@ static int __init find_free_range(int nrpages)
     return (FIX_BITMAP_BEGIN - start);
 }
 
-static void __init early_set_fixmap(enum fixed_addresses idx,
-    phys_addr_t phys_addr, pgprot_t prot)
+static void ____set_fixmap(pte_t *ptep, phys_addr_t phys_addr, pgprot_t prot)
 {
-    pte_t *ptep;
     pgprotval_t pgprot;
 
-    assert(((idx >= FIX_BITMAP_END) && (idx <= FIX_BITMAP_BEGIN)),
-        "%d out of %d to %d.\n", idx, FIX_BITMAP_BEGIN, FIX_BITMAP_END);
-
-    unsigned long addr = fix_to_virt(idx);
-
-    ptep = &level1_fixmap_pgt[0][pte_index(addr)];
     pgprot = pgprot_val(prot) & __supported_pte_mask;
-
     if (pgprot)
         pte_set(ptep, __pte_t(phys_addr | pgprot));
     else
         pte_clear(ptep);
-
-    flush_tlb_one(addr);
 }
 
-void __init *early_ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
+void set_fixmap(enum fixed_addresses idx, phys_addr_t phys_addr, pgprot_t prot)
+{
+    assert(((idx > FIX_TOP) && (idx < FIX_BITMAP_BEGIN)),
+        "%d out of %d to %d.\n", idx, FIX_BITMAP_BEGIN, FIX_BITMAP_END);
+
+    unsigned long address = fix_to_virt(idx);
+
+    pte_t *ptep = &level1_fixmap_pgt[1][pte_index(address)];
+
+    ____set_fixmap(ptep, phys_addr, prot);
+    flush_tlb_one(address);
+}
+
+static void __init __set_fixmap(enum fixed_addresses idx,
+    phys_addr_t phys_addr, pgprot_t prot)
+{
+    assert(((idx >= FIX_BITMAP_END) && (idx <= FIX_BITMAP_BEGIN)),
+        "%d out of %d to %d.\n", idx, FIX_BITMAP_BEGIN, FIX_BITMAP_END);
+
+    unsigned long address = fix_to_virt(idx);
+
+    pte_t *ptep = &level1_fixmap_pgt[0][pte_index(address)];
+
+    ____set_fixmap(ptep, phys_addr, prot);
+    flush_tlb_one(address);
+}
+
+
+
+
+void __init *ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
 {
     int i, slot;
     unsigned int nrpages;
@@ -65,7 +84,7 @@ void __init *early_ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
     end = phys_addr + size - 1;
 
     /* Wraparound?! */
-    if (warning_on(!size || end < phys_addr))
+    if (!size || end < phys_addr)
         return NULL;
 
     offset = offset_in_page(phys_addr);
@@ -73,15 +92,15 @@ void __init *early_ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
     size = PAGE_ALIGN(end + 1) - phys_addr;
 
     nrpages = size >> PAGE_SHIFT;
-    if (warning_on(nrpages > TOTAL_FIX_BITMAPS))
+    if (nrpages > TOTAL_FIX_BITMAPS)
         return NULL;
 
     slot = find_free_range(nrpages);
-    if (warning_on(slot == -1))
+    if (slot == -1)
         return NULL;
 
     for (i = slot; nrpages > 0; nrpages--, i--) {
-        early_set_fixmap(i, phys_addr, prot);
+        __set_fixmap(i, phys_addr, prot);
 
         phys_addr += PAGE_SIZE;
     }
@@ -89,26 +108,26 @@ void __init *early_ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
     return (void *)(fix_to_virt(slot) + offset);
 }
 
-void __init early_iounmap(void *__addr, size_t size)
+void __init iounmap(void *__addr, size_t size)
 {
     int i, slot;
     unsigned int nrpages;
     unsigned long offset;
     unsigned long addr = (unsigned long)__addr;
 
-    if (warning_on((addr < fix_to_virt(FIX_BITMAP_BEGIN)) ||
-            (addr > fix_to_virt(FIX_BITMAP_END))))
+    if ((addr < fix_to_virt(FIX_BITMAP_BEGIN)) ||
+        (addr > fix_to_virt(FIX_BITMAP_END)))
         return;
 
     slot = virt_to_fix(addr);
     offset = offset_in_page(addr);
     nrpages = PAGE_ALIGN(offset + size) >> PAGE_SHIFT;
 
-    if (warning_on(mapping[FIX_BITMAP_BEGIN - slot] != nrpages))
+    if (mapping[FIX_BITMAP_BEGIN - slot] != nrpages)
         return;
 
     for (i = slot; nrpages > 0; nrpages--, i--)
-        early_set_fixmap(i, 0, __pgprot_t(0));
+        __set_fixmap(i, 0, __pgprot_t(0));
 
     mapping[FIX_BITMAP_BEGIN - slot] = -1;
 }

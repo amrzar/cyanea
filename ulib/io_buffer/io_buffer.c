@@ -1,23 +1,25 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/minmax.h>
+#include <cyanea/errno.h>
 
-#include <string.h>
-
-#include "../io_buffer.h"
+#include <cyanea/string.h>
+#include <cyanea/io_buffer.h>
 
 static size_t wbuffer_no_flush(_IO_BUFFER io, const char *buffer, size_t count)
 {
     size_t n, written = 0;
 
+    /* It is an input buffer?! Flush the 'io'; push data back to IO or ''discard''. */
+
     if (io->in != 0) {
-        if (io->flush(io))
+        if (io->ops->flush(io))
             return 0;
     }
 
     while (count != 0) {
         if (io->out == io->buf_size) {
-            if (io->flush(io))
+            if (io->ops->flush(io))
                 break;
         }
 
@@ -26,7 +28,7 @@ static size_t wbuffer_no_flush(_IO_BUFFER io, const char *buffer, size_t count)
             /* Buffer is empty. However, the requested size is greater then the buffer. */
             /* Bypass the buffer. */
 
-            n = io->write(io, buffer, count);
+            n = io->ops->write(io, buffer, count);
             if (!n)
                 break;
 
@@ -87,7 +89,7 @@ size_t __iob_write(_IO_BUFFER io, const char *buffer, size_t count)
             return written;
 
         /* We have written 'f_len' byte, let's flush it. */
-        if (io->flush(io))
+        if (io->ops->flush(io))
             return written;
 
         buffer += written;
@@ -104,8 +106,10 @@ size_t __iob_read(_IO_BUFFER io, char *buffer, size_t count)
     char *buffer_ptr;
     size_t n, read = 0;
 
+    /* It is an ouput buffer?! Flush the 'io'; push data back to IO. */
+
     if (io->out != 0) {
-        if (io->flush(io))
+        if (io->ops->flush(io))
             return 0;
     }
 
@@ -122,7 +126,7 @@ size_t __iob_read(_IO_BUFFER io, char *buffer, size_t count)
                 n = count;
             }
 
-            if (!(n = io->read(io, buffer_ptr, n)))
+            if (!(n = io->ops->read(io, buffer_ptr, n)))
                 return read;
 
             if (buffered) {
@@ -154,8 +158,11 @@ size_t __iob_read(_IO_BUFFER io, char *buffer, size_t count)
 
 int __iob_ungetc(_IO_BUFFER io, char c)
 {
-    if ((io->out != 0) || _IO_UNGET_SLOP_FULL(io))
-        return -1;
+    if (io->out != 0)
+        return -EINVAL;
+
+    if (_IO_UNGET_SLOP_FULL(io))
+        return -ENOSPC;
 
     io->inptr--;
     io->inptr[0] = c;

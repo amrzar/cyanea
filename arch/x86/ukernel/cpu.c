@@ -10,6 +10,30 @@
 #include <asm/current.h>
 #include <asm/cpu.h>
 
+u32 boot_cpu_apicid __ro_after_init;
+
+u32 __initdata cpuid_to_apicid[NR_CPUS];
+u32 __initdata cpuid_to_acpiid[NR_CPUS];
+
+/* BSP gets CPU# 0. */
+static int __initdata assigned_cpus = 1;
+void __init register_apic_id(u32 apic_id, u32 acpi_id)
+{
+    int cpu;
+
+    cpu = (apic_id == boot_cpu_apicid) ? 0 : assigned_cpus++;
+    if (cpu < NR_CPUS) {
+        cpuid_to_apicid[cpu] = apic_id;
+        cpuid_to_acpiid[cpu] = acpi_id;
+
+        ulog_info("CPU (%u), acpi_id (%u).\n", apic_id, acpi_id);
+
+    } else /* 'CONFIG_NR_CPUS'. */
+        ulog_err("CPU (%u), acpi_id (%u) dropped.", apic_id, acpi_id);
+}
+
+/* CPU. */
+
 desc_struct_t gdt_page[GDT_ENTRIES] __percpu_page_aligned = {
     [GDT_ENTRY_KERNEL32_CS] = GDT_ENTRY_INIT(0xC09B, 0, 0xFFFFF),
     [GDT_ENTRY_KERNEL_CS] = GDT_ENTRY_INIT(0xA09B, 0, 0xFFFFF),
@@ -66,7 +90,7 @@ void cr4_init_shadow(void)
 /* Per-cpu TSS segments. */
 
 struct tss cpu_tss __percpu_page_aligned = {
-    /* Initialize at runtime; at boot time we are always at ring 0. */
+    /* Initialize at runtime. */
 };
 
 /* Per-cpu Hot Stuff! */

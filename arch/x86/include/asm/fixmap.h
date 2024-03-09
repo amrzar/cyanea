@@ -18,10 +18,11 @@
 
 enum fixed_addresses {
     FIX_TOP,
+    FIX_CONSOLE_MEM_BASE,
 
     __end_of_permanent_fixed_addresses = TOTAL_FIX_BITMAPS,
 
-    /* Temporary boot-time mappings; see early_ioremap.c. */
+    /* Temporary boot-time mappings. see: ioremap.c. */
 
     FIX_BITMAP_END = __end_of_permanent_fixed_addresses,
 
@@ -31,5 +32,7 @@ enum fixed_addresses {
 
 # define fix_to_virt(x) (FIX_TOP_ADDR - ((x) << PAGE_SHIFT))
 # define virt_to_fix(x) ((FIX_TOP_ADDR - ((x) & PAGE_MASK)) >> PAGE_SHIFT)
+
+void set_fixmap(enum fixed_addresses, phys_addr_t, pgprot_t);
 
 #endif /* __X86_ASM_FIXMAP_H__ */

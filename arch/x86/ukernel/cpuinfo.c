@@ -79,11 +79,7 @@ void __init early_cpuinfo_init(void)
 
         c->x86_virt_bits = (eax >> 8) & 0xFF;
         c->x86_phys_bits = eax & 0xFF;
-
     } else {
-
-        /* Let's use some conservative values. */
-
         c->x86_phys_bits = 36;
         c->x86_virt_bits = 48;
     }

@@ -17,11 +17,10 @@ static void __init do_ctors(void)
         (*fn)();
 }
 
-extern const struct ukernel_param __setup_start[], __setup_end[];
 static void __init do_param(int early)
 {
     char param[64];
-    const struct ukernel_param *p;
+    const struct setup_param *p;
 
     for (p = __setup_start; p < __setup_end; p++) {
         int err;

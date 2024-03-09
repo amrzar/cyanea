@@ -4,9 +4,10 @@
 #include <cyanea/const.h>
 #include <cyanea/memblock.h>
 #include <cyanea/errno.h>
-#include <cyanea/sizes.h>
 #include <asm/realmode.h>
 #include <asm/page.h>
+
+# define SZ_1M BIT_UL(20)
 
 struct real_mode_header *real_mode_header;
 

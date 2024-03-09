@@ -5,7 +5,7 @@
 
 #include <asm-generic/unaligned.h>
 
-#include <stddef.h>
+#include <cyanea/stddef.h>
 
 #include "compressed.h"
 #include "string.h"
@@ -239,6 +239,9 @@ void *decompress_ukernel(void *bp, unsigned char *output)
     int ret;
 
     boot_params = bp;
+
+    /* Clear flags intended for solely in-kernel use. */
+    boot_params->hdr.loadflags &= ~KASLR_FLAG;
 
     early_console_init();
 

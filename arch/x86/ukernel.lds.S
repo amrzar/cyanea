@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/pgtable.h>
-#include <asm/cache.h>
+#include <cyanea/cache.h>
+
 #include <asm/ukernel.lds.h>
 
 OUTPUT_FORMAT("elf64-x86-64")
@@ -38,7 +39,7 @@ SECTIONS
     .rodata : AT(ADDR(.rodata) - LOAD_OFFSET) {
         __start_rodata = .;
         *(.rodata .rodata.*)
-        
+
         *(.data..ro_after_init)
     } : rodata
 
@@ -73,6 +74,8 @@ SECTIONS
     .init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
         *(.init.data)
         *(.init.data.*)
+        *(.init.rodata)
+        *(.init.rodata.*)
 
         . = ALIGN(8);
         __ctors_start = .;
@@ -88,6 +91,13 @@ SECTIONS
         __setup_end = .;
     }
 
+    .apic.drivers : AT(ADDR(.apic.drivers) - LOAD_OFFSET) {
+        . = ALIGN(8);
+        __apic_drivers_start = .;
+        *(.apic.drivers);
+        __apic_drivers_end = .;
+    }
+
     __per_cpu_load = .;
 
     /* Use address 0; We want to calculate offset for variable in this esction. */
@@ -98,8 +108,9 @@ SECTIONS
         . = ALIGN(PAGE_SIZE);
         *(.data..percpu..page_aligned)
 
-        . = ALIGN(L1_CACHE_BYTES);
+        . = ALIGN(SMP_CACHE_BYTES);
         *(.data..percpu)
+        *(.data..percpu..cache_aligned)
         __per_cpu_end = .;
     } : pcpu
 

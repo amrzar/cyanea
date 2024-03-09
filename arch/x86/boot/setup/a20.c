@@ -53,7 +53,7 @@ static void enable_a20_kbc(void)
 
 /*
  * To test if A20 is enabled, 'a20_test' uses a safe address in the first segment,
- * i.e. '0x0000:nnnn' and writes an arbitary value and tries to re-read the value
+ * i.e. '0x0000:nnnn' and writes an arbitrary value and tries to re-read the value
  * using the last segment -- starting from '1MiB - 0x10'. So, if value read from
  * '0xFFFF:(nnnn + 0x10)' is the same, then A20 is still disabled.
  *
@@ -71,16 +71,16 @@ static int a20_test(int loops)
     set_fs(0x0000);
     set_gs(0xFFFF);
 
-    n = old_value = rdfs32(A20_TEST_ADDR);
+    n = old_value = read_fs(A20_TEST_ADDR);
 
     while (!ret && loops--) {
-        wrfs32(++n, A20_TEST_ADDR);
+        write_fs(++n, A20_TEST_ADDR);
         slow_down_io();
 
-        ret = (rdgs32(A20_TEST_ADDR + 0x10) != n);
+        ret = (read_gs(A20_TEST_ADDR + 0x10) != n);
     }
 
-    wrfs32(old_value, A20_TEST_ADDR);
+    write_fs(old_value, A20_TEST_ADDR);
     return ret;
 }
 

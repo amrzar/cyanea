@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef __ULIB_CTYPE_H__
-#define __ULIB_CTYPE_H__
+#ifndef __CYANEA_CTYPE_H__
+#define __CYANEA_CTYPE_H__
 
 int isupper(int);
 int islower(int);
@@ -33,4 +33,4 @@ static inline int toupper(int c)
     return c;
 }
 
-#endif /* __ULIB_CTYPE_H__ */
+#endif /* __CYANEA_CTYPE_H__ */

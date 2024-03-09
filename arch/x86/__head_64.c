@@ -11,8 +11,8 @@
 #include <asm/desc_types.h>
 #include <asm/utask.h>
 
-#include <stddef.h>
-#include <string.h>
+#include <cyanea/stddef.h>
+#include <cyanea/string.h>
 
 void __init x86_64_start_kernel(phys_addr_t);
 void __init start_kernel(void);
@@ -54,24 +54,34 @@ static void __init *get__free_page(unsigned int *np)
 static void __init purge_ident_mapping(void)
 {
     /* Purge the 'early_top_pgt', except the ''kernel symbol map''. */
-
     memset(early_top_pgt, 0, sizeof(pgd_t) * (PTRS_PER_PGD - 1));
 
     /* Page 0 is being used for boot PUD; see '__startup_64'. */
-
     next_page = 1;
 
-    /* Here, 'CR4.PCIDE' is zero. */
+    /* 4.10.4.1 Operations that Invalidate TLBs and Paging-Structure Caches. */
 
-    /* This invalidates all TLB entries associated with PCID 000H except those
-     * for global pages. It also invalidates all entries in all paging-structure
-     * caches associated with PCID 000H.
+    /* If CR4.PCIDE = 0, the instruction invalidates all TLB entries associated
+     * with PCID 000H except those for global pages. It also invalidates all entries
+     * in all paging-structure caches associated with PCID 000H.
+     *
+     * If CR4.PCIDE = 1 and bit 63 of the instruction’s source operand is 0, the
+     * instruction invalidates all TLB entries associated with the PCID specified in
+     * bits 11:0 of the instruction’s source operand except those for global pages.
+     * It also invalidates all entries in all paging-structure caches associated with
+     * that PCID. It is not required to invalidate entries in the TLBs and
+     * paging-structure caches that are associated with other PCIDs.
+     *
+     * If CR4.PCIDE = 1 and bit 63 of the instruction’s source operand is 1, the
+     * instruction is not required to invalidate any TLB entries or entries in
+     * paging-structure caches.
      */
 
+    /* Here, 'CR4.PCIDE' is zero. */
     write_cr3(__pa(early_top_pgt));
 }
 
-static void __init copy_bootdata(struct boot_params *bp)
+static void __init copy_boot_data(struct boot_params *bp)
 {
     phys_addr_t cmd_line_ptr;
 
@@ -87,17 +97,15 @@ static void __init copy_bootdata(struct boot_params *bp)
 void __init x86_64_start_kernel(phys_addr_t bp)
 {
     cr4_init_shadow();
-
     purge_ident_mapping();
-
     idt_setup_early_handler();
 
-    copy_bootdata(__va(bp));
+    copy_boot_data(__va(bp));
 
     start_kernel();
 }
 
-/* Boot PAGEFAULT handler! */
+/* Boot PAGE FAULT handler! */
 
 static void __init *get_free_zero_page(void)
 {
@@ -170,11 +178,11 @@ void __init do_boot_exception(struct utask_regs *regs, int exp)
         ulog_err("exp %d (HLT.).", exp);
 hlt_loop:
 
-        HALT;
+        halt();
     }
 }
 
-/* Function used while running on direct mapping. */
+/* Functions used while running on direct mapping. */
 
 static void __head *fixup_pointer(void *ptr, phys_addr_t load_phys_addr)
 {
@@ -244,7 +252,7 @@ void __head __startup_64(phys_addr_t load_phys_addr)
      */
 
     if (!IS_ALIGNED(load_delta, PMD_SHIFT))
-        HALT;
+        halt();
 
     /* PGD [511]. */
     pgd[pgd_index(__START_KERNEL_map)] =
@@ -263,7 +271,11 @@ void __head __startup_64(phys_addr_t load_phys_addr)
      * we map '__START_KERNEL_map' to the 'load_delta'.
      */
 
-    /* However, the range 'load_delta' up to '_text' is not mapped. */
+    /* Note that the range between '__START_KERNEL_map' and '_text' is not mapped.
+     * This could be an issue for how '__phys_addr()' works.
+     * In 'physical_mapping_init', we make sure there is no symbol with virtual
+     * address in this range; or we refuse to boot.
+     */
 
     /* Use '__PAGE_KERNEL_LARGE_EXEC'. '_PAGE_XD' is not set. '_PAGE_GLOBAL' is set. */
     /* '_PAGE_GLOBAL' will be ignored if not supported by CPU. */
@@ -279,9 +291,8 @@ void __head __startup_64(phys_addr_t load_phys_addr)
     pmd_fixmap[510] = __pmd_t((pmdval_t)(pt_fixmap_1) | _KERNPG_TABLE);
 
     /* Mapping identity mappings for switchover (Temp). */
-    for (i = 0; i < __KERNEL_DIV_ROUND_UP(_end - _text, PMD_SIZE); i++) {
+    for (i = 0; i < __KERNEL_DIV_ROUND_UP(_end - _text, PMD_SIZE); i++)
         ident_map(pgd, load_phys_addr + (i * PMD_SIZE), load_phys_addr);
-    }
 
     *(unsigned long *)fixup_pointer(&phys_base, load_phys_addr) = load_delta;
 }

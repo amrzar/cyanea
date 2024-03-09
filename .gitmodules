@@ -1,3 +1,0 @@
-[submodule "drivers/acpi/acpica"]
-	path = drivers/acpi/acpica
-	url = git@github.com:amrzar/acpica.git

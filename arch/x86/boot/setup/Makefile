@@ -5,7 +5,7 @@ CFLAGS += -fno-asynchronous-unwind-tables
 AFLAGS := $(CFLAGS) -D__ASSEMBLY__
 LDFLAGS := -m elf_i386
 
-obj-y += setup.o
+obj-y += main.o
 obj-y += header.o
 obj-y += puts.o
 obj-y += early_params.o

@@ -4,6 +4,7 @@
 #define __X86_BOOT_SETUP_SETUP_H__
 
 #include <asm/setup.h>
+
 #include <uapi/asm/bootparam.h>
 
 #define SETUP_STACK_SIZE 1024   /* Size of real-mode stack. */
@@ -15,7 +16,7 @@
 #ifndef __ASSEMBLY__
 
 #include <cyanea/types.h>
-#include <cyanea/compiler.h>
+
 #include <asm/io.h>
 
 extern struct setup_header hdr;
@@ -23,107 +24,62 @@ extern struct boot_params boot_params;
 
 typedef unsigned int offset_t;
 
-#define get_segment(seg) ({ \
-        u16 value; \
-        asm volatile ("movw %%" #seg ", %0" : "=rm" (value)); \
-        value; \
-    })
+/* GS/FS Get and Set. */
 
-#define set_segmant(seg, v) \
-    asm volatile ("movw %0, %%" #seg : : "rm" ((u16) (v)))
+static inline u16 ds(void)
+{
+    u16 seg;
+    asm volatile("movw %%ds, %0" : "=rm" (seg));
+    return seg;
+}
 
-#define set_fs(v) set_segmant(fs, (v))
-#define set_gs(v) set_segmant(gs, (v))
+static inline void set_fs(u16 seg)
+{
+    asm volatile("movw %0, %%fs" : : "rm" (seg));
+}
 
-#define ADDR(seg, off) \
-    ((unsigned long)(get_segment(seg)) << 4) + (offset_t)(off)
+static inline void set_gs(u16 seg)
+{
+    asm volatile("movw %0, %%gs" : : "rm" (seg));
+}
 
-static inline u8 rdfs8(offset_t off)
+/* GS/FS Read and Write helpers. */
+
+static inline u8 read_fs_8(offset_t off)
 {
     u8 value;
-
-    asm volatile("movb %%fs:%1, %0"
-        : "=q"(value)
-        : "m"(*(u8 *)(off)));
-
+    asm volatile("movb %%fs:%1, %0" : "=q" (value) : "m" (*(u8 *)(off)));
     return value;
 }
 
-static inline u16 rdfs16(offset_t off)
+static inline u16 read_fs_16(offset_t off)
 {
     u16 value;
-
-    asm volatile("movw %%fs:%1, %0"
-        : "=r"(value)
-        : "m"(*(u16 *)(off)));
-
+    asm volatile("movw %%fs:%1, %0" : "=r" (value) : "m" (*(u16 *)(off)));
     return value;
 }
 
-static inline u32 rdfs32(offset_t off)
+static inline u32 read_fs(offset_t off)
 {
     u32 value;
-
-    asm volatile("movl %%fs:%1, %0"
-        : "=r"(value)
-        : "m"(*(u32 *)(off)));
-
+    asm volatile("movl %%fs:%1, %0" : "=r" (value) : "m" (*(u32 *)(off)));
     return value;
 }
 
-static inline u8 rdgs8(offset_t off)
-{
-    u8 value;
-
-    asm volatile("movb %%gs:%1, %0"
-        : "=q"(value)
-        : "m"(*(u8 *)(off)));
-
-    return value;
-}
-
-static inline u16 rdgs16(offset_t off)
-{
-    u16 value;
-
-    asm volatile("movw %%gs:%1, %0"
-        : "=r"(value)
-        : "m"(*(u16 *)(off)));
-
-    return value;
-}
-
-static inline u32 rdgs32(offset_t off)
+static inline u32 read_gs(offset_t off)
 {
     u32 value;
-
-    asm volatile("movl %%gs:%1, %0"
-        : "=r"(value)
-        : "m"(*(u32 *)(off)));
-
+    asm volatile("movl %%gs:%1, %0" : "=r" (value) : "m" (*(u32 *)(off)));
     return value;
 }
 
-static inline void wrfs8(u8 value, offset_t off)
+static inline void write_fs(u32 value, offset_t off)
 {
-    asm volatile("movb %1, %%fs:%0"
-        : "+m"(*(u8 *)(off))
-        : "qi"(value));
+    asm volatile("movl %1, %%fs:%0" : "+m" (*(u32 *)(off)) : "ri" (value));
 }
 
-static inline void wrfs16(u16 value, offset_t off)
-{
-    asm volatile("movw %1, %%fs:%0"
-        : "+m"(*(u16 *)(off))
-        : "ri"(value));
-}
-
-static inline void wrfs32(u32 value, offset_t off)
-{
-    asm volatile("movl %1, %%fs:%0"
-        : "+m"(*(u32 *)(off))
-        : "ri"(value));
-}
+/* 'ADDR' converts a ''logical address'' to a ''linear address'' in 'DS'. */
+#define ADDR(seg, off) (((unsigned long)(ds()) << 4) + (offset_t)(off))
 
 int early_param_parse(const char *, char *, int);
 

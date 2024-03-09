@@ -107,28 +107,28 @@ struct bios_e820_entry {
 } __attribute__((__packed__));
 
 struct boot_params {
-    __u8 _pad[0x0C0];           /* 0x000 */
-    __u32 ext_ramdisk_image;    /* 0x0C0 */
-    __u32 ext_ramdisk_size;     /* 0x0C4 */
-    __u32 ext_cmd_line_ptr;     /* 0x0C8 */
-    __u8 _pad1[0x118];          /* 0x0CC */
-    __u32 scratch;              /* 0x1E4 */
-    __u8 e820_entries;          /* 0x1E8 */
-    __u8 _pad2[6];              /* 0x1E9 */
+    __u8 _pad[0x0C0];                   /* 0x008 */
+    __u32 ext_ramdisk_image;            /* 0x0C0 */
+    __u32 ext_ramdisk_size;             /* 0x0C4 */
+    __u32 ext_cmd_line_ptr;             /* 0x0C8 */
+    __u8 _pad1[0x118];                  /* 0x0CC */
+    __u32 scratch;                      /* 0x1E4 */
+    __u8 e820_entries;                  /* 0x1E8 */
+    __u8 _pad2[6];                      /* 0x1E9 */
 
     /* This structure should be cleared by the boot-loader. */
     /* 'sentinel' is set to a nonzero value (0xFF) in header.S. */
 
     /* TODO. Check if the structure has been cleared. */
 
-    __u8 sentinel;              /* 0x1EF */
-    __u8 _pad3[1];              /* 0x1F0 */
+    __u8 sentinel;                      /* 0x1EF */
+    __u8 _pad3[1];                      /* 0x1F0 */
 
-    struct setup_header hdr;    /* 0x1F1 */
+    struct setup_header hdr;            /* 0x1F1 */
     __u8 _pad4[0x2D0 - 0x1F1 - sizeof(struct setup_header)];
 
     struct bios_e820_entry e820_table[BIOS_E820_MAX_ENTRIES];   /* 0x2D0 */
-    __u8 _pad5[0x330];          /* 0xCD0 */
+    __u8 _pad5[0x330];                  /* 0xCD0 */
 } __attribute__((__packed__));
 
 _Static_assert((sizeof(struct boot_params) == 0x1000),

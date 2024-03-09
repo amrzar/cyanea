@@ -4,8 +4,7 @@
 #define __CYANEA_MEMBLOCK_H__
 
 #include <cyanea/types.h>
-
-#include <stddef.h>
+#include <cyanea/stddef.h>
 
 enum memblock_flags {
     MEMBLOCK_NONE = 0x0,
@@ -41,6 +40,7 @@ void memblock_free(phys_addr_t, size_t);
 phys_addr_t memblock_alloc(size_t, unsigned long, phys_addr_t, phys_addr_t, int,
     bool);
 int memblock_reserve(phys_addr_t, size_t);
+size_t memblock_phys_mem_size(void);
 void memblock_dump(void);
 
 #define for_each_mem_pfn_range(i, n, start_pfn, end_pfn, nid) \

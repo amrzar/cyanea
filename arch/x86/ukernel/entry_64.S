@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <cyanea/cache.h>
+
 #include <asm-offsets.h>
 #include <asm/entry_64.h>
-#include <asm/percpu.h>
-#include <asm/cache.h>
 #include <asm/irq.h>
 
     .section ".text.entry", "ax"
@@ -58,7 +58,7 @@ return_to_user:
     pushq   3*8(%rdi)   # CS
     pushq   2*8(%rdi)   # RIP
 
-    # All registers are valiud except RDI. RDI holds the address of the utasks's
+    # All registers are valid except RDI. RDI holds the address of the utasks's
     # stack where the value of RDI is stored.
 
     movq    (%rdi), %rdi
@@ -134,7 +134,7 @@ error_return:
 .endm # IDTENTRY
 
 .macro IDTENTRY_IRQ cfunc
-    .balign L1_CACHE_BYTES
+    .balign SMP_CACHE_BYTES
     IDTENTRY asm_\cfunc \cfunc has_error_code=1
 .endm # IDTENTRY_IRQ
 

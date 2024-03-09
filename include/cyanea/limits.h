@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef __ULIB_LIMITS_H__
-#define __ULIB_LIMITS_H__
+#ifndef __CYANEA_LIMITS_H__
+#define __CYANEA_LIMITS_H__
 
 #ifdef __SHRT_MAX__
 #  define SHRT_MAX __SHRT_MAX__
@@ -40,4 +40,4 @@
 
 #define UINTPTR_MAX ULONG_MAX
 
-#endif /* __ULIB_LIMITS_H__ */
+#endif /* __CYANEA_LIMITS_H__ */

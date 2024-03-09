@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef __ULIB_STDARG_H__
-#define __ULIB_STDARG_H__
+#ifndef __CYANEA_STDARG_H__
+#define __CYANEA_STDARG_H__
 
 typedef __builtin_va_list va_list;
 
@@ -10,4 +10,4 @@ typedef __builtin_va_list va_list;
 # define va_arg(v, T) __builtin_va_arg(v, T)
 # define va_copy(d, s) __builtin_va_copy(d, s)
 
-#endif /* __ULIB_STDARG_H__ */
+#endif /* __CYANEA_STDARG_H__ */

@@ -3,7 +3,6 @@
 #include <cyanea/types.h>
 #include <asm/pgtable_types.h>
 
-/* ''Intel 64 and IA-32 Architectures Software Developer's Manual'' */
 /* See: 12.11 MEMORY TYPE RANGE REGISTERS (MTRRS). */
 /* See: 12.12 PAGE ATTRIBUTE TABLE (PAT). */
 
@@ -53,9 +52,7 @@ static enum page_cache_mode __pat_to_cachemode[8] = {
 unsigned long cachemode2protval(enum page_cache_mode pcm)
 {
     if (pcm == _PAGE_CACHE_MODE_WB) {
-
         /* 'WB' is default cache mode, keep it at PAT0. */
-
         return 0;
     }
 
@@ -67,9 +64,7 @@ enum page_cache_mode pgprot2cachemode(pgprot_t pgprot)
     pgprotval_t masked = pgprot_val(pgprot) & _PAGE_CACHE_MASK;
 
     if (masked == 0) {
-
         /* PAT, PCD, and PWT are zero. PAT0 is always 'WB'. */
-
         return _PAGE_CACHE_MODE_WB;
     }
 

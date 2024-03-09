@@ -2,7 +2,6 @@
 
 #ifndef __X86_ASM_PGTABLE_TYPES_H__
 #define __X86_ASM_PGTABLE_TYPES_H__
-#define __PGTABLE_TYPES__
 
 #include <asm/page_types.h>
 
@@ -54,8 +53,7 @@
 
 #ifndef __ASSEMBLY__
 
-/* ''Intel 64 and IA-32 Architectures Software Developer's Manual'' */
-/* See: 12.3 METHODS OF CACHING AVAILABLE. */
+/* 12.3 METHODS OF CACHING AVAILABLE. */
 
 enum page_cache_mode {
     _PAGE_CACHE_MODE_WB = 0,
@@ -148,5 +146,4 @@ enum page_size {
 
 #endif /* __ASSEMBLY__ */
 
-#  undef  __PGTABLE_TYPES__
 #endif /* __X86_ASM_PGTABLE_TYPES_H__ */

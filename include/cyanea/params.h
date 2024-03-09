@@ -5,8 +5,7 @@
 
 #include <cyanea/errno.h>
 #include <asm/setup.h>
-
-#include <stddef.h>
+#include <cyanea/stddef.h>
 
 int __param_get_option(const char *, int, const char *, char *, int,
     char (*)(const char *, int));

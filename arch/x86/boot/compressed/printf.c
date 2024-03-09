@@ -2,8 +2,8 @@
 
 #include <asm/io.h>
 
-#include <stddef.h>
-#include <stdarg.h>
+#include <cyanea/stddef.h>
+#include <cyanea/stdarg.h>
 
 #include "string.h"
 #include "compressed.h"

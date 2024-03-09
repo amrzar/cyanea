@@ -4,48 +4,41 @@
 #define __CYANEA_INIT_H__
 
 #ifndef __ASSEMBLY__
-#include <cyanea/compiler.h>
+
 #include <asm/setup.h>
-#include <asm/cache.h>
-#include <asm/page.h>
 
-#define __init __section(".init.text")
-#define __head __section(".head.text")
-#define __initdata __section(".init.data")
+# define __init __section(".init.text")
+# define __head __section(".head.text")
+# define __initdata __section(".init.data")
+# define __initconst __section(".init.rodata")
 
-#define __ro_after_init __section(".data..ro_after_init")
+# define __ro_after_init __section(".data..ro_after_init")
 
 extern char __initdata boot_command_line[COMMAND_LINE_SIZE];
 
-/* It is Linux obsolete parameter format; It's enough for us. */
+/* ''THIS IS SIMILAR TO LINUX OBSOLETE PARAMETER FORMAT''. */
 
-struct ukernel_param {
+struct setup_param {
     const char *param;
     int (*setup_func)(char *);
     int early;
 };
 
-/* Force the alignment so the compiler doesn't space elements of the 'ukernel_param'
- * array too far apart in '.init.setup'.
- */
+extern const struct setup_param __setup_start[], __setup_end[];
 
-#define __setup_param(str, unique_id, fn, early) \
-    static const char __setup_str_##unique_id[] __initdata = str; \
-    static struct ukernel_param __setup_##unique_id \
-    __used __section(".init.setup") \
-    __aligned(__alignof__(struct ukernel_param)) = \
-        { __setup_str_##unique_id, fn, early }
+# define __setup_param(str, uid, f, early) \
+    static const char __sstr_ ## uid[] __initconst = str; \
+    static struct setup_param __sp_ ## uid __used  \
+    __aligned(__alignof__(struct setup_param)) \
+    __section(".init.setup") = { __sstr_ ## uid, f, early }
 
-/* 'fn' returns 'SUCCESS' if the option argument is handled. */
-
-#define __setup(str, fn) __setup_param(str, fn, fn, 0)
-
-#define early_param(str, fn) __setup_param(str, fn, fn, 1)
+# define __setup(str, f) __setup_param(str, f, f, 0)
+# define early_param(str, f) __setup_param(str, f, f, 1)
 
 /* Constructors. */
 
-#define __pure_constructor __attribute__((constructor(101)))    /* PURE: */
-#define __arch_constructor __attribute__((constructor(110)))    /* ARCH: */
+# define __PURE_CONSTRUCTOR__ __attribute__((constructor(101)))    /* PURE: */
+# define __ARCH_CONSTRUCTOR__ __attribute__((constructor(110)))    /* ARCH: */
 
 #endif /*  __ASSEMBLY__ */
 

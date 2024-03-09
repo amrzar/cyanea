@@ -6,12 +6,12 @@
 
 #include <asm-offsets-defs.h>
 
-#include <cyanea/compiler.h>
-
 #include <uapi/asm/bootparam.h>
 #include <asm/current.h>
 
-#include <stddef.h>
+#include <cyanea/stddef.h>
+
+#include <compiler.h>
 
 static void __always_unused unused_common_function(void)
 {

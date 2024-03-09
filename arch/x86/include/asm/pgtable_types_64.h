@@ -2,7 +2,8 @@
 
 #ifndef __X86_ASM_PGTABLE_TYPES_64_H__
 #define __X86_ASM_PGTABLE_TYPES_64_H__
-#ifndef __PGTABLE_TYPES__
+
+#ifndef __X86_ASM_PGTABLE_TYPES_H__
 #  error use 'pgtable_types.h' instead.
 #endif
 

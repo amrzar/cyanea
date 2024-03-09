@@ -5,10 +5,6 @@
 
 #include "../zoffset.h"
 
-    #ifndef SVGA_MODE
-#define SVGA_MODE ASK_VGA   #
-    #endif
- 
     #ifndef ROOT_RDONLY
 #define ROOT_RDONLY 1       #
     #endif
@@ -287,7 +283,7 @@ hdr:
                             # 16-byte paragraphs, filled it at compile time.
 
     .word   0               # ram_size (OBSOLETE)
-    .word   SVGA_MODE       # vid_mode
+    .word   NORMAL_VGA      # vid_mode
     .word   0               # root_dev, default root device device number (DEPRECATED).
 
     .word   0xAA55          # boot_flag, signature at end of boot-sector.

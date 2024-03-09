@@ -4,7 +4,7 @@
 #include <cyanea/errno.h>
 #include <asm-generic/unaligned.h>
 
-#include <stddef.h>
+#include <cyanea/stddef.h>
 
 #define MAX_BITS 16
 #define MAX_SYMBOLS 288

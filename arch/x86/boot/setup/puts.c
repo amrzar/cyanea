@@ -2,7 +2,7 @@
 
 #include <asm/io.h>
 
-#include <stddef.h>
+#include <cyanea/stddef.h>
 
 #include "string.h"
 #include "setup.h"
@@ -10,7 +10,7 @@
 #include "../../../../drivers/uart/uart_regs.h"
 #include "../early_serial_console.c"
 
-static void __bios_putchar(int c)
+static void bios_putchar(int c)
 {
     asm volatile(
         "pushal         ;"
@@ -27,17 +27,14 @@ void putchar(int c)
     if (c == '\n')
         putchar('\r');
 
+    bios_putchar(c);
+
     if (early_serial_port != 0)
         early_serial_putchar(c);
-    else {
-        /* Use BIOS if serial port is not ready. */
-        __bios_putchar(c);
-    }
 }
 
 void puts(const char *str)
 {
-    while (*str) {
+    while (*str)
         putchar(*str++);
-    }
 }

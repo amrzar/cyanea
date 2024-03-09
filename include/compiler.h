@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef __CYANEA_COMPILER_H__
-#define __CYANEA_COMPILER_H__
+#ifndef __COMPILER_H__
+#define __COMPILER_H__
 
 #define __packed __attribute__((__packed__))
 #define __aligned(a) __attribute__((__aligned__(a)))
@@ -30,4 +30,6 @@
 
 #define __used __attribute__((__used__))
 
-#endif /* __CYANEA_COMPILER_H__ */
+#define __weak __attribute__((__weak__))
+
+#endif /* __COMPILER_H__ */

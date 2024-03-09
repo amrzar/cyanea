@@ -7,9 +7,7 @@
 #include <asm/cpu.h>
 #include <asm/cpuinfo.h>
 
-/* ''Intel 64 and IA-32 Architectures Software Developer's Manual''
- * See: 4.10.4 Invalidation of TLBs and Paging-Structure Caches.
- */
+/* 4.10.4 Invalidation of TLBs and Paging-Structure Caches. */
 
 /* We use single address space for each task, i.e. single ASID per-task and
  * kernel mapping uses global pages.

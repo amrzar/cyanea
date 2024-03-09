@@ -3,17 +3,19 @@
 #ifndef __CYANEA_BITOPS_H__
 #define __CYANEA_BITOPS_H__
 
-#include <cyanea/compiler.h>
+#include <cyanea/const.h>
 
 #ifndef __CHAR_BIT__
 # error '__CHAR_BIT__'  is not defined.
 #else
 # define BITS_PER_TYPE(type) (sizeof(type) * __CHAR_BIT__)
+# define BITS_TO_ULONGS(nr) __KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(unsigned long))
+# define BITS_TO_BYTES(nr) __KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(char))
 #endif
 
 #include <asm/bitops.h>
 
-/* 'x_bit' is atomic and '__x_bit' is non-atomic. */
+/* 'X_bit' is atomic and '__X_bit' is non-atomic. */
 
 #ifndef arch_set_bit
 # error 'arch_set_bit' is not defined.

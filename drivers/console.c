@@ -4,12 +4,10 @@
 #include <cyanea/errno.h>
 #include <cyanea/init.h>
 
-#include <stddef.h>
-#include <ctype.h>
-#include <strtox.h>
-#include <string.h>
-
-#include "uart.h"
+#include <cyanea/stddef.h>
+#include <cyanea/ctype.h>
+#include <cyanea/strtox.h>
+#include <cyanea/string.h>
 
 #define MAX_CONSOLE 8           /* .. */
 
@@ -43,7 +41,9 @@ static int __add_preferred_console(char *name, int index, char *options,
     strncpy(pc->name, name, sizeof(pc->name));
     pc->index = index;
     pc->user_specified = user_specified;
-    strncpy(pc->options, options, sizeof(pc->options));
+
+    if (options)
+        strncpy(pc->options, options, sizeof(pc->options));
 
     return SUCCESS;
 }
@@ -90,11 +90,10 @@ static int try_enable_preferred_console(struct console *con, int user_specified)
             continue;
 
         if (!con->match || con->match(con, pc->name, pc->options)) {
-            if (!strcmp(pc->name, con->name))
+            if (strcmp(pc->name, con->name))
                 continue;
 
             if (con->index >= 0) {
-
                 /* Check if exact port was requested!? */
                 if (con->index != pc->index)
                     continue;
@@ -133,13 +132,10 @@ int register_console(struct console *con)
 
 int console_write(const char *s, size_t count)
 {
-    int i;
-
     if (!active_console)
         return -EINVAL;
 
-    for (i = 0; i < count; i++, s++)
-        uart_poll_put_char(active_console->index, *s);
+    active_console->write(active_console, s, count);
 
     return SUCCESS;
 }
