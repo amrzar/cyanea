@@ -3,8 +3,6 @@
 #ifndef __X86_ASM_PGTABLE_H__
 #define __X86_ASM_PGTABLE_H__
 
-#include <cyanea/compiler.h>
-
 #include <asm/pgtable_types.h>
 
 #ifndef __ASSEMBLY__

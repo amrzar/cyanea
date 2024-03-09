@@ -3,7 +3,7 @@
 #include <cyanea/console.h>
 #include <cyanea/errno.h>
 
-#include "io_buffer.h"
+#include <cyanea/io_buffer.h>
 
 static size_t iob_write(_IO_BUFFER io, const char *buffer, size_t count)
 {
@@ -22,6 +22,11 @@ static int iob_flush(_IO_BUFFER io)
     return SUCCESS;
 }
 
+static struct io_buffer_operations ulog_ops = {
+    .write = iob_write,
+    .flush = iob_flush,
+};
+
 void __va_ulog(const char *fmt, va_list ap)
 {
     static char buffer[128];
@@ -29,8 +34,7 @@ void __va_ulog(const char *fmt, va_list ap)
         .mode = _IOLBF,
         .buffer = buffer,
         .buf_size = 128,
-        .write = iob_write,
-        .flush = iob_flush
+        .ops = &ulog_ops,
     };
 
     iob_vsnprintf(&io, fmt, ap);

@@ -5,8 +5,7 @@
 
 #include <cyanea/bitops.h>
 #include <cyanea/const.h>
-
-#include <string.h>
+#include <cyanea/string.h>
 
 #define BITS_TO_ULONGS(x) \
     __KERNEL_DIV_ROUND_UP(x, BITS_PER_TYPE(unsigned long))
@@ -23,14 +22,22 @@ static always_inline void bitmap_fill(unsigned long *dest, unsigned int nbits)
     memset(dest, 0xFF, BITS_TO_ULONGS(nbits) * sizeof(unsigned long));
 }
 
-static always_inline void bitmap_set(unsigned long *map, unsigned int bit)
+static always_inline void bitmap_set(unsigned long *map, unsigned int start,
+    unsigned int nbits)
 {
-    __set_bit(bit, map);
+    if (__builtin_constant_p(nbits) && nbits == 1)
+        __set_bit(start, map);
+    else
+        assert(0);
 }
 
-static always_inline void bitmap_clear(unsigned long *map, unsigned int bit)
+static always_inline void bitmap_clear(unsigned long *map, unsigned int start,
+    unsigned int nbits)
 {
-    __clear_bit(bit, map);
+    if (__builtin_constant_p(nbits) && nbits == 1)
+        __clear_bit(start, map);
+    else
+        assert(0);
 }
 
 #endif /* __CYANEA_BITMAP_H__ */

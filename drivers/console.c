@@ -4,10 +4,10 @@
 #include <cyanea/errno.h>
 #include <cyanea/init.h>
 
-#include <stddef.h>
-#include <ctype.h>
-#include <strtox.h>
-#include <string.h>
+#include <cyanea/stddef.h>
+#include <cyanea/ctype.h>
+#include <cyanea/strtox.h>
+#include <cyanea/string.h>
 
 #include "uart.h"
 

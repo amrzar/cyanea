@@ -3,7 +3,6 @@
 #ifndef __X86_BOOT_COMPRESSED_COMPRESSED_H__
 #define __X86_BOOT_COMPRESSED_COMPRESSED_H__
 
-#include <cyanea/compiler.h>
 #include <uapi/asm/bootparam.h>
 
 extern struct boot_params *boot_params;

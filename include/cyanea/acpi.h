@@ -5,6 +5,9 @@
 
 #include <cyanea/init.h>
 
+#ifndef ACPI_USE_BUILTIN_STDARG
+# define ACPI_USE_BUILTIN_STDARG
+#endif
 # undef __linux__
 # include "../../drivers/acpi/acpica/source/include/acpi.h"
 

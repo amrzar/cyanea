@@ -4,6 +4,7 @@
 #define __X86_BOOT_SETUP_SETUP_H__
 
 #include <asm/setup.h>
+
 #include <uapi/asm/bootparam.h>
 
 #define SETUP_STACK_SIZE 1024   /* Size of real-mode stack. */
@@ -15,7 +16,7 @@
 #ifndef __ASSEMBLY__
 
 #include <cyanea/types.h>
-#include <cyanea/compiler.h>
+
 #include <asm/io.h>
 
 extern struct setup_header hdr;

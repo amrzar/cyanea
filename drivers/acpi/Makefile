@@ -6,6 +6,7 @@ components = $(acpica)/source/components
 cflags := -I$(acpica)/source/include
 cflags += -U__linux__
 cflags += -Wno-unused-but-set-variable
+cflags += -DACPI_USE_BUILTIN_STDARG
 
 # List of files in the ''acpica''
 

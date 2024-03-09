@@ -5,7 +5,6 @@
 
 #include <cyanea/const.h>
 #include <cyanea/types.h>
-#include <cyanea/compiler.h>
 
 /* EFLAGS bits. */
 

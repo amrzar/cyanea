@@ -3,8 +3,6 @@
 #ifndef __CYANEA_BITOPS_H__
 #define __CYANEA_BITOPS_H__
 
-#include <cyanea/compiler.h>
-
 #ifndef __CHAR_BIT__
 # error '__CHAR_BIT__'  is not defined.
 #else

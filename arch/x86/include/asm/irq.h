@@ -3,8 +3,6 @@
 #ifndef __X86_ASM_IRQ_H__
 #define __X86_ASM_IRQ_H__
 
-#include <cyanea/compiler.h>
-
 #include <asm/desc_types.h>
 #include <uapi/asm/eflags.h>
 

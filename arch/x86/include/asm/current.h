@@ -4,7 +4,6 @@
 #define __X86_ASM_CURRENT_H__
 
 #include <cyanea/percpu.h>
-#include <cyanea/compiler.h>
 
 #include <asm/utask.h>
 #include <asm/cache.h>

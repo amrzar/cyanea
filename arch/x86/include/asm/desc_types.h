@@ -96,7 +96,7 @@
 
 #ifndef __ASSEMBLY__
 
-#include <string.h>
+#include <cyanea/string.h>
 
 union desc_struct {
     struct {

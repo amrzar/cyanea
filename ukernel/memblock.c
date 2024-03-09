@@ -7,7 +7,7 @@
 
 #include <asm/page_types.h>
 
-#include <string.h>
+#include <cyanea/string.h>
 
 static int memblock_debug = 0;
 

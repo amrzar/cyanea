@@ -8,6 +8,4 @@ obj-y += io_buffer/io_buffer.o
 obj-y += io_buffer/strtox.o
 obj-y += io_buffer/vsnprintf.o
 
-obj-y += ulog.o
-
 include $(srctree)/scripts/makefile.build

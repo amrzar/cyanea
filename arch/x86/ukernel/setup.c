@@ -2,7 +2,6 @@
 
 #include <cyanea/init.h>
 #include <cyanea/memblock.h>
-#include <cyanea/sizes.h>
 #include <cyanea/acpi.h>
 #include <asm/setup.h>
 #include <asm/e820.h>

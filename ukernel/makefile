@@ -3,5 +3,6 @@
 obj-y += params.o
 obj-y += memblock.o
 obj-y += early_ioremap.o
+obj-y += ulog.o
 
 include $(srctree)/scripts/makefile.build

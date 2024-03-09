@@ -3,7 +3,7 @@
 #include <cyanea/acpi.h>
 #include <cyanea/errno.h>
 
-#include <string.h>
+#include <cyanea/string.h>
 
 void __init acpi_x86_table_init(void)
 {

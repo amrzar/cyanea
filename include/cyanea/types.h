@@ -13,5 +13,4 @@ typedef _Bool bool;
 typedef u64 phys_addr_t;
 
 #endif /*  __ASSEMBLY__ */
-
 #endif /* __CYANEA_TYPES_H__ */

@@ -4,7 +4,6 @@
 #define __CYANEA_INIT_H__
 
 #ifndef __ASSEMBLY__
-#include <cyanea/compiler.h>
 #include <asm/setup.h>
 #include <asm/cache.h>
 #include <asm/page.h>
