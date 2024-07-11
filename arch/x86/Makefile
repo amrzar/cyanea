@@ -28,23 +28,17 @@ obj-y += arch/x86/realmode/
 obj-y += arch/x86/head_$(BITS).o arch/x86/__head_$(BITS).o
 
 # Building 'ukernel.elf'.
-
 include/generated/asm-offsets.h: arch/x86/asm-offsets.s FORCE
 	$(call if-changed, $(asm-offset))
 
-ukernel.elf: arch/x86/ukernel.lds
+ukernel.arch: include/generated/asm-offsets.h arch/x86/ukernel.lds ukernel.elf
 
-LDFLAGS-ukernel.elf := -T arch/x86/ukernel.lds
-
-# Instruct linker to use 2 MiB page size, i.e. segment's alignment.
-LDFLAGS-ukernel.elf += -z max-page-size=0x200000
+# Use 2MiB page size (i.e. segment alignment).
+LDFLAGS-ukernel.elf := -z max-page-size=0x200000
+LDFLAGS-ukernel.elf += -T arch/x86/ukernel.lds
 
 CLEAN_FILES += arch/x86/asm-offsets.s
 CLEAN_FILES += arch/x86/ukernel.lds ukernel.elf
-
-# 'ukernel' is default target.
-
-ukernel: include/generated/asm-offsets.h ukernel.elf
 
 define archhelp
 	echo  'Architecture specific targets ($(ARCH)):'

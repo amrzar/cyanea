@@ -110,6 +110,8 @@ help:
 
 .SILENT: help
 
+ukernel: ukernel.arch
+
 # Uncommnet if use astyle.
 export USE_ASTYLE = 1
 
@@ -118,5 +120,5 @@ style:
 		\( -name '*.c' -o -name '*.h' \) \
 		\( -exec $(scripts)/style.sh {} .style \; -o -quit \)
 
-.PHONY: help style
+.PHONY: help style ukernel.arch
 .DEFAULT_GOAL := ukernel
