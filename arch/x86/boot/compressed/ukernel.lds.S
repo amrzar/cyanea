@@ -10,9 +10,9 @@ SECTIONS
 {
     . = 0;
     .head.text : {
-        _head = . ;
+        _head = .;
         *(.head.text)
-        _ehead = . ;
+        _ehead = .;
     }
 
     .rodata..compressed : {
@@ -22,24 +22,27 @@ SECTIONS
     .text : {
         _text = .;
         *(.text) *(.text.*)
-        _etext = . ;
+        _etext = .;
     }
 
     .rodata : {
-        _rodata = . ;
+        _rodata = .;
         *(.rodata) *(.rodata.*)
-        _erodata = . ;
+        _erodata = .;
     }
 
     .data : {
-        _data = . ;
+        _data = .;
         *(.data) *(.data.*)
-        _edata = . ;
+
+        /* See 'build.c'; add 4 bytes for a CRC-32 checksum. */
+        . = . + 4;
+        _edata = .;
     }
 
     . = ALIGN(8);
     .bss : {
-        _bss = . ;
+        _bss = .;
         *(.bss) *(.bss.*)
         *(COMMON)
         . = ALIGN(8);
@@ -48,9 +51,9 @@ SECTIONS
 
     . = ALIGN(PAGE_SIZE);
     .pgtable : {
-        _pgtable = . ;
+        _pgtable = .;
         *(.pgtable)
-        _epgtable = . ;
+        _epgtable = .;
     }
 
     . = ALIGN(PAGE_SIZE);

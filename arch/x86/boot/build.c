@@ -4,14 +4,28 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdarg.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <endian.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "voffset.h"
 #include "zoffset.h"
+
+#define read_le16(p) le16toh(*((uint16_t *)(p)))
+
+/* The real-mode code consists of the boot-sector (always one sector) plus the setup
+ * code (at least 4 sectors), i.e. 'SETUP_SECT_MIN' is 5. The maximum size of
+ * real-mode code is 32KiB so that there is enough space for stack and heap
+ * in a 64KiB segment. See 'setup_sects' and 'setup_move_size' in 'header.S'.
+ */
+
+# define SETUP_SECT_MIN 5
+# define SETUP_SECT_MAX 64
+
+static uint8_t buffer[SETUP_SECT_MAX * 512];
 
 static const uint32_t crctab32[] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419,
@@ -68,200 +82,6 @@ static const uint32_t crctab32[] = {
     0x2d02ef8d
 };
 
-/* The real-mode code consists of the boot-sector (always one sector) plus the
- * setup code (at least 4 sectors), i.e. 'SETUP_SECT_MIN' is 5. The maximum size
- * of real-mode code is 32KiB so that there is enough space for stack and heap
- * in a 64KiB segment.
- *
- * See 'setup_sects' and 'setup_move_size' in 'header.S'.
- */
-
-#define SETUP_SECT_MIN 5
-#define SETUP_SECT_MAX 64
-
-static uint8_t buffer[SETUP_SECT_MAX * 512] = { 0 };
-
-#define OFFSET_PE_HEADER_PTR 0x3C
-#define OFFSET_SETUP_SECTS 0x1F1
-#define OFFSET_SYSSIZE 0x1F4
-#define OFFSET_BOOT_FLAG 0x1FE
-#define OFFSET_INIT_SIZE 0x260
-#define OFFSET_HANDOVER_OFFSET 0x264
-#define OFFSET_KERNEL_INFO_OFFSET 0x268
-
-#define read_le16(p) le16toh(*((uint16_t *)(p)))
-#define read_le32(p) le32toh(*((uint32_t *)(p)))
-#define store_le16(p, value) (*((uint16_t *)(p)) = htole16((uint16_t)(value)))
-#define store_le32(p, value) (*((uint32_t *)(p)) = htole32((uint32_t)(value)))
-
-#ifdef CONFIG_EFI_STUB
-
-/* 'PECOFF_COMPAT_RESERVE' is default '.compat' size. EFI stub version 1.0 allows
- * the firmware that targets a diffrent machine type to start the kernel via the
- * entry point exposed in the '.compat' PE/COFF section.
- */
-
-#ifdef CONFIG_EFI_MIXED
-#define PECOFF_COMPAT_RESERVE 0x20
-#else
-#define PECOFF_COMPAT_RESERVE 0x0
-#endif /* CONFIG_EFI_MIXED */
-
-/* 'PECOFF_RELOC_RESERVE' is default '.reloc' size. The EFI application loader
- * requires a relocation section as EFI applications must be relocatable.
- */
-
-#define PECOFF_RELOC_RESERVE 0x20
-
-static void update_pecoff_section_header(char *section_name,
-    uint32_t virtual_offset, size_t virtual_size,
-    uint32_t raw_data_offset, size_t raw_data_size)
-{
-
-    uintptr_t pe_header = read_le32(&buffer[OFFSET_PE_HEADER_PTR]);
-
-#define OFFSET_PECOFF_NR_SECTIONS 0x6
-#define OFFSET_PECOFF_SECTION_TABLE 0xB8
-
-    int num_sections =
-        read_le32(&buffer[pe_header + OFFSET_PECOFF_NR_SECTIONS]);
-    uintptr_t section =
-        (uintptr_t)(&buffer[pe_header + OFFSET_PECOFF_SECTION_TABLE]);
-
-    while (num_sections > 0) {
-        if (strncmp((char *)section, section_name, 8) == 0) {
-            store_le32(section + 0x8, virtual_size);
-            store_le32(section + 0xC, virtual_offset);
-            store_le32(section + 0x10, raw_data_size);
-            store_le32(section + 0x14, raw_data_offset);
-
-            break;
-        }
-
-        section += 0x28;        /* ... move to next section. */
-        num_sections--;
-    }
-}
-
-static void update_pecoff_setup(size_t size)
-{
-    uint32_t setup_size =
-        size - 0x200 - PECOFF_RELOC_RESERVE - PECOFF_COMPAT_RESERVE;
-
-    /* '.setup' section covers setup code following the first sector. */
-    update_pecoff_section_header(".setup", 0x200, setup_size, 0x200,
-        setup_size);
-}
-
-static void update_pecoff_reloc(size_t size)
-{
-    uint32_t reloc_offset = size - PECOFF_RELOC_RESERVE - PECOFF_COMPAT_RESERVE;
-
-    update_pecoff_section_header(".reloc", reloc_offset, PECOFF_RELOC_RESERVE,
-        reloc_offset, PECOFF_RELOC_RESERVE);
-
-    /* '.reloc' section contains single dummy relocation entry.
-     * The relocation is applied to offset 10 of the relocation section.
-     */
-
-    store_le32(&buffer[reloc_offset], reloc_offset + 10);
-    store_le32(&buffer[reloc_offset + 0x4], 10);
-}
-
-static void update_pecoff_compat(size_t size)
-{
-    uint32_t compat_offset = size - PECOFF_COMPAT_RESERVE;
-
-    update_pecoff_section_header(".compat", compat_offset,
-        PECOFF_COMPAT_RESERVE, compat_offset, PECOFF_COMPAT_RESERVE);
-
-    /* Store the IA-32 machine type (0x14c) and the associated entry point.
-     * The boot-loader uses '.compat' to figure out supported execution modes in
-     * the image.
-     */
-
-    buffer[compat_offset] = 0x1;
-    buffer[compat_offset + 0x1] = 0x8;
-    store_le16(&buffer[compat_offset + 0x2], 0x14C);
-    store_le32(&buffer[compat_offset + 0x4], efi32_pe_entry + size);
-}
-
-static void update_pecoff_text(uintptr_t text_start,
-    size_t sys_size, size_t init_size)
-{
-    uintptr_t pe_header = read_le32(&buffer[OFFSET_PE_HEADER_PTR]);
-
-#define OFFSET_PECOFF_SIZE_OF_CODE 0x1C
-#define OFFSET_PECOFF_ADDRESS_OF_ENTRY_POINT 0x28
-#define OFFSET_PECOFF_SIZE_OF_IMAGE 0x50
-
-    /* The PE/COFF loader can load 'ukernel.bin' at an address which is misaligned
-     * with respect to the 'kernel_alignment' in the setup header.
-     *
-     * Add 'CONFIG_PHYSICAL_ALIGN' so that 'ukernel.bin' can be aligned within the
-     * declared size of the buffer.
-     */
-
-    init_sz += CONFIG_PHYSICAL_ALIGN;
-
-    /* 'SizeOfCode' is sum of ''code'' sections ... assuming 'init_sz' except the initial sector. */
-    store_le32(&buffer[pe_header + OFFSET_PECOFF_SIZE_OF_CODE],
-        init_sz - 0x200);
-
-    /* 'SizeOfImage' is size of sections, including headers ... assuming 'init_sz'. */
-    store_le32(&buffer[pe_header + OFFSET_PECOFF_SIZE_OF_IMAGE], init_sz);
-
-    store_le32(&buffer[pe_header + OFFSET_PECOFF_ADDRESS_OF_ENTRY_POINT],
-        text_start + efi_pe_entry);
-
-    update_pecoff_section_header(".text", text_start,
-        init_sz - text_start, text_start, sys_size);
-}
-
-static int update_setup_handover(void)
-{
-    uintptr_t stub;
-
-    stub = efi64_stub_entry - 0x200;
-
-#ifdef CONFIG_EFI_MIXED
-    if (efi32_stub_entry != stub) {
-        fprintf(stderr,
-            "'efi32_stub_entry' and 'efi64_stub_entry' should be 512-byte apart.\n");
-        return -1;
-    }
-#endif /* CONFIG_EFI_MIXED */
-
-    store_le32(&buffer[OFFSET_HANDOVER_OFFSET], stub);
-    return 0;
-}
-
-#else
-
-static void update_pecoff_setup(size_t size)
-{
-}
-
-static void update_pecoff_reloc(size_t size)
-{
-}
-
-static void update_pecoff_compat(size_t size)
-{
-}
-
-static void update_pecoff_text(uintptr_t text_start,
-    size_t sys_size, size_t init_sz)
-{
-}
-
-static int update_setup_handover(void)
-{
-    return 0;
-}
-
-#endif /* CONFIG_EFI_STUB */
-
 static uint32_t partial_crc32_one(uint8_t c, uint32_t crc)
 {
     return crctab32[(crc ^ c) & 0xFF] ^ (crc >> 8);
@@ -269,230 +89,110 @@ static uint32_t partial_crc32_one(uint8_t c, uint32_t crc)
 
 static uint32_t partial_crc32(const uint8_t buf[], size_t length, uint32_t crc)
 {
-    for (size_t i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++)
         crc = partial_crc32_one(buf[i], crc);
-    }
 
     return crc;
 }
 
-#define die(s) do{          \
-        perror(s);          \
-        return -1;          \
-    } while(0)
+static void die(const char *str, ...)
+{
+    va_list args;
 
-#define align_mask(x, mask) (((x) + (mask)) & ~(mask))
+    va_start(args, str);
+    vfprintf(stderr, str, args);
+    va_end(args);
+
+    fputc('\n', stderr);
+
+    exit(1);
+}
+
+# define OFFSET_BOOT_FLAG 0x1FE
 
 int main(int argc, char **argv)
 {
-    int fd;
-    ssize_t setup_len;
-    size_t sys_size, kernel_size, init_size;
+    int fd, c;
+    unsigned int setup_sectors, sz, setup_sz;
+    struct stat sb;
+    FILE *dest;
 
     void *kernel;
+    uint32_t crc = 0xFFFFFFFFUL;
 
     if (argc != 4) {
         fprintf(stderr, "Usage: %s SETUP KERNEL OUTPUT\n"
-            "  SETUP is 'setup.bin' from boot directory.\n"
-            "  KERNEL is 'ukernel.bin' from compressed directory.\n"
-            "  OUTPUT is 'zukernel'.\n", argv[0]);
+            "  SETUP  is setup.bin from boot directory.\n"
+            "  KERNEL is ukernel.bin from compressed directory.\n"
+            "  OUTPUT is zukernel.\n", argv[0]);
         return -1;
     }
 
-    if ((fd = open(argv[1], O_RDONLY)) == -1)
+    dest = fopen(argv[3], "w");
+    if (!dest)
+        die("Unable to write '%s'.\n", argv[3]);
+
+    /* Open SETUP. */
+    fd = open(argv[1], O_RDONLY);
+    if (fd == -1)
         die(argv[1]);
 
-    if ((setup_len = read(fd, buffer, SETUP_SECT_MAX * 512)) == -1)
+    c = read(fd, buffer, SETUP_SECT_MAX * 512);
+    if (c == -1)
         die(argv[1]);
 
-    if (setup_len < 1024) {
-        fprintf(stderr, "%s must be at least two sectors.\n", argv[1]);
-        return -1;
-    }
+    if (c < 1024)
+        die("%s must be at least 1024 bytes.\n", argv[1]);
 
-    if (read_le16(&buffer[OFFSET_BOOT_FLAG]) != 0xAA55) {
-        fprintf(stderr, "'boot_flag' is not '0xAA55'.\n");
-        return -1;
-    }
+    if (read_le16(&buffer[OFFSET_BOOT_FLAG]) != 0xAA55)
+        die("'boot_flag' is not '0xAA55'.\n");
 
-    close(fd);                  /* ... 'SETUP'. */
+    close(fd);  /* Close SETUP. */
 
-#ifdef CONFIG_EFI_STUB
-    setup_len += PECOFF_COMPAT_RESERVE;
-    setup_len += PECOFF_RELOC_RESERVE;
-#endif
+    /* Pad unused space with zero, see 'setup.ids'. */
+    setup_sectors = (c + 4095) / 4096;
+    setup_sectors *= 8;
+    if (setup_sectors < SETUP_SECT_MIN)
+        setup_sectors = SETUP_SECT_MIN;
 
-    setup_len = align_mask(setup_len, 0x1FF);
+    setup_sz = setup_sectors * 512;
 
-    if (setup_len < SETUP_SECT_MIN * 512)
-        setup_len = SETUP_SECT_MIN * 512;
+    memset(buffer + c, 0, setup_sz - c);
 
-    buffer[OFFSET_SETUP_SECTS] = (setup_len / 512) - 1;
-
-    /* Updating '.setup', '.reloc', and '.compat' PE/COFF sections ... */
-
-    update_pecoff_setup(setup_len);
-    update_pecoff_reloc(setup_len);
-    update_pecoff_compat(setup_len);
-
-    if ((fd = open(argv[2], O_RDONLY)) == -1)
+    /* Open KERNEL. */
+    fd = open(argv[2], O_RDONLY);
+    if (fd == -1)
         die(argv[1]);
 
-    struct stat sb;
-
-    if (fstat(fd, &sb) == -1)
+    if (fstat(fd, &sb))
         die(argv[1]);
 
-    kernel_size = sb.st_size;
-    kernel = mmap(NULL, kernel_size, PROT_READ, MAP_SHARED, fd, 0);
+    if (ZO__edata != sb.st_size)
+        die("Unexpected file size '%s': %u != %u.\n", argv[2], ZO__edata, sb.st_size);
 
+    sz = ZO__edata - 4; /* 'ukernel.lds.S' added 4 bytes for CRC-32 checksum. */
+
+    kernel = mmap(NULL, sz, PROT_READ, MAP_SHARED, fd, 0);
     if (kernel == MAP_FAILED)
-        die(argv[1]);
+        die("Unable to mmap '%s'.\n", argv[2]);
 
-    /* 'sys_size' must be 16-byte paragraphs aligned, add a 4-byte for CRC. */
-    sys_size = (kernel_size + 15 + 4) / 16;
+    /* Write SETUP.  */
+    crc = partial_crc32(buffer, setup_sz, crc);
+    if (fwrite(buffer, 1, setup_sz, dest) != setup_sz)
+        die("Writing setup failed.\n");
 
-#ifdef CONFIG_EFI_STUB
+    /* Write KERNEL. */
+    crc = partial_crc32(kernel, sz, crc);
+    if (fwrite(kernel, 1, sz, dest) != sz)
+        die("Writing kernel failed.\n");
 
-    /* Here, end of the PE/COFF executable is 16-byte aligned. However, the PE/COFF
-     * header in 'header.S' specifies 'FileAlignment' as 32 bytes, and when adding
-     * an EFI signature to the file it must first be padded to this alignment.
-     */
+    /* Write CRC.    */
+    fprintf(dest, "%u", htole32(crc));
 
-    sys_size = align_mask(sys_size, 0x1);
-#endif /* CONFIG_EFI_STUB */
+    if (fclose(dest))
+        die("Writing image failed.\n");
 
-    store_le32(&buffer[OFFSET_SYSSIZE], sys_size);
-
-    /* Calculate 'init_size' for 'ukernel.bin' in 'compressed directory'
-     *
-     * The compressed file consists of a short header and an arbitrary number of
-     * compressed blocks. Three different block encoding are currently used in
-     * deflate: 'stored', 'static', and 'dynamic'. The smallest block type encoding
-     * is always used. 'stored' blocks contains uncompressed data with maximum
-     * size of ''32768 - 1'' (minus one is for end-of-block literal).
-     *
-     * The worst case overhead is 18 bytes for the file header, plus 5 bytes every
-     * 32KiB block -- assuming 'stored' block. As a result, to decompress in-place,
-     * two cases should be considered:
-     *
-     *    (1) compressed data 'ZO_z_input_len' is larger than uncompressed data
-     *        'ZO_z_output_len' or equal ''OFFSET = 18 + 5 bytes-per-32KiB + 32KiB''.
-     *        Last 32KiB is added so after decompression of a block, it does not
-     *        overrun the compressed data.
-     *
-     *    (2) compressed data smaller then uncompressed data
-     *        ''OFFSET + uncompressed data - compressed data''
-     *
-     * See https://www.rfc-editor.org/rfc/rfc1952.txt
-     * See https://www.rfc-editor.org/rfc/rfc1951.txt
-     */
-
-#define ZO_z_extra_bytes (18 + (ZO_z_output_len >> 15 << 3) + 32768)
-#if ZO_z_output_len > ZO_z_input_len
-#define ZO_z_extract_offset (ZO_z_extra_bytes + ZO_z_output_len - ZO_z_input_len)
-#else
-#define ZO_z_extract_offset ZO_z_extra_bytes
-#endif
-
-    /* The boot-loader reserves 'init_size' linear contiguous memory starting at
-     * the runtime start address of the 'ukernel.bin'.
-     *
-     * This buffer is used for in-place decompression of the ukernel. The code
-     * running from the 'ukernel.bin''s head under 'ZO__ehead' address moves the
-     * 'ukernel.bin', i.e. ''itself'', to the end of this buffer. It copies memory
-     * from '_bss' backward to the current instruction; see 'ukernel.lds.S' and
-     * in 'head_{32, 64}.S' compress directory.
-     *
-     * 'init_size' should be large enough so that the copy operation running form
-     * the head does not overwrite the head ''itself''.
-     */
-
-#if (ZO__ehead - ZO_startup_32) > ZO_z_extract_offset
-#define ZO_z_min_extract_offset (ZO__ehead - ZO_startup_32)
-#else
-#define ZO_z_min_extract_offset ZO_z_extract_offset
-#endif
-
-    /* 'init_size' should be large enough for the final decompressed ukernel. */
-
-#define ZO_INIT_SIZE (ZO__end - ZO_startup_32 + ZO_z_min_extract_offset)
-#define VO_INIT_SIZE (VO__end - VO__text)
-#if ZO_INIT_SIZE > VO_INIT_SIZE
-    init_size = ZO_INIT_SIZE;
-#else
-    init_size = VO_INIT_SIZE;
-#endif
-
-#ifdef CONFIG_EFI_STUB
-
-    /* There are two types of bootable image for 'zukernel':
-     *
-     *    (1) standard Linux image. 'setup_sectors' is not part of the 'init_size'.
-     *        'init_size' defines the static footprint of the 'ukernel.bin' in
-     *        compressed directory. 'setup.bin''s memory is allocated separately
-     *        by the boot-loader.
-     *
-     *    (2) PE/COFF executable. 'setup_sectors' is part of the 'init_size'.
-     *        '.setup' and '.text' section are loaded by UEFI as part of the
-     *        PE/COFF execution.
-     */
-
-    init_size += setup_len;
-#endif /* CONFIG_EFI_STUB */
-
-    /* Here, page align 'init_size' so that when calculating the relocation address
-     * in 'head_64.S', the result remains page aligned. It is required for initialising
-     * identity mappings.
-     */
-
-    init_size = align_mask(init_size, 0xFFF);
-
-    store_le32(&buffer[OFFSET_INIT_SIZE], init_size);
-    store_le32(&buffer[OFFSET_KERNEL_INFO_OFFSET], ZO_kernel_info);
-
-    /* Start of '.text' section is after '.setup' section. */
-    update_pecoff_text(setup_len, sys_size * 16, init_size);
-
-    if (update_setup_handover() == -1)
-        return -1;
-
-    uint32_t crc = 0xFFFFFFFFUL;
-
-    /* Store 'OUTPUT' ...
-     *
-     * CRC-32 is created over 'SETUP' and 'KERNEL' files.
-     * End of 'OUTPUT' is padded with '\0' after 'kernel_size' and CRC is stored
-     * in the last 4 bytes. Therefore, CRC of the 'OUTPUT' up to the limit specified
-     * in the 'sys_size' is always 0.
-     */
-
-    FILE *file = fopen(argv[3], "w");
-
-    if (file == NULL)
-        die(argv[3]);
-
-    crc = partial_crc32(buffer, setup_len, crc);
-
-    if (fwrite(buffer, 1, setup_len, file) != setup_len)
-        die(argv[3]);
-
-    crc = partial_crc32(kernel, kernel_size, crc);
-
-    if (fwrite(kernel, 1, kernel_size, file) != kernel_size)
-        die(argv[3]);
-
-    while (kernel_size++ < (sys_size * 16) - 4) {
-        crc = partial_crc32_one('\0', crc);
-
-        if (fwrite("\0", 1, 1, file) != 1)
-            die(argv[3]);
-    }
-
-    fprintf(file, "%u", htole32(crc));
-
-    fclose(file);
-    close(fd);                  /* ... 'KERNEL'. */
+    close(fd);
 
     return 0;
 }

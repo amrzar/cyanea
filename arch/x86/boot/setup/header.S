@@ -5,265 +5,9 @@
 
 #include "../zoffset.h"
 
-    #ifndef ROOT_RDONLY
-#define ROOT_RDONLY 1       #
-    #endif
-
-BOOTSEG     = 0x07c0        # Original boot-sector segment
-BIOSSEG     = 0xf000        # BIOS reset segment
-
     .code16
     .section ".bstext", "ax"
-
-    #
-    # Offset 0, beginning of boot-sector.
-    #
-
-    .global bootsect_start
-bootsect_start:
-
-#
-# There are two methods to boot the EFI-compatible ukernel image
-#
-# Without EFI boot-loader - The ukernel is compiled as a PE/COFF executable.
-# It can be run as a standard EFI application with 'efi_pe_entry' as entry point.
-#
-# With EFI boot-loader - The boot-loader uses the handover code specified
-# with 'handover_offset' field in the ukernel header. Here, the EFI boot-loader
-# uses two separate entry points to enter the kernel based on the architecture
-# it was compiled for,
-#
-#    (1) 32-bit loader: handover_offset points to 'efi32_stub_entry'
-#    (2) 64-bit loader: handover_offset + 512 points to 'efi64_stub_entry'
-#
-# By making (1) and (2) valid entry points for both 'CONFIG_X86_32' and
-# 'CONFIG_X86_64', the image can be used with both 32-bit and 64-bit EFI.
-#
-
-#
-# See https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
-# for specification describing the structure of PE format.
-#
-
-#ifdef CONFIG_EFI_STUB
-
-#define EFI_STUB_MAJOR_VERSION 0x1
-#define EFI_STUB_MINOR_VERSION 0x0
-
-    .set    pe_machine, 0x8664              # IMAGE_FILE_MACHINE_AMD64
-    .set    image_file_extra_flags, 0       # None!
-    .set    pe_opt_magic, 0x20b             # Magic: PE32+ format
-
-    .byte   0x4d              # "MZ", MS-DOS header
-    .byte   0x5a
-
-#endif /* CONFIG_EFI_STUB */
-
-    #
-    # BIOS 'JMP' to the boot-sector at 0000:7C00. However, the code linked
-    # 'setup.lds' at address 0x0. 'LJMP' to 07c0:0000 to normalise the address.
-    # See https://en.wikibooks.org/wiki/X86_Assembly/Bootloaders
-    #
-
-    ljmp    $BOOTSEG, $start2
-
-start2:
-    movw    %cs, %ax
-    movw    %ax, %ds
-    movw    %ax, %es
-    movw    %ax, %ss
-    xorw    %sp, %sp
-    sti
-
-    cld
-    movw    $bugger_off_msg, %si
-
-msg_loop:
-    lodsb
-    andb    %al, %al
-    jz      bs_die
-    movb    $0xe, %ah
-    movw    $7, %bx
-    int     $0x10
-    jmp     msg_loop
-
-bs_die:
-    xorw    %ax, %ax
-    int     $0x16           # Wait for user to press any key, and
-    int     $0x19           # reboot the computer.
-
-    #
-    # 'int $0x19' should never return. In case it does anyway,
-    # invoke the BIOS reset code ...
-    #
-
-    ljmp    $BIOSSEG, $0xfff0
-
-#ifdef CONFIG_EFI_STUB
-    .org    0x3c            # End of MS-DOS header, with pointer
-    .long   pe_header       # to begining of PE header.
-
-#endif /* CONFIG_EFI_STUB */
-
-    .section ".bsdata", "a"
-bugger_off_msg:
-    .ascii  "Use a boot-loader.\r\n"
-    .ascii  "\n"
-    .ascii  "Remove disk and press any key to reboot ...\r\n"
-    .byte   0
-
-#ifdef CONFIG_EFI_STUB
-pe_header:
-    .ascii  "PE"
-    .word   0
-
-    .word   pe_machine
-    .word   section_count   # NumberOfSections
-    .long   0               # TimeDateStamp
-    .long   0               # PointerToSymbolTable, deprecated
-    .long   1               # NumberOfSymbols, deprecated
-    .word   section_table - optional_header # SizeOfOptionalHeader
-    .word   image_file_extra_flags | 0x206  # Characteristics:
-                                            # 'image_file_extra_flags' |
-                                            # IMAGE_FILE_DEBUG_STRIPPED |
-                                            # IMAGE_FILE_EXECUTABLE_IMAGE |
-                                            # IMAGE_FILE_LINE_NUMS_STRIPPED
-
-optional_header:
-    .word   pe_opt_magic
-
-    .byte   0x02            # MajorLinkerVersion
-    .byte   0x14            # MinorLinkerVersion
-    .long   0               # SizeOfCode, filled it at compile time.
-    .long   0               # SizeOfInitializedData
-    .long   0               # SizeOfUninitializedData
-    .long   0x0000          # AddressOfEntryPoint, filled it at compile time.
-    .long   0x0200          # BaseOfCode, '_start' at begining of second sector.
-
-extra_header_fields:
-    .quad   CONFIG_PHYSICAL_START
-
-    .long   0x20            # SectionAlignment
-    .long   0x20            # FileAlignment
-    .word   0               # MajorOperatingSystemVersion
-    .word   0               # MinorOperatingSystemVersion
-    .word   EFI_STUB_MAJOR_VERSION  # MajorImageVersion
-    .word   EFI_STUB_MINOR_VERSION  # MinorImageVersion
-    .word   0               # MajorSubsystemVersion
-    .word   0               # MinorSubsystemVersion
-    .long   0               # Win32VersionValue
-    .long   0               # SizeOfImage, filled it at compile time.
-    .long   0x200           # SizeOfHeaders
-    .long   0               # CheckSum
-    .word   0xa             # IMAGE_SUBSYSTEM_EFI_APPLICATION
-    .word   0               # DllCharacteristics
-
-    .quad   0               # SizeOfStackReserve
-    .quad   0               # SizeOfStackCommit
-    .quad   0               # SizeOfHeapReserve
-    .quad   0               # SizeOfHeapCommit
-
-    .long   0               # LoaderFlags
-    .long   0x6             # NumberOfRvaAndSizes
-
-    .quad   0               # ExportTable, SizeOfExportTable
-    .quad   0               # ImportTable, SizeOfImportTable
-    .quad   0               # ResourceTable, SizeOfResourceTable
-    .quad   0               # ExceptionTable, SizeOfExceptionTable
-    .quad   0               # CertificationTable, SizeOfCertificateTable
-    .quad   0               # BaseRelocationTable, SizeOfBaseRelocationTable
-
-section_table:
-
-    #
-    # For all sections, 'VirtualSize', total size of the section when loaded
-    # into memory, 'VirtualAddress', the address of the section's first byte
-    # relative to 'ImageBase' when loaded into memory, 'SizeOfRawData', size
-    # of the section for image file, 'PointerToRawData', pointer to the first
-    # byte of the section within the image file, are filled at compile time.
-    # 
-
-    .ascii  ".setup\0\0"
-    .long   0               # VirtualSize
-    .long   0x0             # VirtualAddress
-    .long   0               # SizeOfRawData
-    .long   0x0             # PointerToRawData
-
-    .long   0               # PointerToRelocations
-    .long   0               # PointerToLineNumbers
-    .word   0               # NumberOfRelocations
-    .word   0               # NumberOfLineNumbers
-    .long   0x60500020      # Characteristics:
-                            # IMAGE_SCN_CNT_CODE |
-                            # IMAGE_SCN_ALIGN_16BYTES |
-                            # IMAGE_SCN_MEM_EXECUTE |
-                            # IMAGE_SCN_MEM_READ
-
-    #
-    # The EFI application loader requires a relocation section because
-    # EFI applications must be relocatable.
-    #
-
-    .ascii  ".reloc\0\0"
-    .long   0               # VirtualSize
-    .long   0               # VirtualAddress
-    .long   0               # SizeOfRawData
-    .long   0               # PointerToRawData
-
-    .long   0               # PointerToRelocations
-    .long   0               # PointerToLineNumbers
-    .word   0               # NumberOfRelocations
-    .word   0               # NumberOfLineNumbers
-    .long   0x42100040      # Characteristics:
-                            # IMAGE_SCN_CNT_INITIALIZED_DATA |
-                            # IMAGE_SCN_ALIGN_1BYTES |
-                            # IMAGE_SCN_MEM_DISCARDABLE |
-                            # IMAGE_SCN_MEM_READ
-
-#ifdef CONFIG_EFI_MIXED
-
-    #
-    # The '.compat' section contains the PE machine type and entry point
-    # address, allowing firmware implementations to match it to their native
-    # machine type, and invoke non-native binaries using a secondary entry point.
-    #
-
-    .ascii  ".compat\0"
-    .long   0               # VirtualSize
-    .long   0x0             # VirtualAddress
-    .long   0               # SizeOfRawData
-    .long   0x0             # PointerToRawData
-
-    .long   0               # PointerToRelocations
-    .long   0               # PointerToLineNumbers
-    .word   0               # NumberOfRelocations
-    .word   0               # NumberOfLineNumbers
-    .long   0x42100040      # Characteristics:
-                            # IMAGE_SCN_CNT_INITIALIZED_DATA |
-                            # IMAGE_SCN_ALIGN_1BYTES |
-                            # IMAGE_SCN_MEM_DISCARDABLE |
-                            # IMAGE_SCN_MEM_READ
-
-#endif /* CONFIG_EFI_MIXED */
-
-    .ascii  ".text\0\0\0"
-    .long   0               # VirtualSize
-    .long   0x0             # VirtualAddress
-    .long   0               # SizeOfRawData
-    .long   0x0             # PointerToRawData
-
-    .long   0               # PointerToRelocations
-    .long   0               # PointerToLineNumbers
-    .word   0               # NumberOfRelocations
-    .word   0               # NumberOfLineNumbers
-    .long   0x60500020      # Characteristics:
-                            # IMAGE_SCN_CNT_CODE |
-                            # IMAGE_SCN_ALIGN_16BYTES |
-                            # IMAGE_SCN_MEM_EXECUTE |
-                            # IMAGE_SCN_MEM_READ
- 
-    .set    section_count, (. - section_table) / 0x28
-#endif /* CONFIG_EFI_STUB */
+    .fill   0x1EF, 1, 0x90
 
     .section ".header", "a"
     .byte   0xFF            # sentinel.
@@ -276,12 +20,10 @@ section_table:
     .global hdr
 hdr:
 
-    .byte   0               # setup_sects, filled it at compile time.
-    .word   ROOT_RDONLY     # root_flags, default to readonly root (DEPRECATED).
-
-    .long   0               # syssize, size of the protected-mode code in units of
-                            # 16-byte paragraphs, filled it at compile time.
-
+    .byte   setup_sects - 1 # setup_sects.
+    .word   1               # root_flags, default to readonly root (1) (DEPRECATED).
+    .long   ZO__edata / 16  # syssize, size of the protected-mode code in units of
+                            # 16-byte paragraphs.
     .word   0               # ram_size (OBSOLETE)
     .word   NORMAL_VGA      # vid_mode
     .word   0               # root_dev, default root device device number (DEPRECATED).
@@ -289,7 +31,7 @@ hdr:
     .word   0xAA55          # boot_flag, signature at end of boot-sector.
 
     #
-    # Offset 512, begining of second sector, entry from bootloader, e.g. GRUB.
+    # Offset 512, begining of second sector, entry from boot-loader, e.g. GRUB.
     #
     # Here, segment registers 'GS', 'FS', 'ES', 'DS', 'SS' have equal values, any
     # 64KiB segment between 0x1000 and 0xA0000. It covers real-mode image. 'SP' 
@@ -314,7 +56,7 @@ _start:
     .long   0                       # realmode_swtch
     .word   0                       # start_sys_seg (OBSOLETE)
     .word   kernel_version - 512    # kernel_version, default to no version information.
-    .byte   0                       # type_of_loader, 0x00 is pre-2.00 bootloader.
+    .byte   0                       # type_of_loader, 0x00 is pre-2.00 boot-loader.
 
 loadflags:
     .byte   LOADED_HIGH     # loadflags, protected-mode code is loaded at 0x100000.
@@ -366,28 +108,15 @@ heap_end_ptr:
 xloadflags:
     #ifdef CONFIG_X86_64
     #ifdef CONFIG_RELOCATABLE
-#define XLF01 (XLF_CAN_BE_LOADED_ABOVE_4G | XLF_KERNEL_64)
+#define XFLAG (XLF_CAN_BE_LOADED_ABOVE_4G | XLF_KERNEL_64)
     #else
-#define XLF01 XLF_KERNEL_64
+#define XFLAG XLF_KERNEL_64
     #endif /* CONFIG_RELOCATABLE */
     #else
-#define XLF01 0
+#define XFLAG 0
     #endif /* CONFIG_X86_64 */
 
-    #ifdef CONFIG_EFI_STUB
-    #ifdef CONFIG_EFI_MIXED
-#define XLF23 (XLF_EFI_HANDOVER_32 | XLF_EFI_HANDOVER_64)
-    #else
-    #ifdef CONFIG_X86_64
-#define XLF23 XLF_EFI_HANDOVER_64
-    #else
-#define XLF23 XLF_EFI_HANDOVER_32
-    #endif /* CONFIG_X86_64 */
-    #endif /* CONFIG_EFI_MIXED */
-    #else
-#define XLF23 0
-    #endif /* CONFIG_EFI_STUB */
-    .word   XLF01 | XLF23           # xloadflags, 'XLF_EFI_KEXEC' is zero.
+    .word   XFLAG                   # xloadflags, 'XLF_EFI_KEXEC' is zero.
 
     .long   COMMAND_LINE_SIZE - 1   # cmdline_size, maximum size of the command-line.
 
@@ -397,15 +126,84 @@ xloadflags:
     .long   ZO_input_data           # payload_offset
     .long   ZO_z_input_len          # payload_length
 
-    .quad   SETUP_NONE              # setup_data
+    .quad   SETUP_NONE              # setup_data, linked list of 'struct setup_data'.
     .quad   CONFIG_PHYSICAL_START   # pref_address (RELOC)
 
-    .long   0               # init_size, amount of linear contiguous memory starting
-                            # at the kernel runtime start address that the ukernel
-                            # needs before it is capable of examining its memory map,
-                            # filled it at compile time.
+    #
+    # Calculate 'init_size' for 'ukernel.bin' in 'compressed directory'
+    #
+    # The compressed file consists of a short header and an arbitrary number of
+    # compressed blocks. Three different block encoding are currently used in
+    # deflate: 'stored', 'static', and 'dynamic'. The smallest block type encoding
+    # is always used. 'stored' blocks contains uncompressed data with maximum
+    # size of ''32768 - 1'' (minus one is for end-of-block literal).
+    #
+    # The worst case overhead is 18 bytes for the file header, plus 5 bytes every
+    # 32KiB block -- assuming 'stored' block. As a result, to decompress in-place,
+    # two cases should be considered:
+    #
+    #    (1) compressed data 'ZO_z_input_len' is larger than uncompressed data
+    #        'ZO_z_output_len' or equal ''OFFSET = 18 + 5 bytes-per-32KiB + 32KiB''.
+    #        Last 32KiB is added so after decompression of a block, it does not
+    #        overrun the compressed data.
+    #
+    #    (2) compressed data 'ZO_z_input_len' is smaller then uncompressed data
+    #        ''OFFSET + uncompressed data - compressed data''
+    #
+    # See https://www.rfc-editor.org/rfc/rfc1952.txt
+    # See https://www.rfc-editor.org/rfc/rfc1951.txt
+    #
 
-    .long   0               # handover_offset, filled it at compile time.
+#define ZO_z_extra_bytes (18 + (ZO_z_output_len >> 15 << 3) + 32768)
+#if ZO_z_output_len > ZO_z_input_len
+#define ZO_z_extract_offset (ZO_z_extra_bytes + ZO_z_output_len - ZO_z_input_len)
+#else
+#define ZO_z_extract_offset ZO_z_extra_bytes
+#endif
+
+    #
+    # The boot-loader reserves 'init_size' linear contiguous memory starting at the
+    # runtime start address of the 'ukernel.bin'.
+    #
+    # This buffer is used for in-place decompression of the ukernel. The code running
+    # from the 'ukernel.bin''s head under 'ZO__ehead' address moves the 'ukernel.bin',
+    # i.e. itself, to the end of this buffer. It copies memory from '_bss' backward
+    # to the current instruction; see 'ukernel.lds.S' and 'head_64.S' in compressed directory.
+    #
+    # 'init_size' should be large enough so that the copy operation running form
+    # the head does not overwrite the head ''itself''.
+    #
+
+#if (ZO__ehead - ZO_startup_32) > ZO_z_extract_offset
+#define ZO_z_min_extract_offset (ZO__ehead - ZO_startup_32)
+#else
+#define ZO_z_min_extract_offset ZO_z_extract_offset
+#endif
+
+    #
+    # 'init_size' should be large enough for the final decompressed ukernel.
+    #
+
+#define ZO_INIT_SIZE (ZO__end - ZO_startup_32 + ZO_z_min_extract_offset)
+#define VO_INIT_SIZE (VO__end - VO__text)
+#if ZO_INIT_SIZE > VO_INIT_SIZE
+#define __INIT_SIZE ZO_INIT_SIZE
+#else
+#define __INIT_SIZE VO_INIT_SIZE
+#endif
+
+    #
+    # Align 'init_size' to a page, so that when calculating the relocation address in
+    # 'head_64.S', the result remains page aligned. It is required for initialising
+    # identity mappings.
+    #
+
+#define INIT_SIZE ((__INIT_SIZE  + 0xFFF) & ~0xFFF)
+    .long   INIT_SIZE       # init_size, amount of linear contiguous memory starting
+                            # at the kernel runtime start address that the ukernel
+                            # needs before it is capable of examining its memory map.
+
+    .long   0               # handover_offset.
     .long   0               # kernel_info_offset, filled it at compile time.
 
     #
@@ -451,10 +249,7 @@ start_of_setup:
     lretw
 4:
 
-    #
     # Reset BSS.
-    #
-
     cld
     xorl    %eax, %eax
     movw    $__bss_start, %di

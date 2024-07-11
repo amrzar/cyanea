@@ -10,7 +10,7 @@ sed-voffset := 's/^\([0-9a-fA-F]*\) [ABCDGRSTVW] \(_text\|__bss_start\|_end\)$$/
 voffset.h: FORCE
 	$(call if-changed, $(NM) $(srctree)/ukernel.elf | sed -ne $(sed-voffset))
 
-sed-zoffset := 's/^\([0-9a-fA-F]*\) [a-zA-Z] \(startup_32\|startup_64\|efi32_stub_entry\|efi64_stub_entry\|efi_pe_entry\|efi32_pe_entry\|input_data\|kernel_info\|_end\|_ehead\|_text\|z_.*\)$$/\#define ZO_\2 0x\1/p'
+sed-zoffset := 's/^\([0-9a-fA-F]*\) [a-zA-Z] \(startup_32\|input_data\|kernel_info\|_end\|_ehead\|_text\|_e\?data\|z_.*\)$$/\#define ZO_\2 0x\1/p'
 zoffset.h: compressed/ FORCE
 	$(call if-changed, $(NM) compressed/ukernel.elf | sed -ne $(sed-zoffset))
 

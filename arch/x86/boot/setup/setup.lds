@@ -8,10 +8,9 @@ SECTIONS
 {
     . = 0;
     .bstext : { *(.bstext) }
-    .bsdata : { *(.bsdata) }
 
-    . = 495;
     .header : { *(.header) }
+
     .entrytext : { *(.entrytext) }
 
     .text : {
@@ -30,6 +29,9 @@ SECTIONS
         *(.data)
         *(.data.*)
     }
+
+    /* See 'build.c'. */
+    setup_sects = ABSOLUTE(ALIGN(ABSOLUTE(.), 4096) / 512);
 
     . = ALIGN(8);
     .bss : {
