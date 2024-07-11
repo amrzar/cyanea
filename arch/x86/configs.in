@@ -76,14 +76,6 @@ menu "Architecture dependant configurations" # arch-dep-config
 			help
 				"This feature allows the ''ukernel'' to be loaded directly by EFI
 				firmware without the use of a boot-loader."
-
-		config "mixed-mode EFI"
-			CONFIG_EFI_MIXED
-			BOOL false
-			depends CONFIG_EFI_STUB && CONFIG_64BIT
-			help
-				"Allow a 64-bit ukernel to be booted on a 32-bit firmware, provided
-				that your CPU supports 64-bit mode."
 	endmenu # efi-support
 
 	menu "NUMA (Non-Uniform Memory Access) support"
