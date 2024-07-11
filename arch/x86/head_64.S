@@ -3,12 +3,11 @@
 #
 # ''64-bit entry to ukernel''.
 #
-# We come here either directly from a 64-bit bootloader, or from from compressed
-# image. Paging is enabled. Someone has loaded an identity mapped page table for
-# us. These identity mapped page tables map all of the kernel pages and possibly
-# all of memory.
+# At this point the CPU runs in 64-bit mode CS.L = 1 CS.D = 0, and someone has
+# loaded an identity mapped page table. These identity mapped page tables map
+# all of the kernel pages and possibly all of memory.
 #
-# 'RSI' holds the real-mode address of 'boot_params'.
+# RSI holds the physical address of the bootparams provided by the boot-loader.
 #
 
 #include <cyanea/pgtable.h>
@@ -20,8 +19,6 @@
 #include <asm/page.h>
 
     .section ".head.text", "ax"
-
-#define pa(x) __phys_addr_kernel(x)
 
     .global startup_64
     .balign 16, 0x90
@@ -62,21 +59,26 @@ startup_64:
     rep; stosq
 
     leaq    _text(%rip), %rdi
-    pushq   %rsi                        # Keep 'ESI' safe.
+    pushq   %rsi                        # Keep 'RSI' safe.
     call    __startup_64                # Perform page-table initialisation.
     popq    %rsi
 
-    movq    $pa(early_top_pgt), %rax    # Use 'early_top_pgt' for 'BSP'.
-                                        # Add 'phys_base' bellow.
+    leaq    early_top_pgt(%rip), %rax   # Here, runtime virtual address is equal to
+    movq    %rax, %cr3                  # physicall address (i.e. ident-mapping).
 
-    jmp     .Ldefault_entry             # '.Ldefault_entry' shared by 'BSP' and 'AP's.
+    jmp     *1f(%rip)       # Branch to '.Ldefault_entry' at its virtual address.
 
     .type   startup_64, @function
     .size   startup_64, . - startup_64
 
+    .section ".init.rodata", "a"
+1:  .quad   .Ldefault_entry
+
 #
 # Application CPU entry point; entered from trampoline.S.
 #
+
+    .text
 
     .global startup_64_smp
     .balign 16, 0x90
@@ -85,17 +87,9 @@ startup_64_smp:
 
 
 .Ldefault_entry:
-    addq    phys_base(%rip), %rax
 
     movq    $(_CR4_PAE | _CR4_PGE), %rcx 
     movq    %rcx, %cr4
-
-    #
-    # For the 'BSP' this switches to 'early_top_pgt' which still has the
-    # indentity mappings present. For the 'AP's, it switches to 'init_top_pgt'.
-    #
-
-    movq    %rax, %cr3
 
     #
     # Do a global TLB flush after the 'CR3' switch to make sure the TLB entries
