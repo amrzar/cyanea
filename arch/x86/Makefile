@@ -30,7 +30,7 @@ obj-y += arch/x86/head_$(BITS).o arch/x86/__head_$(BITS).o
 # Building 'ukernel.elf'.
 
 include/generated/asm-offsets.h: arch/x86/asm-offsets.s FORCE
-	$(call if-changed,$(asm-offset))
+	$(call if-changed, $(asm-offset))
 
 ukernel.elf: arch/x86/ukernel.lds
 
@@ -45,11 +45,6 @@ CLEAN_FILES += arch/x86/ukernel.lds ukernel.elf
 # 'ukernel' is default target.
 
 ukernel: include/generated/asm-offsets.h ukernel.elf
-	$(call descend-make, arch/x86/boot)
-
-define clean-all
-	$(call descend-make, arch/x86/boot rm-files)
-endef
 
 define archhelp
 	echo  'Architecture specific targets ($(ARCH)):'
