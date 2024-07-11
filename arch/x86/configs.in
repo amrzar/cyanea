@@ -68,16 +68,6 @@ menu "Architecture dependant configurations" # arch-dep-config
 				(Default to 1MiB)."
 	endmenu # ukernel-image-config
 
-	menu "Extensible Firmware Interface (EFI) support" # efi-support
-		config "EFI stub"
-			CONFIG_EFI_STUB
-			BOOL false
-			select CONFIG_RELOCATABLE
-			help
-				"This feature allows the ''ukernel'' to be loaded directly by EFI
-				firmware without the use of a boot-loader."
-	endmenu # efi-support
-
 	menu "NUMA (Non-Uniform Memory Access) support"
 		config "Enable NUMA Memory Allocation and Scheduler Support "
 			CONFIG_NUMA

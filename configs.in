@@ -21,6 +21,15 @@ menu "Hardware setting" # hardware-setting
 			"Number of memory regions."
 endmenu # hardware-setting
 
+menu "Extensible Firmware Interface (EFI) support" # efi-support
+	config "EFI stub"
+		CONFIG_EFI_STUB BOOL
+		select CONFIG_RELOCATABLE
+		help
+			"This feature allows the ''ukernel'' to be loaded directly by EFI
+			firmware without the use of a boot-loader."
+endmenu # efi-support
+
 menu "Debugging settings"
 	config "Build debug version"
 		CONFIG_DEBUG BOOL
