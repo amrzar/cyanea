@@ -32,7 +32,10 @@ kernel.elf: realmode.lds
 
 LDFLAGS-kernel.elf := -T realmode.lds --emit-relocs --discard-none
 
-OBJCOPYFLAGS-kernel.bin := -O binary
+kernel.bin: kernel.elf
+	@$(call cmd-info, OBJCOPY, $<)
+	$(Q)$(OBJCOPY) -O binary $< $@
+
 CLEAN_FILES += kernel.elf kernel.bin
 
 include $(srctree)/scripts/makefile.build

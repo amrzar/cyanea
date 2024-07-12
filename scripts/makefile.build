@@ -20,7 +20,6 @@ dep-files := $(foreach a-path, $(targets), $(call dot-file, $(a-path)).d)
 # 'LDFLAGS', 'ld-flags'  Global and directory linker flags for '.builtin.o'.
 # 'CFLAGS', 'cflags', CFLAGS-$(@F) Global, directory, and per-file compiler flags.
 # 'AFLAGS', 'aflags', AFLAGS-$(@F) Global, directory, and per-file assembler flags.
-# 'OBJCOPYFLAGS', 'OBJCOPYFLAGS-$(@F)' Global and per-file 'objcopy' flags.
 #
 
 -include $(dep-files)
@@ -59,10 +58,6 @@ cpp_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
 
 %.elf: .builtin.o
 	$(Q)$(LD) $(LDFLAGS) $(LDFLAGS-$(@F)) -o $@ .builtin.o
-
-%.bin: %.elf
-	@$(call cmd-info, OBJCOPY, $<)
-	$(Q)$(OBJCOPY) $(OBJCOPYFLAGS) $(OBJCOPYFLAGS-$(@F)) $< $@
 
 # Descending ...
 $(subdir): FORCE
