@@ -254,11 +254,7 @@ void __head __startup_64(phys_addr_t load_phys_addr)
     unsigned long load_delta = load_phys_addr - __phys_addr_kernel(_text);
     RIP_REL_REF(phys_base) = load_delta;
 
-    /* 'min_alignment' is 'PMD_SHIFT' in header.S.
-     * So if we are loaded with a delta it should be aligned to 'PMD_SHIFT'.
-     */
-
-    if (!IS_ALIGNED(load_delta, PMD_SHIFT))
+     if (!IS_ALIGNED(load_delta, PMD_SHIFT))
         halt();
 
     /* PGD [511]. */
