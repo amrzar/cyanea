@@ -32,4 +32,6 @@
 
 #define __weak __attribute__((__weak__))
 
+#define __pure __attribute__((__pure__))
+
 #endif /* __COMPILER_H__ */

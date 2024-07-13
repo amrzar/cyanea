@@ -71,7 +71,7 @@ void __init early_cpuinfo_init(void)
     }
 
     /* Extended Function CPUID Information. */
-    get_cpuid_eax(0x80000000);
+    eax = get_cpuid_eax(0x80000000);
     c->extended_cpuid_level = eax;
 
     if (c->extended_cpuid_level >= 0x80000008) {
