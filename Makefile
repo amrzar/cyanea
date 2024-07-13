@@ -46,7 +46,7 @@ UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 CPPFLAGS := -D__UKERNEL__ -D__CYANEA__
 CFLAGS   := -std=gnu11 -fno-common -fno-PIE -ffreestanding -fno-strict-aliasing \
 	-Wall -Wundef -Wstrict-prototypes -ftls-model=local-exec -Wnested-externs   \
-	-Werror
+	-Werror -O2
 AFLAGS   := -D__ASSEMBLY__ -fno-PIE
 
 export CPPFLAGS CFLAGS AFLAGS LDFLAGS ARFLAGS UKERINCLUDE

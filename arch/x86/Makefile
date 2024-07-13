@@ -28,6 +28,10 @@ obj-y += arch/x86/realmode/
 obj-y += arch/x86/head_$(BITS).o arch/x86/__head_$(BITS).o
 
 # Building 'ukernel.elf'.
+
+arch/x86/asm-offsets.s: arch/x86/asm-offsets.c
+	$(Q)$(CC) $(UKERINCLUDE) -S -o $@ $<
+
 include/generated/asm-offsets.h: arch/x86/asm-offsets.s FORCE
 	$(call if-changed, $(asm-offset))
 
