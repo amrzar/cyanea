@@ -26,7 +26,6 @@ unsigned long smpboot_cpu = 0;
 /* It is used trough out the boot till 'init_top_pgt' get initialised and enabled
  * in 'init_mem_mapping' (see mm.c).
  */
-
 pgd_t __initdata early_top_pgt[PTRS_PER_PGD] __aligned(PAGE_SIZE) = { 0 };
 
 /* Use '.bss' so the assembly code reset the '_PAGE_PRESENT' for us. */
@@ -44,12 +43,7 @@ phys_addr_t phys_base;
 #define EARLY_FREE_PAGES 64
 
 static unsigned int __initdata next_page;
-static char __initdata early_pages[EARLY_FREE_PAGES][PAGE_SIZE]
-__aligned(PAGE_SIZE);
-static void __init *get__free_page(unsigned int *np)
-{
-    return (*np < EARLY_FREE_PAGES) ? early_pages[(*np)++] : NULL;
-}
+static char __initdata early_pages[EARLY_FREE_PAGES][PAGE_SIZE] __aligned(PAGE_SIZE);
 
 static void __init purge_ident_mapping(void)
 {
@@ -109,10 +103,13 @@ void __init x86_64_start_kernel(phys_addr_t bp)
 
 static void __init *get_free_zero_page(void)
 {
-    void *page = get__free_page(&next_page);
+    char *page = NULL;
 
-    if (page)
+    if (next_page < EARLY_FREE_PAGES) {
+        page = early_pages[next_page++];
+
         memset(page, 0, PAGE_SIZE);
+    }
 
     return page;
 }
@@ -182,18 +179,28 @@ hlt_loop:
     }
 }
 
-/* Functions used while running on direct mapping. */
+/* Here, we are running on direct mapping. */
 
-static void __head *fixup_pointer(void *ptr, phys_addr_t load_phys_addr)
+static always_inline __pure void *rip_rel_ptr(void *p)
 {
-    return (ptr - (void *)(_text) + (void *)(load_phys_addr));
+    /* This compiles only with '-O2'.
+     * Probably, it relies on constant-propagation through the function argument 'p' to
+     * the asm statement for constraint "i". Otherwise, it fails with 'error: ‘asm’
+     * operand 1 probably does not match constraints'.
+     */
+
+    asm("leaq %c1(%%rip), %0" : "=r"(p) : "i"(p));
+
+    return p;
 }
 
-static void __head *early_get_free_page(phys_addr_t load_phys_addr)
-{
-    void *page = get__free_page(fixup_pointer(&next_page, load_phys_addr));
+# define RIP_REL_REF(x) (*(typeof(&(x)))(rip_rel_ptr(&(x))))
 
-    return fixup_pointer(page, load_phys_addr);
+static void __head *__get_free_page(phys_addr_t load_phys_addr)
+{
+    char (*__early_pages)[PAGE_SIZE] = RIP_REL_REF(early_pages);
+
+    return __early_pages[RIP_REL_REF(next_page)++];
 }
 
 static void __head ident_map(pgd_t *pgd, phys_addr_t address,
@@ -208,7 +215,7 @@ static void __head ident_map(pgd_t *pgd, phys_addr_t address,
 
         /* 'PUD' is not present for 'address', allocate and map. */
 
-        pud = early_get_free_page(load_phys_addr);
+        pud = __get_free_page(load_phys_addr);
         pgd[pgd_index(address)] = __pgd_t((pgdval_t)(pud) | _KERNPG_TABLE);
     }
 
@@ -218,7 +225,7 @@ static void __head ident_map(pgd_t *pgd, phys_addr_t address,
 
         /* 'PMD' is not present for 'address', allocate and map. */
 
-        pmd = early_get_free_page(load_phys_addr);
+        pmd = __get_free_page(load_phys_addr);
         pud[pud_index(address)] = __pud_t((pudval_t)(pmd) | _KERNPG_TABLE);
     }
 
@@ -234,18 +241,18 @@ void __head __startup_64(phys_addr_t load_phys_addr)
 {
     int i;
 
-    pgd_t *pgd = fixup_pointer(early_top_pgt, load_phys_addr);
+    pgd_t *pgd = RIP_REL_REF(early_top_pgt);
 
     /* We get a page for boot PUD to keep 'init_mem_mapping' simple. */
+    pud_t *pud = __get_free_page(load_phys_addr);
 
-    pud_t *pud = early_get_free_page(load_phys_addr);
-
-    pmd_t *pmd = fixup_pointer(level2_kernel_pgt, load_phys_addr);
-    pmd_t *pmd_fixmap = fixup_pointer(level2_fixmap_pgt, load_phys_addr);
-    pte_t *pt_fixmap_1 = fixup_pointer(level1_fixmap_pgt[0], load_phys_addr);
-    pte_t *pt_fixmap_2 = fixup_pointer(level1_fixmap_pgt[1], load_phys_addr);
+    pmd_t *pmd = RIP_REL_REF(level2_kernel_pgt);
+    pmd_t *pmd_fixmap = RIP_REL_REF(level2_fixmap_pgt);
+    pte_t *pt_fixmap_1 = RIP_REL_REF(level1_fixmap_pgt[0]);
+    pte_t *pt_fixmap_2 = RIP_REL_REF(level1_fixmap_pgt[1]);
 
     unsigned long load_delta = load_phys_addr - __phys_addr_kernel(_text);
+    RIP_REL_REF(phys_base) = load_delta;
 
     /* 'min_alignment' is 'PMD_SHIFT' in header.S.
      * So if we are loaded with a delta it should be aligned to 'PMD_SHIFT'.
@@ -293,6 +300,4 @@ void __head __startup_64(phys_addr_t load_phys_addr)
     /* Mapping identity mappings for switchover (Temp). */
     for (i = 0; i < __KERNEL_DIV_ROUND_UP(_end - _text, PMD_SIZE); i++)
         ident_map(pgd, load_phys_addr + (i * PMD_SIZE), load_phys_addr);
-
-    *(unsigned long *)fixup_pointer(&phys_base, load_phys_addr) = load_delta;
 }
