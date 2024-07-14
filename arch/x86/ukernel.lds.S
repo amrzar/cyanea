@@ -49,6 +49,9 @@ SECTIONS
     .data : AT(ADDR(.data) - LOAD_OFFSET) {
         _sdata = .;
 
+        . = ALIGN(PAGE_SIZE);
+        *(.data..page_aligned)
+
         /* Keep start and end of stack aligned. */
         . = ALIGN(STACK_SIZE);
         __init_utask_stack = .;
@@ -132,8 +135,7 @@ SECTIONS
         . = ALIGN(PAGE_SIZE);
         __bss_stop = .;
     } : data
-   
-       . = ALIGN(PAGE_SIZE);
+
     __end_of_kernel_reserve = .;
 
     .brk : AT(ADDR(.brk) - LOAD_OFFSET) {

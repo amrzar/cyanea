@@ -18,27 +18,23 @@ void __init x86_64_start_kernel(phys_addr_t);
 void __init start_kernel(void);
 void __init idt_setup_early_handler(void);
 
+/* Use ".data" as ".bss" may not be mapped and ready during boot. */
+
 /* Initialisation variable used by ''head_64.S''. Used for SMP boot. */
 
-unsigned long initial_code = (unsigned long)x86_64_start_kernel;
-unsigned long smpboot_cpu = 0;
+unsigned long initial_code __section(".data") = (unsigned long)x86_64_start_kernel;
+unsigned long smpboot_cpu __section(".data") = 0;
 
-/* It is used trough out the boot till 'init_top_pgt' get initialised and enabled
- * in 'init_mem_mapping' (see mm.c).
- */
+pgd_t init_top_pgt[PTRS_PER_PGD] __section(".data..page_aligned") = { 0 };
+pud_t level3_kernel_pgt[PTRS_PER_PUD] __section(".data..page_aligned") = { 0 };
+pmd_t level2_kernel_pgt[PTRS_PER_PMD] __section(".data..page_aligned") = { 0 };
+pmd_t level2_fixmap_pgt[PTRS_PER_PMD] __section(".data..page_aligned") = { 0 };
+pte_t level1_fixmap_pgt[2][PTRS_PER_PT] __section(".data..page_aligned") = { 0 };
+
+phys_addr_t phys_base __section(".data");
+
+/* Used during boot until 'init_top_pgt' get initialised and enabled, mm.c. */
 pgd_t __initdata early_top_pgt[PTRS_PER_PGD] __aligned(PAGE_SIZE) = { 0 };
-
-/* Use '.bss' so the assembly code reset the '_PAGE_PRESENT' for us. */
-
-pgd_t init_top_pgt[PTRS_PER_PGD] __section(".bss..page_aligned");
-pud_t level3_kernel_pgt[PTRS_PER_PUD] __section(".bss..page_aligned");
-pmd_t level2_kernel_pgt[PTRS_PER_PMD] __section(".bss..page_aligned");
-pmd_t level2_fixmap_pgt[PTRS_PER_PMD] __section(".bss..page_aligned");
-
-/* Two pages for the fixmap addresses, see 'asm/fixmap.h'. */
-pte_t level1_fixmap_pgt[2][PTRS_PER_PT] __section(".bss..page_aligned");
-
-phys_addr_t phys_base;
 
 #define EARLY_FREE_PAGES 64
 
@@ -75,6 +71,14 @@ static void __init purge_ident_mapping(void)
     write_cr3(__pa(early_top_pgt));
 }
 
+static void __init clear_bss(void)
+{
+    memset(__bss_start, 0,
+        (unsigned long) __bss_stop - (unsigned long) __bss_start);
+    memset(__brk_base, 0,
+        (unsigned long) __brk_limit - (unsigned long) __brk_base);
+}
+
 static void __init copy_boot_data(struct boot_params *bp)
 {
     phys_addr_t cmd_line_ptr;
@@ -91,7 +95,11 @@ static void __init copy_boot_data(struct boot_params *bp)
 void __init x86_64_start_kernel(phys_addr_t bp)
 {
     cr4_init_shadow();
+    
     purge_ident_mapping();
+    
+    clear_bss();
+
     idt_setup_early_handler();
 
     copy_boot_data(__va(bp));

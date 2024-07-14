@@ -46,18 +46,6 @@ startup_64:
  
 .Lon_boot_cs:
 
-    #
-    # Reset BSS.
-    #
-
-    cld
-    xorl    %eax, %eax
-    leaq    __bss_start(%rip), %rdi
-    leaq    __bss_stop(%rip), %rcx
-    subq    %rdi, %rcx
-    shrq    $3, %rcx
-    rep; stosq
-
     leaq    _text(%rip), %rdi
     pushq   %rsi                        # Keep 'RSI' safe.
     call    __startup_64                # Perform page-table initialisation.
