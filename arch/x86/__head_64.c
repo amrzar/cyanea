@@ -21,9 +21,10 @@ void __init idt_setup_early_handler(void);
 /* Use ".data" as ".bss" may not be mapped and ready during boot. */
 
 /* Initialisation variable used by ''head_64.S''. Used for SMP boot. */
-
 unsigned long initial_code __section(".data") = (unsigned long)x86_64_start_kernel;
 unsigned long smpboot_cpu __section(".data") = 0;
+
+/* ''uKERNEL PAGE TABLES''. */
 
 pgd_t init_top_pgt[PTRS_PER_PGD] __section(".data..page_aligned") = { 0 };
 pud_t level3_kernel_pgt[PTRS_PER_PUD] __section(".data..page_aligned") = { 0 };
@@ -39,7 +40,8 @@ pgd_t __initdata early_top_pgt[PTRS_PER_PGD] __aligned(PAGE_SIZE) = { 0 };
 #define EARLY_FREE_PAGES 64
 
 static unsigned int __initdata next_page;
-static char __initdata early_pages[EARLY_FREE_PAGES][PAGE_SIZE] __aligned(PAGE_SIZE);
+static char __initdata early_pages[EARLY_FREE_PAGES][PAGE_SIZE]
+    __aligned(PAGE_SIZE);
 
 static void __init purge_ident_mapping(void)
 {
@@ -95,9 +97,9 @@ static void __init copy_boot_data(struct boot_params *bp)
 void __init x86_64_start_kernel(phys_addr_t bp)
 {
     cr4_init_shadow();
-    
+
     purge_ident_mapping();
-    
+
     clear_bss();
 
     idt_setup_early_handler();
@@ -262,7 +264,7 @@ void __head __startup_64(phys_addr_t load_phys_addr)
     unsigned long load_delta = load_phys_addr - __phys_addr_kernel(_text);
     RIP_REL_REF(phys_base) = load_delta;
 
-     if (!IS_ALIGNED(load_delta, PMD_SHIFT))
+    if (!IS_ALIGNED(load_delta, PMD_SHIFT))
         halt();
 
     /* PGD [511]. */
