@@ -147,6 +147,8 @@ SECTIONS
     . = ALIGN(PAGE_SIZE);
     _end = .;
 
+    __ukernel_code_size = _end - _text;
+
     /DISCARD/ :
     {
         *(.note.*)

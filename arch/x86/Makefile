@@ -35,14 +35,21 @@ arch/x86/asm-offsets.s: arch/x86/asm-offsets.c
 include/generated/asm-offsets.h: arch/x86/asm-offsets.s FORCE
 	$(call if-changed, $(asm-offset))
 
-ukernel.arch: include/generated/asm-offsets.h arch/x86/ukernel.lds ukernel.elf
+UKERNEL.bin: ukernel.elf
+	@$(call cmd-info, BUILD, $@)
+	$(Q)$(OBJCOPY) -O binary $< $@
+	$(Q)truncate -s $$(nm --radix=d $< | awk '/ __ukernel_code_size$$/{print $$1}') $@
+
+ukernel.arch: include/generated/asm-offsets.h arch/x86/ukernel.lds UKERNEL.bin
 
 # Use 2MiB page size (i.e. segment alignment).
 LDFLAGS-ukernel.elf := -z max-page-size=0x200000
 LDFLAGS-ukernel.elf += -T arch/x86/ukernel.lds
 
 CLEAN_FILES += arch/x86/asm-offsets.s
-CLEAN_FILES += arch/x86/ukernel.lds ukernel.elf
+CLEAN_FILES += arch/x86/ukernel.lds
+CLEAN_FILES += ukernel.elf
+CLEAN_FILES += UKERNEL.bin
 
 define archhelp
 	echo  'Architecture specific targets ($(ARCH)):'
