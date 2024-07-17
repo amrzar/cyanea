@@ -2,10 +2,8 @@
 
 include $(srctree)/scripts/makefile.lib
 
-#
-# 'obj-y'     List objects and directories that should be built for '.builtin.o'.
-# 'subdir-y'  List of directories should be built before '.builtin.o'.
-#
+# 'obj-y': List objects and directories that should be built for '.builtin.o'.
+# 'subdir-y': List of directories should be built before '.builtin.o'.
 
 targets-for-builtin := $(filter %.o, $(obj-y))
 targets := $(targets-for-builtin)
@@ -15,19 +13,17 @@ subdir := $(subdir-y) $(subdir-for-builtin)
 
 dep-files := $(foreach a-path, $(targets), $(call dot-file, $(a-path)).d)
 
-#
-# 'CPPFLAGS', 'cppflags' Global and directory preprocessor flags.
-# 'LDFLAGS', 'ld-flags'  Global and directory linker flags for '.builtin.o'.
-# 'CFLAGS', 'cflags', CFLAGS-$(@F) Global, directory, and per-file compiler flags.
-# 'AFLAGS', 'aflags', AFLAGS-$(@F) Global, directory, and per-file assembler flags.
-#
+# 'CPPFLAGS', 'cppflags': Global and directory preprocessor flags.
+# 'LDFLAGS', 'ld-flags':  Global and directory linker flags for '.builtin.o'.
+# 'CFLAGS', 'cflags', CFLAGS-$(@F): Global, directory, and per-file compiler flags.
+# 'AFLAGS', 'aflags', AFLAGS-$(@F): Global, directory, and per-file assembler flags.
 
 -include $(dep-files)
 
-c_flags   = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
+c_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
 	$(UKERINCLUDE) $(CPPFLAGS) $(CFLAGS) $(cflags) $(CFLAGS-$(@F))
 
-a_flags   = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
+a_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
 	$(UKERINCLUDE) $(CPPFLAGS) $(AFLAGS) $(aflags) $(AFLAGS-$(@F))
 
 cpp_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
@@ -49,8 +45,6 @@ cpp_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
 	@$(call cmd-info, LDS, $<)
 	$(Q)$(CPP) $(cpp_flags) -Wp,-MT,$@ -P -D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
 
-##
-
 .builtin.o: $(subdir-for-builtin) $(targets-for-builtin)
 	@$(call cmd-info, LD, $@)
 	$(Q)$(LD) $(LDFLAGS) $(ld-flags) $(targets-for-builtin) \
@@ -64,6 +58,7 @@ $(subdir): FORCE
 	@printf '%-8s%s\n' DESCEND $@
 	$(call descend-make, $@)
 
+# 
 rm-files: FORCE
 	$(Q)$(foreach a-subdir, $(subdir), $(MAKE) -C $(a-subdir) rm-files &&) true
 	$(Q)rm -f $(targets) $(dep-files)
