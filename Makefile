@@ -86,6 +86,9 @@ menuconfig silentoldconfig defconfig: FORCE
 clean: rm-files
 	@echo "CLEAN"
 	$(Q)find . \( -name '*.o' -o -name '*.d' \) -delete
+ifdef EFI_STUB
+	$(call descend-make, efi-boot rm-files)
+endif # EFI_STUB
 
 mrproper: clean
 	$(call descend-make, $(uconfig) clean)
@@ -111,6 +114,9 @@ help:
 .SILENT: help
 
 ukernel: ukernel.arch
+ifdef EFI_STUB
+	$(call descend-make, efi-boot)
+endif # EFI_STUB
 
 # Uncommnet if use astyle.
 export USE_ASTYLE = 1
