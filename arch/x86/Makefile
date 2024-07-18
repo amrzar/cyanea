@@ -36,7 +36,6 @@ include/generated/asm-offsets.h: arch/x86/asm-offsets.s FORCE
 	$(call if-changed, $(asm-offset))
 
 UKERNEL.bin: ukernel.elf
-	@$(call cmd-info, BUILD, $@)
 	$(Q)$(OBJCOPY) -O binary $< $@
 	$(Q)truncate -s $$(nm --radix=d $< | awk '/ __ukernel_code_size$$/{print $$1}') $@
 
