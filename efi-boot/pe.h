@@ -1,6 +1,35 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef __PE_H_
-#define __PE_H_
+#ifndef __PE_H__
+#define __PE_H__
 
-#endif /* __PE_H_ */
+#define LINUX_EFISTUB_MAJOR_VERSION 0x3
+#define LINUX_EFISTUB_MINOR_VERSION 0x0
+
+#define LINUX_PE_MAGIC 0x818223cd
+
+#define MZ_MAGIC 0x5a4d         /* 'MZ'. */
+
+#define PE_MAGIC 0x00004550     /* 'PE\0\0'. */
+#define PE_OPT_MAGIC_PE32PLUS 0x020b
+
+/* Machine Types: */
+#define IMAGE_FILE_MACHINE_AMD64    0x8664
+
+/* COFF header Characteristics: */
+#define IMAGE_FILE_DEBUG_STRIPPED 0x0200
+#define IMAGE_FILE_EXECUTABLE_IMAGE 0x0002
+#define IMAGE_FILE_LINE_NUMS_STRIPPED 0x0004
+
+#define IMAGE_SUBSYSTEM_EFI_APPLICATION 10
+
+#define IMAGE_DLL_CHARACTERISTICS_NX_COMPAT 0x0100
+
+/* Section Characteristics: */
+#define IMAGE_SCN_CNT_INITIALIZED_DATA 0x00000040
+#define IMAGE_SCN_CNT_CODE 0x00000020
+#define IMAGE_SCN_MEM_READ 0x40000000
+#define IMAGE_SCN_MEM_EXECUTE 0x20000000
+#define IMAGE_SCN_MEM_WRITE 0x80000000
+
+#endif /* __PE_H__ */
