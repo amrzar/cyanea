@@ -1,24 +1,51 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-include $(srctree)/scripts/makefile.lib
+cmd-info = printf '%-8s%s\n' $1 $(notdir $2)
+dot-file = $(dir $1).$(notdir $1)
 
-# 'obj-y': List objects and directories that should be built for '.builtin.o'.
-# 'subdir-y': List of directories should be built before '.builtin.o'.
+define if-changed
+	$(Q)set -e;	\
+	trap "rm -f $(call dot-file, $@).tmp" EXIT; \
+	{ $(1); } > $(call dot-file, $@).tmp; \
+	if [ ! -r $@ ] || ! cmp -s $@ $(call dot-file, $@).tmp; then \
+		$(call cmd-info, UPD, $@); \
+		mv -f $(call dot-file, $@).tmp $@; \
+	fi
+endef
 
-targets-for-builtin := $(filter %.o, $(obj-y))
-targets := $(targets-for-builtin)
+# 'asm-offset.h' header generation.
+define sed-offsets
+	's/^\.ascii "\(.*\)".*/\1/; \
+	/^->/{s:->#\(.*\):/* \1 */:; \
+	s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; \
+	s:->::; p;}'
+endef
 
-subdir-for-builtin  := $(sort $(filter %/, $(obj-y)))
-subdir := $(subdir-y) $(subdir-for-builtin)
+define asm-offset
+	echo "#ifndef __ASM_OFFSETS_H__"; \
+	echo "#define __ASM_OFFSETS_H__"; \
+	echo "/** DO NOT MODIFY!! **/"; \
+	echo ""; \
+	sed -ne $(sed-offsets) < $<; \
+	echo ""; \
+	echo "#endif /* __ASM_OFFSETS_H__ */"
+endef
+
+define descend-make
+	$(Q)$(MAKE) -C $(1)
+endef
+
+targets := $(filter %.o, $(obj-y))
+sub-dir := $(sort $(filter %/, $(obj-y)))
 
 dep-files := $(foreach a-path, $(targets), $(call dot-file, $(a-path)).d)
+
+-include $(dep-files)
 
 # 'CPPFLAGS', 'cppflags': Global and directory preprocessor flags.
 # 'LDFLAGS', 'ld-flags':  Global and directory linker flags for '.builtin.o'.
 # 'CFLAGS', 'cflags', CFLAGS-$(@F): Global, directory, and per-file compiler flags.
 # 'AFLAGS', 'aflags', AFLAGS-$(@F): Global, directory, and per-file assembler flags.
-
--include $(dep-files)
 
 c_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
 	$(UKERINCLUDE) $(CPPFLAGS) $(CFLAGS) $(cflags) $(CFLAGS-$(@F))
@@ -45,26 +72,28 @@ cpp_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
 	@$(call cmd-info, LDS, $<)
 	$(Q)$(CPP) $(cpp_flags) -Wp,-MT,$@ -P -D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
 
-.builtin.o: $(subdir-for-builtin) $(targets-for-builtin)
+.builtin.o: $(sub-dir) $(targets)
 	@$(call cmd-info, LD, $@)
-	$(Q)$(LD) $(LDFLAGS) $(ld-flags) $(targets-for-builtin) \
-		$(patsubst %/,%/.builtin.o,$(subdir-for-builtin)) -r -o $@
+	$(Q)$(LD) $(LDFLAGS) $(ld-flags) $(targets) \
+		$(patsubst %/,%/.builtin.o,$(sub-dir)) -r -o $@
 
 %.elf: .builtin.o
 	$(Q)$(LD) $(LDFLAGS) $(LDFLAGS-$(@F)) -o $@ .builtin.o
 
 # Descending ...
-$(subdir): FORCE
+$(sub-dir): FORCE
 	@printf '%-8s%s\n' DESCEND $@
 	$(call descend-make, $@)
 
-# 
 rm-files: FORCE
-	$(Q)$(foreach a-subdir, $(subdir), $(MAKE) -C $(a-subdir) rm-files &&) true
+	$(Q)$(foreach a-subdir, $(sub-dir), $(MAKE) -C $(a-subdir) rm-files &&) true
 	$(Q)rm -f $(targets) $(dep-files)
 	$(Q)rm -rf $(CLEAN_FILES)
 	$(Q)rm -f .builtin.o
 	$(clean-all)
+
+FORCE:
+.PHONY: FORCE
 
 .DEFAULT_GOAL := .builtin.o
 .SECONDARY:
