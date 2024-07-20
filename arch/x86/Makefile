@@ -55,7 +55,4 @@ define archhelp
 	echo  '  [ukernel]       - Build ukernel image'
 endef
 
-run: ukernel
-	$(Q)$(srctree)/scripts/qemu.sh arch/x86/boot/zukernel /home/amrzar/initrd
-
 .PHONY: run
