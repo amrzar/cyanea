@@ -41,7 +41,7 @@ pgd_t __initdata early_top_pgt[PTRS_PER_PGD] __aligned(PAGE_SIZE) = { 0 };
 
 static unsigned int __initdata next_page;
 static char __initdata early_pages[EARLY_FREE_PAGES][PAGE_SIZE]
-    __aligned(PAGE_SIZE);
+__aligned(PAGE_SIZE);
 
 static void __init purge_ident_mapping(void)
 {
