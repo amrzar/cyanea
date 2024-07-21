@@ -42,7 +42,7 @@ UKERNEL.bin: ukernel.elf
 ukernel.arch: include/generated/asm-offsets.h arch/x86/ukernel.lds UKERNEL.bin
 
 # Use 2MiB page size (i.e. segment alignment).
-LDFLAGS-ukernel.elf := -z max-page-size=0x200000
+LDFLAGS-ukernel.elf += -z max-page-size=0x200000
 LDFLAGS-ukernel.elf += -T arch/x86/ukernel.lds
 
 CLEAN_FILES += arch/x86/asm-offsets.s
@@ -54,5 +54,3 @@ define archhelp
 	echo  'Architecture specific targets ($(ARCH)):'
 	echo  '  [ukernel]       - Build ukernel image'
 endef
-
-.PHONY: run

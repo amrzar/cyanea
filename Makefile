@@ -3,32 +3,32 @@
 MAKEFLAGS += --no-print-directory
 Q = $(if $(V),,@)
 
-srctree := $(CURDIR)
 $(shell mkdir -p include/generated)
 
-uconfig = ../tools/uconfig
-scripts = ../tools/scripts
+srctree := $(CURDIR)
 sysconfig = $(srctree)/include/sys.config.h
 ulib = $(srctree)/ulib
+scripts = ../tools/scripts
 
--include .sys.config.in # ... try building '.sys.config.in'
+export srctree sysconfig ulib scripts Q
+
+uconfig = ../tools/uconfig
+
+-include .sys.config.in
 
 AS = $(CROSS_COMPILE)as
 LD = $(CROSS_COMPILE)ld
 CC = $(CROSS_COMPILE)gcc
 CPP = $(CC) -E -x c
 NM = $(CROSS_COMPILE)nm
-AR = $(CROSS_COMPILE)ar
 OBJCOPY = $(CROSS_COMPILE)objcopy
-NOSTDINC_FLAGS = -nostdinc
+
+export CROSS_COMPILE CPP AS LD CC NM OBJCOPY
 
 HOSTCC = gcc
 HOSTCFLAGS = -Wall -Wstrict-prototypes -Wno-unused-function -O2
 
-export CROSS_COMPILE CPP AS LD CC NM AR OBJCOPY
-export NOSTDINC_FLAGS OBJCOPYFLAGS
 export HOSTCC HOSTCFLAGS
-export srctree sysconfig ulib scripts Q
 
 UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 			   -I$(srctree)/include/generated \
@@ -37,29 +37,20 @@ UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 			   -include $(srctree)/include/ulog.h \
 			   -include $(srctree)/include/compiler.h
 
-#
-# The '-nostdlib' forces GCC not to use standard system startup files or
-# libraries. It is only effective when $(CC) is used as linker driver.
-# Here, we do not set '-nostdlib' as $(LD) is always called explicitly.
-#
-
-CPPFLAGS := -D__UKERNEL__ -D__CYANEA__
-CFLAGS   := -std=gnu11 -fno-common -fno-PIE -ffreestanding -fno-strict-aliasing \
+CPPFLAGS := -nostdinc -D__UKERNEL__ -D__CYANEA__
+CFLAGS := -nostdinc -std=gnu11 -fno-common -fno-PIE -ffreestanding -fno-strict-aliasing \
 	-Wall -Wundef -Wstrict-prototypes -ftls-model=local-exec -Wnested-externs   \
 	-Werror -O2
-AFLAGS   := -D__ASSEMBLY__ -fno-PIE
+AFLAGS := -nostdinc -D__ASSEMBLY__ -fno-PIE
 
-export CPPFLAGS CFLAGS AFLAGS LDFLAGS ARFLAGS UKERINCLUDE
+export CPPFLAGS CFLAGS AFLAGS LDFLAGS UKERINCLUDE
 
 CFLAGS += -fno-stack-protector
 CFLAGS += -Wimplicit-fallthrough=5
-
 ifdef DEBUG
-	CFLAGS += -g
-	CFLAGS += -Wno-unused-function
-endif # DEBUG
+CFLAGS += -g -Wno-unused-function
+endif
 
-# Build compile information header 'compile-info.h'.
 include/generated/compile-info.h: FORCE
 	$(Q)$(srctree)/scripts/mkcompile-info.sh $@
 
@@ -72,8 +63,6 @@ obj-y += init/ ulib/ ukernel/ drivers/
 -include $(srctree)/arch/$(ARCH)/Makefile
 include $(srctree)/scripts/makefile.build
 
-# Just make sure sections are not placed heuristically by the linker.
-# All sections should be explicitly named in the linker script.
 LDFLAGS-ukernel.elf += --orphan-handling=error
 
 menuconfig silentoldconfig defconfig: FORCE
@@ -97,15 +86,13 @@ mrproper: clean
 	$(Q)rm -f .old.config
 	$(Q)rm -f .sys.config.in
 
-.PHONY: mrproper clean
-
 help:
 	echo 'Cleaning targets:'
 	echo '  clean           - remove compiled and generated files but keep config files'
 	echo '  mrproper        - remove everything'
 	echo ''
 	echo 'Configuration targets:'
-	echo '  menuconfig      - start uconfig gui'
+	echo '  menuconfig      - start uconfig GUI'
 	echo '  silentoldconfig - generate sys.config.h form existing config files'
 	echo '  defconfig       - generate default config files'
 	echo ''
@@ -118,7 +105,7 @@ ifdef EFI_STUB
 	$(call descend-make, efi-boot)
 endif # EFI_STUB
 
-# Uncommnet if use astyle.
+# Uncomment if use astyle.
 export USE_ASTYLE = 1
 
 style:
@@ -126,5 +113,5 @@ style:
 		\( -name '*.c' -o -name '*.h' \) \
 		\( -exec $(scripts)/style.sh {} .style \; -o -quit \)
 
-.PHONY: help style ukernel.arch
+.PHONY: help style ukernel.arch mrproper clean
 .DEFAULT_GOAL := ukernel

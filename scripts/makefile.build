@@ -42,40 +42,29 @@ dep-files := $(foreach a-path, $(targets), $(call dot-file, $(a-path)).d)
 
 -include $(dep-files)
 
-# 'CPPFLAGS', 'cppflags': Global and directory preprocessor flags.
-# 'LDFLAGS', 'ld-flags':  Global and directory linker flags for '.builtin.o'.
-# 'CFLAGS', 'cflags', CFLAGS-$(@F): Global, directory, and per-file compiler flags.
-# 'AFLAGS', 'aflags', AFLAGS-$(@F): Global, directory, and per-file assembler flags.
-
-c_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
-	$(UKERINCLUDE) $(CPPFLAGS) $(CFLAGS) $(cflags) $(CFLAGS-$(@F))
-
-a_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
-	$(UKERINCLUDE) $(CPPFLAGS) $(AFLAGS) $(aflags) $(AFLAGS-$(@F))
-
-cpp_flags = -Wp,-MMD,$(call dot-file,$@).d $(NOSTDINC_FLAGS) \
-	$(UKERINCLUDE) $(CPPFLAGS) $(cppflags)
+cflags = -Wp,-MMD,$(call dot-file,$@).d $(UKERINCLUDE) $(CPPFLAGS) $(CFLAGS) $(CFLAGS-$(@F))
+aflags = -Wp,-MMD,$(call dot-file,$@).d $(UKERINCLUDE) $(CPPFLAGS) $(AFLAGS) $(AFLAGS-$(@F))
+cppflags = -Wp,-MMD,$(call dot-file,$@).d $(UKERINCLUDE) $(CPPFLAGS)
 
 %.o: %.c
 	@$(call cmd-info, CC, $<)
-	$(Q)$(CC) $(c_flags) -c -o $@ $<
+	$(Q)$(CC) $(cflags) -c -o $@ $<
 
 %.o: %.S
 	@$(call cmd-info, AS, $<)
-	$(Q)$(CC) $(a_flags) -c -o $@ $<
+	$(Q)$(CC) $(aflags) -c -o $@ $<
 
 %.s: %.c
 	@$(call cmd-info, CC, $<)
-	$(Q)$(CC) $(c_flags) -S -o $@ $<
+	$(Q)$(CC) $(cflags) -S -o $@ $<
 
 %.lds: %.lds.S
 	@$(call cmd-info, LDS, $<)
-	$(Q)$(CPP) $(cpp_flags) -Wp,-MT,$@ -P -D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
+	$(Q)$(CPP) $(cppflags) -Wp,-MT,$@ -P -D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
 
 .builtin.o: $(sub-dir) $(targets)
 	@$(call cmd-info, LD, $@)
-	$(Q)$(LD) $(LDFLAGS) $(ld-flags) $(targets) \
-		$(patsubst %/,%/.builtin.o,$(sub-dir)) -r -o $@
+	$(Q)$(LD) $(LDFLAGS) $(targets) $(patsubst %/,%/.builtin.o,$(sub-dir)) -r -o $@
 
 %.elf: .builtin.o
 	$(Q)$(LD) $(LDFLAGS) $(LDFLAGS-$(@F)) -o $@ .builtin.o
