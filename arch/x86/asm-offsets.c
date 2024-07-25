@@ -1,30 +1,23 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef __ASM_OFFSET_BUILD
-# define __ASM_OFFSET_BUILD
-#endif /* __ASM_OFFSET_BUILD */
-
-#include <asm-offsets-defs.h>
+#include <cyanea/stddef.h>
+#include <build.h>
 
 #include <uapi/asm/bootparam.h>
 #include <asm/current.h>
 
-#include <cyanea/stddef.h>
-
-#include <compiler.h>
-
 static void __always_unused unused_common_function(void)
 {
     /* struct boot_params. */
-    SIZE_OF(BP_size, boot_params);
-    OFFSET(BP_scratch, boot_params, scratch);
-    OFFSET(BP_kernel_alignment, boot_params, hdr.kernel_alignment);
-    OFFSET(BP_init_size, boot_params, hdr.init_size);
-    OFFSET(BP_cmd_line_ptr, boot_params, hdr.cmd_line_ptr);
+    DEFINE(BP_size, sizeof(struct boot_params));
+    DEFINE(BP_scratch, offsetof(struct boot_params, scratch));
+    DEFINE(BP_kernel_alignment, offsetof(struct boot_params, hdr.kernel_alignment));
+    DEFINE(BP_init_size, offsetof(struct boot_params, hdr.init_size));
+    DEFINE(BP_cmd_line_ptr, offsetof(struct boot_params, hdr.cmd_line_ptr));
 
     /* struct percpu_hot. */
-    OFFSET(X86_top_of_stack, percpu_hot, top_of_stack);
-    OFFSET(X86_current_task, percpu_hot, current_task);
+    DEFINE(X86_top_of_stack, offsetof(struct percpu_hot, top_of_stack));
+    DEFINE(X86_current_task, offsetof(struct percpu_hot, current_task));
 }
 
 #ifdef CONFIG_X86_64
@@ -32,15 +25,11 @@ static void __always_unused unused_common_function(void)
 
 static void __always_unused unused_x86_64_function(void)
 {
-    OFFSET(TSS_rsp0, tss, tss.rsp0);
-    OFFSET(TSS_rsp1, tss, tss.rsp1);
-    OFFSET(TSS_rsp2, tss, tss.rsp2);
+    DEFINE(TSS_rsp0, offsetof(struct tss, tss.rsp0));
+    DEFINE(TSS_rsp1, offsetof(struct tss, tss.rsp1));
+    DEFINE(TSS_rsp2, offsetof(struct tss, tss.rsp2));
 
-# define ENTRY(entry) OFFSET(utask_regs_ ## entry, utask_regs, entry)
-    ENTRY(cs);
-    ENTRY(orig_rax);
-# undef ENTRY
+    DEFINE(utask_regs_cs, offsetof(struct utask_regs, cs));
+    DEFINE(utask_regs_orig_rax, offsetof(struct utask_regs, orig_rax));
 }
 #endif /* CONFIG_X86_64 */
-
-#undef __ASM_OFFSET_BUILD
