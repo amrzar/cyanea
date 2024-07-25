@@ -10,8 +10,6 @@ static size_t wbuffer_no_flush(_IO_BUFFER io, const char *buffer, size_t count)
 {
     size_t n, written = 0;
 
-    /* It is an input buffer?! Flush the 'io'; push data back to IO or ''discard''. */
-
     if (io->in != 0) {
         if (io->ops->flush(io))
             return 0;
@@ -24,18 +22,17 @@ static size_t wbuffer_no_flush(_IO_BUFFER io, const char *buffer, size_t count)
         }
 
         if (io->out == 0 && io->buf_size <= count) {
-
-            /* Buffer is empty. However, the requested size is greater then the buffer. */
-            /* Bypass the buffer. */
+            /* Output buffer is empty and the requested size is greater then the buffer,
+             * bypass the buffer.
+             */
 
             n = io->ops->write(io, buffer, count);
             if (!n)
                 break;
-
-        } else {
-
-            /* Buffer is not empty. We need to fill it before calling 'write' callback. */
-            /* Buffer is empty. However, the requested size is smaller than the buffer. */
+        } else { /* io->out != 0 || io->buf_size > count */
+            /* Output buffer is not empty, fill it, or buffer is empty and the requested
+             * size is smaller than the buffer.
+             */
 
             n = min(count, io->buf_size - io->out);
 
