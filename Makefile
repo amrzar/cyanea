@@ -111,7 +111,7 @@ export USE_ASTYLE = 1
 style:
 	$(Q)find $(srctree) \
 		\( -name '*.c' -o -name '*.h' \) \
-		\( -exec $(scripts)/style.sh {} .style \; -o -quit \)
+		\( -exec $(scripts)/style.sh {} \; -o -quit \)
 
 .PHONY: help style ukernel.arch mrproper clean
 .DEFAULT_GOAL := ukernel
