@@ -2,4 +2,4 @@
 
 obj-y += boot.o
 
-include $(srctree)/scripts/makefile.build
+include $(srctree)/Makefile.build

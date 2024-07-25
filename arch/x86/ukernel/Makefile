@@ -15,4 +15,4 @@ obj-$(NUMA) += numa.o
 obj-y += apic/
 obj-y += acpi/
 
-include $(srctree)/scripts/makefile.build
+include $(srctree)/Makefile.build

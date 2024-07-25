@@ -5,4 +5,4 @@ obj-y += memblock.o
 obj-y += ioremap.o
 obj-y += ulog.o
 
-include $(srctree)/scripts/makefile.build
+include $(srctree)/Makefile.build

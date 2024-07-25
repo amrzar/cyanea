@@ -3,4 +3,4 @@
 obj-y += main.o
 obj-y += init_utask.o
 
-include $(srctree)/scripts/makefile.build
+include $(srctree)/Makefile.build

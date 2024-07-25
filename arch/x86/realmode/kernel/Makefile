@@ -38,5 +38,5 @@ kernel.bin: kernel.elf
 
 CLEAN_FILES += kernel.elf kernel.bin
 
-include $(srctree)/scripts/makefile.build
+include $(srctree)/Makefile.build
 .DEFAULT_GOAL := kernel.bin

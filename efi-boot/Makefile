@@ -27,5 +27,5 @@ CLEAN_FILES += UKERNEL.gz.o
 CLEAN_FILES += UKERNEL.efi.elf
 CLEAN_FILES += UKERNEL.efi
 
-include $(srctree)/scripts/makefile.build
+include $(srctree)/Makefile.build
 .DEFAULT_GOAL := UKERNEL.efi

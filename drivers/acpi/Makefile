@@ -3,4 +3,4 @@
 obj-y += acpi.o
 obj-y += srat.o
 
-include $(srctree)/scripts/makefile.build
+include $(srctree)/Makefile.build

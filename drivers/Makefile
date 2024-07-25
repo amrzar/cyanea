@@ -8,4 +8,4 @@ obj-y += acpi/
 
 obj-y += uart/8250.o
 
-include $(srctree)/scripts/makefile.build
+include $(srctree)/Makefile.build

@@ -23,4 +23,4 @@ define clean-all
 	$(call descend-make, kernel rm-files)
 endef
 
-include $(srctree)/scripts/makefile.build
+include $(srctree)/Makefile.build

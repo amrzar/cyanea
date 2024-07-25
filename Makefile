@@ -52,7 +52,7 @@ CFLAGS += -g -Wno-unused-function
 endif
 
 include/generated/compile-info.h: FORCE
-	$(Q)$(srctree)/scripts/mkcompile-info.sh $@
+	$(Q)$(srctree)/mkcompile-info.sh $@
 
 CFLAGS-version.o = -include compile-info.h
 version.o: include/generated/compile-info.h
@@ -61,7 +61,7 @@ obj-y += version.o
 obj-y += init/ ulib/ ukernel/ drivers/
 
 -include $(srctree)/arch/$(ARCH)/Makefile
-include $(srctree)/scripts/makefile.build
+include $(srctree)/Makefile.build
 
 LDFLAGS-ukernel.elf += --orphan-handling=error
 
