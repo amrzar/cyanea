@@ -8,13 +8,6 @@
 
 static void __always_unused unused_common_function(void)
 {
-    /* struct boot_params. */
-    DEFINE(BP_size, sizeof(struct boot_params));
-    DEFINE(BP_scratch, offsetof(struct boot_params, scratch));
-    DEFINE(BP_kernel_alignment, offsetof(struct boot_params, hdr.kernel_alignment));
-    DEFINE(BP_init_size, offsetof(struct boot_params, hdr.init_size));
-    DEFINE(BP_cmd_line_ptr, offsetof(struct boot_params, hdr.cmd_line_ptr));
-
     /* struct percpu_hot. */
     DEFINE(X86_top_of_stack, offsetof(struct percpu_hot, top_of_stack));
     DEFINE(X86_current_task, offsetof(struct percpu_hot, current_task));

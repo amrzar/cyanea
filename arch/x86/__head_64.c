@@ -11,8 +11,8 @@
 #include <asm/desc_types.h>
 #include <asm/utask.h>
 
-#include <cyanea/stddef.h>
 #include <cyanea/string.h>
+#include <cyanea/stddef.h>
 
 void __init x86_64_start_kernel(phys_addr_t);
 void __init start_kernel(void);
@@ -83,15 +83,12 @@ static void __init clear_bss(void)
 
 static void __init copy_boot_data(struct boot_params *bp)
 {
-    phys_addr_t cmd_line_ptr;
-
     memcpy(&boot_params, bp, sizeof(boot_params));
 
-    cmd_line_ptr = boot_params.hdr.cmd_line_ptr;
-    cmd_line_ptr |= ((phys_addr_t) boot_params.ext_cmd_line_ptr << 32);
-
-    if (cmd_line_ptr)
-        memcpy(boot_command_line, __va(cmd_line_ptr), COMMAND_LINE_SIZE);
+    if (boot_params.cmd_line_ptr)
+        memcpy(boot_command_line, __va(boot_params.cmd_line_ptr), COMMAND_LINE_SIZE);
+    else
+        memcpy(boot_command_line, CONFIG_CMD_LINE, COMMAND_LINE_SIZE);
 }
 
 void __init x86_64_start_kernel(phys_addr_t bp)
@@ -193,10 +190,10 @@ hlt_loop:
 
 static always_inline __pure void *rip_rel_ptr(void *p)
 {
-    /* This compiles only with '-O2'.
-     * Probably, it relies on constant-propagation through the function argument 'p' to
-     * the asm statement for constraint "i". Otherwise, it fails with 'error: ‘asm’
-     * operand 1 probably does not match constraints'.
+    /* This compiles only with '-O2'. */
+    /* Probably, it relies on constant-propagation through the function argument 'p' to
+     * the asm statement for constraint 'i'. Otherwise, it fails with
+     *   'error: ‘asm’ operand 1 probably does not match constraints'.
      */
 
     asm("leaq %c1(%%rip), %0" : "=r"(p) : "i"(p));
@@ -285,9 +282,9 @@ void __head __startup_64(phys_addr_t load_phys_addr)
      */
 
     /* Note that the range between '__START_KERNEL_map' and '_text' is not mapped.
-     * This could be an issue for how '__phys_addr()' works.
-     * In 'physical_mapping_init', we make sure there is no symbol with virtual
-     * address in this range; or we refuse to boot.
+     * This could be an issue for how '__phys_addr()' works. In 'physical_mapping_init',
+     * we make sure there is no symbol with virtual address in this range; or we
+     * refuse to boot.
      */
 
     /* Use '__PAGE_KERNEL_LARGE_EXEC'. '_PAGE_XD' is not set. '_PAGE_GLOBAL' is set. */

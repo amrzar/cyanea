@@ -3,7 +3,7 @@
 #ifndef __UAPI_CYANEA_BYTEORDER_H__
 #define __UAPI_CYANEA_BYTEORDER_H__
 
-#include <uapi/cyanea/swap.h>
+#include <uapi/cyanea/swab.h>
 #include <uapi/cyanea/types.h>
 
 #ifdef CONFIG_CPU_LITTLE_ENDIAN

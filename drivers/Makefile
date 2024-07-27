@@ -4,6 +4,8 @@ obj-y += uart_core.o
 obj-y += console.o
 obj-y += acpi/
 
+obj-$(EFI_STUB) += framebuffer/efifb.o
+
 # Platform specific driver objects.
 
 obj-y += uart/8250.o

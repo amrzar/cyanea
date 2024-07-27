@@ -155,7 +155,7 @@ SECTIONS
         *(.comment)
     }
 
-    /* Section that should be empty, make sure it is the case. */
+    /* Sections that should be empty, make sure it is the case. */
 
     .got      : { *(.got) *(.igot.*) }
     .plt      : { *(.plt) *(.plt.*) *(.iplt) }
@@ -169,18 +169,16 @@ SECTIONS
     ASSERT((SIZEOF(.rel.dyn) == 0x0), "Unexpected '.rel.dyn' section.")
     ASSERT((SIZEOF(.rela.dyn) == 0x0),  "Unexpected '.rela.dyn' section.")
 
-    /* Sections that we need them if they exist, e.g. debug sections. */
-
+    /* Sections that we should keep if they exist, e.g. debug sections. */
     /* DWARF 1.1 and DWARF 2. */
     .debug_aranges  0 : { *(.debug_aranges) }
-
     /* DWARF 2. */
     .debug_info     0 : { *(.debug_info) }
     .debug_abbrev   0 : { *(.debug_abbrev) }
     .debug_line     0 : { *(.debug_line) }
     .debug_frame    0 : { *(.debug_frame) }
     .debug_str      0 : { *(.debug_str) }
-
+    .debug_loc      0 : { *(.debug_loc) }
     /* DWARF 3. */
     .debug_ranges   0 : { *(.debug_ranges) }
 }

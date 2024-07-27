@@ -4,7 +4,6 @@
 #include <cyanea/errno.h>
 #include <cyanea/init.h>
 
-#include <cyanea/stddef.h>
 #include <cyanea/ctype.h>
 #include <cyanea/strtox.h>
 #include <cyanea/string.h>

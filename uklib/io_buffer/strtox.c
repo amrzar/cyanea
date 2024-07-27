@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/errno.h>
-
-#include <cyanea/limits.h>
 #include <cyanea/ctype.h>
-#include <cyanea/io_buffer.h>
+#include <cyanea/limits.h>
+
+#include "../io_buffer.h"
 
 static inline unsigned int digit_value(int ch)
 {

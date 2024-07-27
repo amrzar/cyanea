@@ -44,6 +44,12 @@ menu "Debugging settings"
 			"Set the default log level [0 : error] [1 : info]"
 endmenu # debugging-setting
 
+config "Default command-line"
+	CONFIG_CMD_LINE
+	STRING ""
+	help
+		"Command-line used if nothing is specified at the boot time."
+
 config "ukernel version"
 	CONFIG_VERSION
 	STRING "1.0.0"

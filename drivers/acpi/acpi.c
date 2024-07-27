@@ -1,11 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/acpi.h>
-#include <cyanea/minmax.h>
 #include <cyanea/string.h>
 #include <cyanea/errno.h>
 
 #include <asm-generic/ioremap.h>
+
+#include <cyanea/minmax.h>
 
 #include "acpi.h"
 

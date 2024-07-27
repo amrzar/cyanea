@@ -27,6 +27,8 @@ obj-y += arch/x86/ukernel/
 obj-y += arch/x86/realmode/
 obj-y += arch/x86/head_$(BITS).o arch/x86/__head_$(BITS).o
 
+CFLAGS-__head_$(BITS).o += -O2
+
 # Building 'ukernel.elf'.
 
 arch/x86/asm-offsets.s: arch/x86/asm-offsets.c

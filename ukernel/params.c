@@ -1,5 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
+#include <cyanea/params.h>
+#include <cyanea/errno.h>
+#include <asm/setup.h>
 #include <cyanea/stddef.h>
 
 static char default_param_read_char(const char *cmdline, int n)
@@ -81,4 +84,20 @@ int __param_get_option(const char *cmdline, int size,
         *buffer = '\0';
 
     return n;
+}
+
+int param_get_option(const char *cmdline, const char *option,
+    char *buf, int buf_size)
+{
+    int err = __param_get_option(cmdline, COMMAND_LINE_SIZE,
+            option, buf, buf_size, NULL);
+
+    switch (err) {
+    case -2:    /* ''BOOLEAN'' parameter. */
+        return 0;
+    case -1:    /* invalid parameter. */
+        return -EINVAL;
+    default:
+        return err;
+    }
 }

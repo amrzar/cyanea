@@ -3,7 +3,6 @@
 #include <cyanea/init.h>
 #include <cyanea/types.h>
 #include <cyanea/memblock.h>
-#include <cyanea/minmax.h>
 #include <cyanea/pgtable.h>
 #include <cyanea/irq.h>
 #include <cyanea/errno.h>
@@ -15,8 +14,10 @@
 #include <asm/entry_64.h>
 #include <asm/page.h>
 
-#include <cyanea/stddef.h>
 #include <cyanea/string.h>
+
+#include <cyanea/stddef.h>
+#include <cyanea/minmax.h>
 
 void __init idt_setup_pf(void);
 

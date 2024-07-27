@@ -4,15 +4,34 @@
 #define __X86_ASM_E820_H__
 
 #include <cyanea/types.h>
-
+#include <cyanea/init.h>
 #include <uapi/asm/bootparam.h>
 
+/* */
+/* The ''INT 15h, E820h'' BIOS interrupt call returns a system memory map, showing the
+ * various types of memory and reserved regions in a system.
+ * Here are the different types of memory that are commonly reported:
+ *
+ *  - RAM (Usable Memory) is the memory available to the OS and  is used for
+ *    running programs and storing data.
+ *  - Reserved Memory.
+ *  - ACPI Reclaimable Memory is initially reserved but can be reclaimed and
+ *    used after the OS has processed the ACPI tables.
+ *  - ACPI NVS (Non-Volatile Storage) Memory is reserved for ACPI non-volatile
+ *    storage. The OS should not use this memory.
+ *  - Unusable.
+ *  - Persistent Memory (PMEM) refers to non-volatile memory that retains data
+ *    even when the power is turned off.
+ *
+ **/
+
 enum e820_type {
-    E820_TYPE_RAM = 1,          /* Usable (normal) RAM. */
-    E820_TYPE_RESERVED = 2,     /* Reserved. */
-    E820_TYPE_ACPI = 3,         /* ACPI reclaimable memory. */
-    E820_TYPE_NVS = 4,          /* ACPI Non-volatile Storage memory. */
-    E820_TYPE_UNUSABLE = 5      /* Unusable memory. */
+    E820_TYPE_RAM = 1,
+    E820_TYPE_RESERVED = 2,
+    E820_TYPE_ACPI = 3,
+    E820_TYPE_NVS = 4,
+    E820_TYPE_UNUSABLE = 5,
+    E820_TYPE_PMEM = 7
 };
 
 struct e820_entry {

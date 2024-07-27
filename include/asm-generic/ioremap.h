@@ -6,7 +6,6 @@
 #include <cyanea/init.h>
 #include <cyanea/types.h>
 #include <cyanea/pgtable.h>
-
 #include <cyanea/stddef.h>
 
 void __init *ioremap(phys_addr_t, size_t, pgprot_t);

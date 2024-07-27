@@ -31,20 +31,12 @@ int __init acpi_boot_init(void);
 
 static phys_addr_t __init get_ramdisk_image(void)
 {
-    phys_addr_t ramdisk_image = boot_params.hdr.ramdisk_image;
-
-    ramdisk_image |= ((phys_addr_t) boot_params.ext_ramdisk_image << 32);
-
-    return ramdisk_image;
+    return boot_params.ramdisk_image;
 }
 
 static size_t __init get_ramdisk_size(void)
 {
-    size_t ramdisk_size = boot_params.hdr.ramdisk_size;
-
-    ramdisk_size |= ((size_t) boot_params.ext_ramdisk_size << 32);
-
-    return ramdisk_size;
+    return boot_params.ramdisk_size;
 }
 
 static void __init reserve_initrd(void)
@@ -52,7 +44,7 @@ static void __init reserve_initrd(void)
     phys_addr_t ramdisk_image = get_ramdisk_image();
     size_t ramdisk_size = get_ramdisk_size();
 
-    if (!boot_params.hdr.type_of_loader || !ramdisk_image || !ramdisk_size)
+    if (!ramdisk_image || !ramdisk_size)
         return;
 
     ramdisk_size = ROUND_UP(ramdisk_size, PAGE_SIZE);

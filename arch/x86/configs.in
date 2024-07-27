@@ -23,14 +23,14 @@ menu "Architecture dependant configurations" # arch-dep-config
 		choice "Processor family"
 			CONFIG_PROCESSOR
 			option "Generic"
-			option "Broadwell:QEMU" [default]
+			option "Broadwell" [default]
 			help
 				"This is the processor types of your CPU."
 
 		config
 			CONFIG_L1_CACHE_6_SHIFT BOOL
 			depends CONFIG_PROCESSOR == "Generic" ||
-					CONFIG_PROCESSOR == "Broadwell:QEMU"
+					CONFIG_PROCESSOR == "Broadwell"
 	endmenu # x86-processor
 
 	menu "ukernel image ''ukernel'' configurations" # ukernel-image-config
@@ -57,8 +57,7 @@ menu "Architecture dependant configurations" # arch-dep-config
 		config "relocatable ukernel"
 			CONFIG_RELOCATABLE BOOL
 			help
-				"This builds a ukernel image that retains relocation information
-				(if necessary) so it can be loaded at different places."
+				"This builds a ukernel image that is relocatable."
 
 		config "boot break size"
 			CONFIG_BRK_ALLOC_PAGES

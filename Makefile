@@ -40,7 +40,7 @@ UKERINCLUDE := -I$(srctree)/arch/$(ARCH)/include \
 CPPFLAGS := -nostdinc -D__UKERNEL__ -D__CYANEA__
 CFLAGS := -nostdinc -std=gnu11 -fno-common -fno-PIE -ffreestanding -fno-strict-aliasing \
 	-Wall -Wundef -Wstrict-prototypes -ftls-model=local-exec -Wnested-externs   \
-	-Werror -O2
+	-Werror
 AFLAGS := -nostdinc -D__ASSEMBLY__ -fno-PIE
 
 export CPPFLAGS CFLAGS AFLAGS LDFLAGS UKERINCLUDE
@@ -58,7 +58,7 @@ CFLAGS-version.o = -include compile-info.h
 version.o: include/generated/compile-info.h
 obj-y += version.o
 
-obj-y += init/ ulib/ ukernel/ drivers/
+obj-y += init/ uklib/ ukernel/ drivers/
 
 -include $(srctree)/arch/$(ARCH)/Makefile
 include $(srctree)/Makefile.build
