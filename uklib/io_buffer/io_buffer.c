@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <cyanea/minmax.h>
 #include <cyanea/errno.h>
-
+#include <cyanea/minmax.h>
 #include <cyanea/string.h>
-#include <cyanea/io_buffer.h>
+
+#include "../io_buffer.h"
 
 static size_t wbuffer_no_flush(_IO_BUFFER io, const char *buffer, size_t count)
 {

@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#ifndef __CYANEA_IO_BUFFER_H__
-#define __CYANEA_IO_BUFFER_H__
+#ifndef __UKLIB_IO_BUFFER_H__
+#define __UKLIB_IO_BUFFER_H__
 
-#include <cyanea/stdarg.h>
 #include <cyanea/stddef.h>
+#include <cyanea/stdarg.h>
 
 enum io_bufmode { _IONBF, _IOLBF, _IOFBF };
 # define _IONBF _IONBF           /* Unbuffered. */
@@ -19,7 +19,7 @@ struct io_buffer_operations {
 };
 
 /**
- * struct io_buffer -
+ * struct io_buffer - Simple buffer for IO.
  * @mode: mode of buffering.
  * @in: size of data in input buffer.
  * @out: size of data in output buffer.
@@ -55,4 +55,4 @@ int iob_strtoll(_IO_BUFFER, int, long long *);
 
 int iob_vsnprintf(_IO_BUFFER, const char *, va_list);
 
-#endif /* __CYANEA_IO_BUFFER_H__ */
+#endif /* __UKLIB_IO_BUFFER_H__ */

@@ -57,8 +57,7 @@ menu "Architecture dependant configurations" # arch-dep-config
 		config "relocatable ukernel"
 			CONFIG_RELOCATABLE BOOL
 			help
-				"This builds a ukernel image that retains relocation information
-				(if necessary) so it can be loaded at different places."
+				"This builds a ukernel image that is relocatable."
 
 		config "boot break size"
 			CONFIG_BRK_ALLOC_PAGES

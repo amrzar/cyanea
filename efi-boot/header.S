@@ -4,8 +4,8 @@
 
     .section ".head", "a"
 
-    .global     __efistub_efi_header
-__efistub_efi_header:
+    .global     __efi_header
+__efi_header:
 .Ldoshdr:
     .short   MZ_MAGIC               # (''MZ''), MS-DOS header.
 
@@ -31,9 +31,9 @@ __efistub_efi_header:
     .byte   0       # MajorLinkerVersion.
     .byte   0       # MinorLinkerVersion.
     .long   _etext - .Lefi_header_end               # SizOfCode.
-    .long   __data_size                             # SizeOfInitialisedData.
+    .long   __data_size                             # SizeOfInitialisedData (see README.md).
     .long   0                                       # SizeOfUninitialisedData.
-    .long   __efistub_efi_entry - .Ldoshdr          # AddressOfEntryPoint (RVA).
+    .long   __efi_entry - .Ldoshdr                  # AddressOfEntryPoint (RVA).
     .long   .Lefi_header_end - .Ldoshdr             # BaseOfCode (RVA).
     .quad   0       # ImageBase.
 
@@ -81,9 +81,9 @@ __efistub_efi_header:
             IMAGE_SCN_MEM_EXECUTE                   # Characteristics.
     
     .ascii  ".data\0\0\0"
-    .long   __data_size                             # VirtualSize.
+    .long   __data_size                             # VirtualSize (see README.md).
     .long   _etext - .Ldoshdr                       # VirtualAddress (RVA).
-    .long   __data_rawsize                          # SizeOfRawData.
+    .long   __data_rawsize                          # SizeOfRawData (see README.md).
     .long   _etext - .Ldoshdr                       # PointerToRawData.
     
     .long   0, 0    # PointerToRelocations, PointerToLineNumbers.

@@ -11,8 +11,8 @@
 #include <asm/desc_types.h>
 #include <asm/utask.h>
 
-#include <cyanea/stddef.h>
 #include <cyanea/string.h>
+#include <cyanea/stddef.h>
 
 void __init x86_64_start_kernel(phys_addr_t);
 void __init start_kernel(void);
@@ -193,10 +193,10 @@ hlt_loop:
 
 static always_inline __pure void *rip_rel_ptr(void *p)
 {
-    /* This compiles only with '-O2'.
-     * Probably, it relies on constant-propagation through the function argument 'p' to
-     * the asm statement for constraint "i". Otherwise, it fails with 'error: ‘asm’
-     * operand 1 probably does not match constraints'.
+    /* This compiles only with '-O2'. */
+    /* Probably, it relies on constant-propagation through the function argument 'p' to
+     * the asm statement for constraint 'i'. Otherwise, it fails with
+     *   'error: ‘asm’ operand 1 probably does not match constraints'.
      */
 
     asm("leaq %c1(%%rip), %0" : "=r"(p) : "i"(p));

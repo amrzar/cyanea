@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/errno.h>
-
 #include <cyanea/ctype.h>
 #include <cyanea/string.h>
-#include <cyanea/io_buffer.h>
+
+#include "../io_buffer.h"
 
 #define FL_ZERO   (1 << 0)      /* Zero modifier. */
 #define FL_MINUS  (1 << 1)      /* Minus modifier. */

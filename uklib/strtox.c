@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
+#include <cyanea/errno.h>
 #include <cyanea/container_of.h>
 #include <cyanea/minmax.h>
-#include <cyanea/errno.h>
-
 #include <cyanea/strtox.h>
 #include <cyanea/string.h>
-#include <cyanea/io_buffer.h>
+
+#include "io_buffer.h"
 
 struct strtox {
     struct io_buffer io;

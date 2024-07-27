@@ -58,7 +58,7 @@ CFLAGS-version.o = -include compile-info.h
 version.o: include/generated/compile-info.h
 obj-y += version.o
 
-obj-y += init/ ulib/ ukernel/ drivers/
+obj-y += init/ uklib/ ukernel/ drivers/
 
 -include $(srctree)/arch/$(ARCH)/Makefile
 include $(srctree)/Makefile.build

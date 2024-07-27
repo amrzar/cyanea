@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/memblock.h>
-#include <cyanea/minmax.h>
 #include <cyanea/errno.h>
 #include <cyanea/init.h>
+#include <cyanea/string.h>
 
 #include <asm/page_types.h>
 
-#include <cyanea/string.h>
+#include <cyanea/minmax.h>
 
 static int memblock_debug = 0;
 
@@ -47,7 +47,6 @@ static int insert_region(int i, phys_addr_t base, size_t size, int nid,
     region = &memory.regions[i];
 
     /* Free up an entry in the region array, move everything one up. */
-
     memmove(region + 1, region, (memory.n - i) * sizeof(*region));
 
     region->base = base;
@@ -66,7 +65,6 @@ static void remove_region(int i)
     struct memblock_region *region = &memory.regions[i];
 
     /* Remove 'region' from the array. */
-
     memmove(region, region + 1, (memory.n - (i + 1)) * sizeof(*region));
 
     memory.n--;
@@ -121,8 +119,7 @@ static int add_range(phys_addr_t base, size_t size, int nid,
 
     phys_addr_t end = base + size;
 
-    /* First region! */
-
+    /* First region!? */
     if (!memory.n) {
         memory.regions[0].base = base;
         memory.regions[0].size = size;
@@ -139,41 +136,40 @@ static int add_range(phys_addr_t base, size_t size, int nid,
         phys_addr_t r_base = region->base;
         phys_addr_t r_end = r_base + region->size;
 
+        /* Possible cases:
+         *  (1) 'region' is already after the new region.
+         *  (2) 'region' does not have overlap with the new region.
+         *  (3) 'region' has overlap with the new region.
+         */
+
         if (r_base >= end)
-            break;              /* 'region' is already after new region. */
+            /* (1) */
+            break;
 
         if (r_end <= base)
-            continue;           /* 'region' does not have overlap with new region. */
+            /* (2) */
+            continue;
 
-        /* 'region' has overlap with the new region. */
+        /* (3) */
+
         /* Add the area before 'region' [base .. r_base] if exists. */
-
         if (r_base > base) {
-            if (insert_region(i, base, r_base - base, nid, flags)) {
-
-                /* Unable to insert the new range. */
-
+            if (insert_region(i, base, r_base - base, nid, flags))
                 goto out;
-            }
-
-            /* Record the range if indexes that should be process for merging. */
 
             if (start_region == -1)
                 start_region = i;
             end_region = i + 1;
         }
 
-        /* else, add the area after 'region' [r_end .. end] if exist.
-         * Here, 'base' == 'end' if this area is empty.
-         */
-
+        /* Add the area after 'region' [r_end .. end] if exist. */
         base = min(r_end, end);
+
+        /* Here, 'base' == 'end' if this area is empty. */
     }
 
     /* Check if any area left to add, then insert it. */
-
     if (base < end) {
-
         if (!insert_region(i, base, end - base, nid, flags)) {
             if (start_region == -1)
                 start_region = i;
@@ -184,7 +180,6 @@ static int add_range(phys_addr_t base, size_t size, int nid,
 out:
 
     /* Try to merge [start_region .. end_region]. */
-
     if (start_region != -1)
         merge_regions(start_region, end_region);
 
@@ -219,38 +214,39 @@ static int isolate_range(phys_addr_t base, size_t size, int *start_range,
         phys_addr_t r_base = region->base;
         phys_addr_t r_end = r_base + region->size;
 
+        /* Possible cases:
+         *  (1) 'region' is already after the new region.
+         *  (2) 'region' does not have overlap with the new region.
+         *  (3) 'region' has overlap with the beginning of the new region.
+         *  (4) 'region' has overlap with the end of the new region.
+         *  (5) 'region' is fully contained in the new region.
+         */
+
         if (r_base >= end)
-            break;              /* 'region' is already after new region. */
+            /* (1) */
+            break;
 
         if (r_end <= base)
-            continue;           /* 'region' does not have overlap with new region. */
+            /* (2) */
+            continue;
 
         if (r_base < base) {
-
-            /* 'region' has overlap with the beginning of [base .. base + size]. */
-
+            /* (3) */
             region->base = base;
             region->size -= base - r_base;
             memory.size -= base - r_base;
             insert_region(i, r_base, base - r_base, region->nid, region->flags);
 
         } else if (r_end > end) {
-
-            /* 'region' has overlap with the end of [base .. base + size].
-             * '--i' so next iteration, the new region will be fully contained,
-             * See 'else' bellow.
-             */
-
+            /* (4) */
             region->base = end;
             region->size -= end - r_base;
             memory.size -= end - r_base;
+            /* --i so next iteration, the new region will be fully contained. */
             insert_region(i--, r_base, end - r_base, region->nid,
                 region->flags);
-
         } else {
-
-            /* 'region' is fully contained in [base .. base + size]. */
-
+            /* (5) */
             if (!*end_range)
                 *start_range = i;
             *end_range = i + 1;
@@ -260,6 +256,7 @@ static int isolate_range(phys_addr_t base, size_t size, int *start_range,
     return SUCCESS;
 }
 
+# define START_PHYSICAL_ADDRESS ((phys_addr_t)(PAGE_SIZE))
 static phys_addr_t find_in_range_node(size_t size, unsigned long align,
     phys_addr_t start, phys_addr_t end, int nid, enum memblock_flags flags)
 {
@@ -267,24 +264,18 @@ static phys_addr_t find_in_range_node(size_t size, unsigned long align,
     struct memblock_region *region;
     phys_addr_t base, r_base, r_end;
 
-    /* Avoid allocating the first page. */
-
-    start = max(start, (phys_addr_t)(PAGE_SIZE));
+    start = max(start, START_PHYSICAL_ADDRESS);
     end = max(start, end);
 
     for_each_memblock_region(i, region) {
         if ((region->flags & flags) == flags) {
-
             if (nid != -1 && nid != region->nid)
                 continue;
-
-            /* 'region' with 'nid' and EXACT 'flags' set. */
 
             r_base = clamp(region->base, start, end);
             r_end = clamp(region->base + region->size, start, end);
 
             base = ALIGN_KERNEL(r_base, align);
-
             if (base < r_end && r_end - base >= size)
                 return base;
         }
@@ -333,8 +324,9 @@ void __next_mem_pfn_range(int *i, int nid, unsigned long *start_pfn,
 int memblock_add(phys_addr_t base, size_t size, int nid,
     enum memblock_flags flags)
 {
-    /* User can not directly pass 'MEMBLOCK_RESERVED' as flag. */
-    /* Used by 'memblock_alloc' and 'memblock_free' to flag the reserved memory !! */
+    /* User can not directly pass 'MEMBLOCK_RESERVED' as flag.
+     * Used by 'memblock_alloc' and 'memblock_free' to flag the reserved memory !!
+     */
 
     flags &= ~MEMBLOCK_RESERVED;
 

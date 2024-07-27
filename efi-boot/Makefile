@@ -13,11 +13,13 @@ else
 $(error undefined architecture.)
 endif
 
+CFLAGS += -Wno-unused-function -Wno-unused-label -Wno-unused-variable
+
 obj-y += header.o
-obj-y += boot.o
+obj-y += efi.o
 
 UKERNEL.efi.elf: UKERNEL.gz.o .builtin.o
-	$(Q)$(LD) $(LDFLAGS) -T boot.lds -o $@ $^
+	$(Q)$(LD) $(LDFLAGS) -T efi-boot.lds -o $@ $^
 
 UKERNEL.efi: UKERNEL.efi.elf
 	$(Q)$(OBJCOPY) -O binary $< $@

@@ -3,17 +3,16 @@
 #ifndef __CYANEA_MINMAX_H__
 #define __CYANEA_MINMAX_H__
 
-#include <cyanea/const.h>
-
+/* Sure comparing arguments of same types. It is too strict but simple. */
 #define __typecheck(a, b) (!!(sizeof((typeof(a) *)(1) == (typeof(b) *)(1))))
 
 #define __no_side_effects(a, b) (__builtin_constant_p(a) && __builtin_constant_p(b))
 
 #define __cmp_const(a, b, op) ((a) op (b) ? (a) : (b))
 #define __cmp_once(a, b, op) ({ \
-        typeof(a) __a = (a); \
-        typeof(b) __b = (b); \
-        __cmp_const(__a, __b, op); \
+        typeof(a) a_value = (a); \
+        typeof(b) b_value = (b); \
+        __cmp_const(a_value, b_value, op); \
     })
 
 #define __careful_cmp(a, b, op) \

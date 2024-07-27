@@ -2,9 +2,8 @@
 
 #include <cyanea/types.h>
 #include <cyanea/errno.h>
-#include <asm-generic/unaligned.h>
-
 #include <cyanea/stddef.h>
+#include <asm-generic/unaligned.h>
 
 #define MAX_BITS 16
 #define MAX_SYMBOLS 288
@@ -12,23 +11,22 @@
 
 typedef u16 symbol_t;
 
-/* The Huffman codes used for each alphabet in the "deflate" format
- * have two additional rules:
+/* The Huffman codes used for each alphabet in the "deflate" format have two
+ * additional rules:
  *
- *   - All codes of a given bit length have lexicographically
- *     consecutive values, in the same order as the symbols
- *     they represent;
+ *   - All codes of a given bit length have lexicographically consecutive values,
+ *     in the same order as the symbols they represent;
  *   - Shorter codes lexicographically precede longer codes.
  *
- * Given these rules, we can define the Huffman tree for an alphabet
- * just by giving the bit lengths of the codes for each symbol of
- * the alphabet in order, i.e. 'lengths' in 'huffman_tree'.
+ * Given these rules, we can define the Huffman tree for an alphabet just by giving
+ * the bit lengths of the codes for each symbol of the alphabet in order, i.e.
+ * lengths in huffman_tree.
  *
  *   See https://www.rfc-editor.org/rfc/rfc1951.txt
  *
- * The code represents a Huffman tree using 'tree_t' where 'bl_count'
- * counts the number of symbols for each code length and 'sorted_symbols'
- * is sorted symbols based on code length.
+ * The code represents a Huffman tree using 'tree_t' where 'bl_count' counts the
+ * number of symbols for each code length and 'sorted_symbols' is sorted symbols
+ * based on code length.
  */
 
 typedef struct tree {
@@ -47,8 +45,8 @@ typedef struct deflate {
     int error;
 
     /* 'bit_accum' accumulates minimum bits to satisfy the next request.
-     * 'u32' because the maximum request size is not larger than 'MAX_BITS'
-     * and maximum of 23 bits ''15 + 8'' is enough to satisfy this request.
+     * 'u32' because the maximum request size is not larger than 'MAX_BITS' and maximum
+     * of 23 bits ''15 + 8'' is enough to satisfy this request.
      */
 
     u32 bit_accum;
@@ -194,10 +192,12 @@ static int huffman_dynamic_tree(deflate_t d, tree_t lt, tree_t dt)
 {
     int it;
 
-    static const unsigned char code_len_for_code_idx[19] = {
-        16, 17, 18, 0, 8, 7, 9, 6, 10, 5,
-        11, 4, 12, 3, 13, 2, 14, 1, 15
+    static unsigned char __code_len_for_code_idx[19] = {
+        16, 17, 18,  0,  8,  7,  9,  6, 10,  5,
+        11,  4, 12,  3, 13,  2, 14,  1, 15,
     };
+
+    unsigned char *code_len_for_code_idx = REL_REF(__code_len_for_code_idx);
 
     unsigned char lengths[MAX_SYMBOLS + MAX_DISTANCE] = { 0 };
 
@@ -283,29 +283,35 @@ static int deflate_block(deflate_t d)
 {
     unsigned char *t_dest = d->dest;
 
-    static const unsigned char length_bits[30] = {
-        0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
-        1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
-        4, 4, 4, 4, 5, 5, 5, 5, 0, 127
+    static unsigned char __length_bits[30] = {
+        0,   0,   0,   0,   0,   0,   0,   0,   1,   1,
+        1,   1,   2,   2,   2,   2,   3,   3,   3,   3,
+        4,   4,   4,   4,   5,   5,   5,   5,   0, 127,
     };
 
-    static const unsigned short length_base[30] = {
-        3, 4, 5, 6, 7, 8, 9, 10, 11, 13,
-        15, 17, 19, 23, 27, 31, 35, 43, 51, 59,
-        67, 83, 99, 115, 131, 163, 195, 227, 258, 0
+    static unsigned short __length_base[30] = {
+        3,   4,   5,   6,   7,   8,   9,  10,  11,  13,
+        15,  17,  19,  23,  27,  31,  35,  43,  51,  59,
+        67,  83,  99, 115, 131, 163, 195, 227, 258,   0,
     };
 
-    static const unsigned char dist_bits[30] = {
-        0, 0, 0, 0, 1, 1, 2, 2, 3, 3,
-        4, 4, 5, 5, 6, 6, 7, 7, 8, 8,
-        9, 9, 10, 10, 11, 11, 12, 12, 13, 13
+    static unsigned char __dist_bits[30] = {
+        0,   0,   0,   0,   1,   1,   2,   2,   3,   3,
+        4,   4,   5,   5,   6,   6,   7,   7,   8,   8,
+        9,   9,  10,  10,  11,  11,  12,  12,  13,  13,
     };
 
-    static const unsigned short dist_base[30] = {
-        1, 2, 3, 4, 5, 7, 9, 13, 17, 25,
-        33, 49, 65, 97, 129, 193, 257, 385, 513, 769,
-        1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577
+    static unsigned short __dist_base[30] = {
+        1,   2,   3,   4,   5,   7,   9,  13,  17,  25,
+        33, 49,  65,  97, 129, 193, 257, 385, 513, 769,
+        1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289,
+        16385, 24577
     };
+
+    unsigned char *length_bits = REL_REF(__length_bits);
+    unsigned short *length_base = REL_REF(__length_base);
+    unsigned char *dist_bits = REL_REF(__dist_bits);
+    unsigned short *dist_base = REL_REF(__dist_base);
 
     while (1) {
 #define SYM_LL_EOB 256
@@ -382,8 +388,8 @@ out:
     return SUCCESS;
 }
 
-int deflate_buffer(unsigned char *dest, size_t *dest_len,
-    const unsigned char *source, size_t source_len)
+static int deflate_buffer(unsigned char *dest, size_t *dest_len, const unsigned char *source,
+    size_t source_len)
 {
     struct deflate d;
 
