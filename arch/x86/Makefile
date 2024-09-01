@@ -27,7 +27,9 @@ obj-y += arch/x86/ukernel/
 obj-y += arch/x86/realmode/
 obj-y += arch/x86/head_$(BITS).o arch/x86/__head_$(BITS).o
 
+ifdef DEBUG
 CFLAGS-__head_$(BITS).o += -O2
+endif
 
 # Building 'ukernel.elf'.
 

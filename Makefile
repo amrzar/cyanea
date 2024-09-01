@@ -47,7 +47,9 @@ export CPPFLAGS CFLAGS AFLAGS LDFLAGS UKERINCLUDE
 
 CFLAGS += -fno-stack-protector
 CFLAGS += -Wimplicit-fallthrough=5
-ifdef DEBUG
+ifndef DEBUG
+CFLAGS += -O2
+else
 CFLAGS += -g -Wno-unused-function
 endif
 

@@ -9,14 +9,15 @@ UKERNEL.gz.o: UKERNEL.gz
 
 ifdef X86_64
 AFLAGS-header.o += -DMACHINE_TYPE=IMAGE_FILE_MACHINE_AMD64
+ifdef DEBUG
+CFLAGS-efi.o += -O2
+endif # DEBUG
 else
 $(error undefined architecture.)
-endif
+endif #X86_64
 
 obj-y += header.o
 obj-y += efi.o
-
-CFLAGS-efi.o += -O2
 
 UKERNEL.efi.elf: UKERNEL.gz.o .builtin.o
 	$(Q)$(LD) $(LDFLAGS) -T efi-boot.lds -o $@ $^
