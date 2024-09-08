@@ -91,8 +91,6 @@ static void con_write(struct console *con, const char *s, size_t count)
         efifb_put_char(*s);
 }
 
-#include <asm/setup.h>
-
 static int con_setup(struct console *con, char *options)
 {
     screen_width = boot_params.screen_info.screen_width;
