@@ -112,6 +112,10 @@ struct efi_system_table {
 };
 
 # define efi_bs_call(func, ...) __efi_systab->boottime->func(__VA_ARGS__)
+# define efi_proto_call(proto, func, ...) ({    \
+        __typeof__(proto) __proto = (proto);    \
+        __proto->func(__proto, __VA_ARGS__);    \
+    })
 
 # define EFI_SUCCESS            (0)
 # define EFI_LOAD_ERROR         (1  | BIT_UL(BITS_PER_LONG - 1))
@@ -331,13 +335,13 @@ struct efi_graphics_output_protocol {
 };
 
 static struct efi_graphics_output_protocol *efi_find_gop(efi_guid_t *proto,
-    efi_handle_t *gop_handles, size_t len)
+    efi_handle_t *gop_handles, size_t gop_handles_len)
 {
     int i;
 
     struct efi_graphics_output_protocol *first_gop = NULL;
 
-    for (i = 0; i < len; i++) {
+    for (i = 0; i < gop_handles_len; i++) {
         efi_status_t status;
 
         efi_handle_t handle;
@@ -372,16 +376,44 @@ static struct efi_graphics_output_protocol *efi_find_gop(efi_guid_t *proto,
     return first_gop;
 }
 
+static void efi_set_mode(struct efi_graphics_output_protocol *gop)
+{
+    int i;
+
+    struct efi_graphics_output_protocol_mode *mode = gop->mode;
+    struct efi_graphics_output_mode_info *qi, *info = mode->info;
+
+    u64 info_size;
+    u64 area, next_area = info->horizontal_resolution * info->vertical_resolution;
+    u32 next_mode = mode->mode;
+
+    for (i = 0; i < mode->max_mode; i++) {
+        if (efi_proto_call(gop, query_mode, i, &info_size, &qi) != EFI_SUCCESS)
+            continue;
+
+        area = qi->horizontal_resolution * qi->vertical_resolution;
+        if (area < next_area) {
+            next_area = area;
+            next_mode = i;
+        }
+    }
+
+    if (mode->mode != next_mode)
+        efi_proto_call(gop, set_mode, next_mode);
+}
+
 static efi_status_t efi_setup_gop(struct screen_info *si, efi_guid_t *proto,
-    efi_handle_t *gop_handles, size_t len)
+    efi_handle_t *gop_handles, size_t gop_handles_len)
 {
     struct efi_graphics_output_protocol *gop;
     struct efi_graphics_output_protocol_mode *mode;
     struct efi_graphics_output_mode_info *info;
 
-    gop = efi_find_gop(proto, gop_handles, len);
+    gop = efi_find_gop(proto, gop_handles, gop_handles_len);
     if (!gop)
         return EFI_NOT_FOUND;
+
+    efi_set_mode(gop);
 
     mode = gop->mode;
     info = mode->info;
@@ -408,16 +440,16 @@ static efi_status_t setup_graphics(struct boot_params *boot_params)
     efi_status_t status;
     efi_guid_t graphics_proto = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     efi_handle_t *gop_handles;
-    u64 size;
+    u64 gop_handles_len;
 
     struct screen_info *si = &boot_params->screen_info;
 
     si->framebuffer = 0;
     /* 7.3.15. EFI_BOOT_SERVICES.LocateHandleBuffer. */
-    status = efi_bs_call(locate_handle_buffer, EFI_LOCATE_BY_PROTOCOL, &graphics_proto, NULL, &size,
-            &gop_handles);
+    status = efi_bs_call(locate_handle_buffer, EFI_LOCATE_BY_PROTOCOL, &graphics_proto, NULL,
+            &gop_handles_len, &gop_handles);
     if (status == EFI_SUCCESS) {
-        status = efi_setup_gop(si, &graphics_proto, gop_handles, size);
+        status = efi_setup_gop(si, &graphics_proto, gop_handles, gop_handles_len);
 
         efi_free(gop_handles);
     } else {
@@ -455,6 +487,11 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_s
     if (status != EFI_SUCCESS)
         efi_exit(handle, status);
 
+    boot_params->ramdisk_image = 0;
+    boot_params->ramdisk_size = 0;
+    boot_params->cmd_line_ptr = 0;
+    boot_params->e820_entries = 0;
+
     /* ''Decompressing ukernel''. */
 
     ukernel_size = ROUND_UP(get_unaligned_le32(__UKERNEL_gz_end - 4), MIN_KERNEL_ALIGN);
@@ -463,7 +500,7 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_s
     if (status != EFI_SUCCESS)
         efi_exit(handle, status);
 
-    efi_puts("Decompressing UKERNEL ... ");
+    efi_puts("Decompressing UKERNEL ...\n");
     if (decompress_gzip((unsigned char *)ukernel_addr, &ukernel_size,
             (unsigned char *)__UKERNEL_gz_start, __UKERNEL_gz_size))
         efi_exit(handle, EFI_LOAD_ERROR);
