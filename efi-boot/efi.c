@@ -5,11 +5,7 @@
 /* [This code is position independent]. */
 
 #include <cyanea/types.h>
-#include <cyanea/stdarg.h>
-#include <cyanea/stddef.h>
-#include <cyanea/limits.h>
 #include <cyanea/const.h>
-
 #include <asm-generic/unaligned.h>
 #include <uapi/cyanea/screen_info.h>
 
