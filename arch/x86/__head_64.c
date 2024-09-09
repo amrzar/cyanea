@@ -83,8 +83,7 @@ static void __init clear_bss(void)
 
 static void __init copy_boot_data(struct boot_params *bp)
 {
-    memcpy(&boot_params, bp, sizeof(boot_params));
-
+    memcpy(&boot_params, bp, BOOT_PARAMS_SIZE);
     if (boot_params.cmd_line_ptr)
         memcpy(boot_command_line, __va(boot_params.cmd_line_ptr), COMMAND_LINE_SIZE);
     else
