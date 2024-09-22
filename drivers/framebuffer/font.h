@@ -6,7 +6,7 @@
 # define CHAR_WIDTH  8
 # define CHAR_HEIGHT 8
 # define __font_char_pixel(ch, r, c) (__font_arr[(ch) - 0x20][(r)] & (1 << (7 - c)))
-const u8 __font_arr[96][8] = {
+const u8 __font_arr[96][CHAR_HEIGHT] = {
     /* 0x20 Space. */
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
     /* 0x21 '!'. */

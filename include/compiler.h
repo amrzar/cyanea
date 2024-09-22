@@ -34,4 +34,6 @@
 
 #define __pure __attribute__((__pure__))
 
+#define __cleanup(func) __attribute__((__cleanup__(func)))
+
 #endif /* __COMPILER_H__ */

@@ -1,123 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-/* UEFI Spec. https://uefi.org/specs/UEFI/2.10/. */
-
 /* [This code is position independent]. */
 
-#include <cyanea/types.h>
 #include <cyanea/const.h>
-#include <asm-generic/unaligned.h>
 #include <uapi/cyanea/screen_info.h>
 
-# define EFI_PAGE_SIZE BIT_UL(12)
-
-# define __efiapi __attribute__((ms_abi))
-
-# define UUID_SIZE 16
-typedef struct {
-    u8 b[UUID_SIZE];
-} efi_guid_t __aligned(__alignof__(u32));
-# define EFI_GUID(a, b, c, d...) ((efi_guid_t){ {   \
-            (a) & 0xff, ((a) >> 8) & 0xff, ((a) >> 16) & 0xff, ((a) >> 24) & 0xff,  \
-            (b) & 0xff, ((b) >> 8) & 0xff,          \
-            (c) & 0xff, ((c) >> 8) & 0xff, d } })
-
-# define EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID \
-    EFI_GUID(0x9042a9de, 0x23dc, 0x4a38, 0x96, 0xfb, 0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a)
-#define EFI_CONSOLE_OUT_DEVICE_GUID \
-    EFI_GUID(0xd3b36f2c, 0xd551, 0x11d4, 0x9a, 0x46, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d)
-
-typedef u64 efi_status_t;
-typedef u64 efi_handle_t;
-typedef u16 efi_char16_t;
-typedef u64 efi_physical_addr_t;
-
-struct efi_table_hdr {
-    u64 signature;
-    u32 revision;
-    u32 header_size;
-    u32 crc32;
-    u32 reserved;
-};
-
-struct efi_simple_text_output_protocol {
-    u64 reset;
-    efi_status_t (__efiapi *output_string)(struct efi_simple_text_output_protocol *, efi_char16_t *);
-};
-
-struct efi_runtime_services {
-    struct efi_table_hdr hdr;
-    u64 __pad[14];
-};
-
-struct efi_memory_desc {
-# define EFI_RESERVED_TYPE          0
-# define EFI_LOADER_CODE            1
-# define EFI_LOADER_DATA            2
-    u32 type;
-    u32 pad;
-    efi_physical_addr_t phys_addr;
-    u64 virt_addr;
-    u64 num_pages;
-    u64 attribute;
-};
-
-struct efi_boot_services {
-    struct efi_table_hdr hdr;
-    u64 __pad1[2];
-# define EFI_ALLOCATE_ANY_PAGES 0
-# define EFI_ALLOCATE_MAX_ADDRESS 1
-# define EFI_ALLOCATE_ADDRESS 2
-    efi_status_t (__efiapi *allocate_pages)(int, int, u64, efi_physical_addr_t *);
-    efi_status_t (__efiapi *free_pages)(efi_physical_addr_t, u64);
-    efi_status_t (__efiapi *get_memory_map)(u64 *, struct efi_memory_desc *, u64 *, u64 *, u32 *);
-    efi_status_t (__efiapi *allocate_pool)(int, u64, void **);
-    efi_status_t (__efiapi *free_pool)(void *);
-    u64 __pad2[9];
-    efi_status_t (__efiapi *handle_protocol)(efi_handle_t, efi_guid_t *, void **);
-    u64 __pad3[2];
-# define EFI_LOCATE_ALL_HANDLES 0
-# define EFI_LOCATE_BY_REGISTER_NOTIFY 1
-# define EFI_LOCATE_BY_PROTOCOL 2
-    efi_status_t (__efiapi *locate_handle)(int, efi_guid_t *, void *, u64 *, efi_handle_t *);
-    u64 __pad4[4];
-    efi_status_t __noreturn (__efiapi *exit)(efi_handle_t, efi_status_t, u64, efi_char16_t *);
-    efi_status_t (__efiapi *unload_image)(efi_handle_t);
-    efi_status_t (__efiapi *exit_boot_services)(efi_handle_t, u64);
-    u64 __pad5[9];
-    efi_status_t (__efiapi *locate_handle_buffer)(int, efi_guid_t *, void *, u64 *, efi_handle_t **);
-    u64 __pad6[7];
-};
-
-struct efi_system_table {
-    struct efi_table_hdr hdr;
-    u64 fw_vendor;
-    u32 fw_revision;
-    u32 __pad1;
-    u64 con_in_handle;      /* efi_handle_t. */
-    u64 con_in;             /* struct efi_simple_text_input_protocol. */
-    efi_handle_t con_out_handle;
-    struct efi_simple_text_output_protocol *con_out;
-    u64 stderr_handle;      /* efi_handle_t. */
-    u64 stderr;             /* struct efi_simple_text_output_protocol. */
-    struct efi_runtime_services *runtime;
-    struct efi_boot_services *boottime;
-    u32 nr_tables;
-    u32 __pad2;
-    u64 tables;
-};
-
-# define efi_bs_call(func, ...) __efi_systab->boottime->func(__VA_ARGS__)
-# define efi_proto_call(proto, func, ...) ({    \
-        __typeof__(proto) __proto = (proto);    \
-        __proto->func(__proto, __VA_ARGS__);    \
-    })
-
-# define EFI_SUCCESS            (0)
-# define EFI_LOAD_ERROR         (1  | BIT_UL(BITS_PER_LONG - 1))
-# define EFI_INVALID_PARAMETER  (2  | BIT_UL(BITS_PER_LONG - 1))
-# define EFI_BUFFER_TOO_SMALL   (5  | BIT_UL(BITS_PER_LONG - 1))
-# define EFI_NOT_FOUND          (14 | BIT_UL(BITS_PER_LONG - 1))
+#include "efi.h"
 
 #ifdef CONFIG_X86
 # define REL_REF(x) (*(typeof(&(x)))(rip_rel_ptr(&(x))))
@@ -159,15 +47,46 @@ static void __efi_puts(const char *s)
     __efi_systab->con_out->output_string(__efi_systab->con_out, usc2);
 }
 
-/* 'decompress_gzip'. */
+static u64 efi_find_config_table(efi_guid_t guid)
+{
+    int i;
+    struct efi_config_table *ct;
+
+    for (i = 0; i < __efi_systab->nr_config_tables; i++) {
+        ct = &__efi_systab->config_tables[i];
+
+        if (!__builtin_memcmp(&ct->guid, &guid, UUID_SIZE))
+            return ct->table;
+    }
+
+    return 0;
+}
+
+/* Support 'ACPI_20_TABLE_GUID'. */
+static efi_physical_addr_t efi_get_rsdp_addr(void)
+{
+    efi_physical_addr_t rsdp_addr;
+
+    rsdp_addr = efi_find_config_table(ACPI_20_TABLE_GUID);
+    if (rsdp_addr) {
+        efi_puts("'ACPI_20_TABLE_GUID' found.\n");
+
+        return rsdp_addr;
+    }
+
+    return 0;
+}
+
 #include "deflate.c"
+
+# define efi_bs_call(func, ...) __efi_systab->boottime->func(__VA_ARGS__)
 
 static void __noreturn efi_exit(efi_handle_t handle, efi_status_t status)
 {
     efi_bs_call(exit, handle, status, 0, NULL);
 }
 
-/* 7.2. Memory Allocation Services. */
+/* 7.2 Memory Allocation Services. */
 /* https://uefi.org/specs/UEFI/2.10/07_Services_Boot_Services.html#memory-allocation-services. */
 
 #ifndef EFI_ALLOC_ALIGN
@@ -238,7 +157,7 @@ static efi_status_t efi_get_memory_map(struct efi_boot_memmap *memmap,
             &memmap->desc_size, &memmap->desc_ver);
 }
 
-/* 7.4. Image Services. */
+/* 7.4 Image Services. */
 /* https://uefi.org/specs/UEFI/2.10/07_Services_Boot_Services.html#image-services. */
 
 static efi_status_t efi_exit_boot_services(efi_handle_t handle, struct efi_boot_memmap **memmap)
@@ -291,44 +210,6 @@ static efi_status_t efi_exit_boot_services(efi_handle_t handle, struct efi_boot_
 
 /* 12.9 Graphics Output Protocol. */
 /* https://uefi.org/specs/UEFI/2.10/12_Protocols_Console_Support.html#graphics-output-protocol. */
-
-struct efi_pixel_bitmask {
-    u32 red_mask;
-    u32 green_mask;
-    u32 blue_mask;
-    u32 reserved_mask;
-};
-
-struct efi_graphics_output_mode_info {
-    u32 version;
-    u32 horizontal_resolution;
-    u32 vertical_resolution;
-# define PIXEL_RGB_RESERVED_8BIT_PER_COLOR 0
-# define PIXEL_BGR_RESERVED_8BIT_PER_COLOR 1
-# define PIXEL_BIT_MASK 2
-# define PIXEL_BLT_ONLY 3
-# define PIXEL_FORMAT_MAX 4
-    int pixel_format;
-    struct efi_pixel_bitmask pixel_information;
-    u32 pixels_per_scan_line;
-};
-
-struct efi_graphics_output_protocol_mode {
-    u32 max_mode;
-    u32 mode;
-    struct efi_graphics_output_mode_info *info;
-    u64 size_of_info;
-    efi_physical_addr_t frame_buffer_base;
-    u64 frame_buffer_size;
-};
-
-struct efi_graphics_output_protocol {
-    efi_status_t (__efiapi *query_mode)(struct efi_graphics_output_protocol *, u32, u64 *,
-        struct efi_graphics_output_mode_info **);
-    efi_status_t (__efiapi *set_mode)(struct efi_graphics_output_protocol *, u32);
-    u64 pad;    /* ''efi_status_t (__efiapi *blt)(...)''. */
-    struct efi_graphics_output_protocol_mode *mode;
-};
 
 static struct efi_graphics_output_protocol *efi_find_gop(efi_guid_t *proto,
     efi_handle_t *gop_handles, size_t gop_handles_len)
@@ -384,7 +265,7 @@ static void efi_set_mode(struct efi_graphics_output_protocol *gop)
     u32 next_mode = mode->mode;
 
     for (i = 0; i < mode->max_mode; i++) {
-        if (efi_proto_call(gop, query_mode, i, &info_size, &qi) != EFI_SUCCESS)
+        if (gop->query_mode(gop, i, &info_size, &qi) != EFI_SUCCESS)
             continue;
 
         area = qi->horizontal_resolution * qi->vertical_resolution;
@@ -395,7 +276,7 @@ static void efi_set_mode(struct efi_graphics_output_protocol *gop)
     }
 
     if (mode->mode != next_mode)
-        efi_proto_call(gop, set_mode, next_mode);
+        gop->set_mode(gop, next_mode);
 }
 
 static efi_status_t efi_setup_gop(struct screen_info *si, efi_guid_t *proto,
@@ -487,6 +368,8 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_s
     boot_params->ramdisk_size = 0;
     boot_params->cmd_line_ptr = 0;
     boot_params->e820_entries = 0;
+
+    boot_params->acpi_rsdp_addr = efi_get_rsdp_addr();
 
     /* ''Decompressing ukernel''. */
 

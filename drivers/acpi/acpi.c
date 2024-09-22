@@ -3,17 +3,14 @@
 #include <cyanea/acpi.h>
 #include <cyanea/string.h>
 #include <cyanea/errno.h>
-
-#include <asm-generic/ioremap.h>
-
 #include <cyanea/minmax.h>
+
+#include <asm/setup.h>
+#include <asm-generic/ioremap.h>
 
 #include "acpi.h"
 
 int acpi_disabled;
-
-# define ACPI_DIFF_PTR(a, b) ((unsigned long)(a) - (unsigned long)(b))
-# define ACPI_ADD_PTR(a, b) ((void *)((unsigned long)(a) + (b)))
 
 # define acpi_compare_sig(a, sig) (!strncmp((a), (sig), 4))
 
@@ -31,11 +28,6 @@ static void __init *acpi_mmap(phys_addr_t phys_addr, size_t size)
     return virt_addr;
 }
 
-/* acpi_calc_checksum
- * acpi_validate_rsdp
- * acpi_validate
- */
-
 static char __init acpi_calc_checksum(char *mem, size_t size)
 {
     int i;
@@ -47,21 +39,6 @@ static char __init acpi_calc_checksum(char *mem, size_t size)
     return sum;
 }
 
-static int __init acpi_validate_rsdp(struct acpi_table_rsdp *rsdp)
-{
-    if (strncmp(rsdp->signature, ACPI_SIG_RSDP, 8))
-        return -EINVAL;
-
-    if (acpi_calc_checksum((char *)rsdp, ACPI_RSDP_CHECKSUM_LENGTH))
-        return -EINVAL;
-
-    if (rsdp->revision >= 2 &&
-        acpi_calc_checksum((char *)rsdp, ACPI_RSDP_XCHECKSUM_LENGTH))
-        return -EINVAL;
-
-    return SUCCESS;
-}
-
 static int __init acpi_validate(struct acpi_table_header *table)
 {
     if (acpi_calc_checksum((char *)table, table->length))
@@ -70,48 +47,18 @@ static int __init acpi_validate(struct acpi_table_header *table)
     return SUCCESS;
 }
 
-# define ACPI_HI_RSDP_WINDOW_BASE ((phys_addr_t)(0x000E0000))
-# define ACPI_HI_RSDP_WINDOW_SIZE 0x00020000
-
-# define ACPI_RSDP_SCAN_STEP 16
-static void __init *acpi_scan_mem_for_rsdp(void *start_addr, size_t size)
-{
-    void *addr, *end_addr = start_addr + size;
-
-    for (addr = start_addr; addr < end_addr; addr += ACPI_RSDP_SCAN_STEP) {
-        if (!acpi_validate_rsdp(addr))
-            return addr;
-    }
-
-    return NULL;
-}
-
 static phys_addr_t __init acpi_find_root_pointer(void)
 {
-    void *addr, *rsdp;
+    /* 5.2.5.2. Finding the RSDP on UEFI Enabled Systems. */
+    /* https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#finding-the-rsdp-on-uefi-enabled-systems. */
 
-    /* (1) TODO. Use Extended BIOS Data Area (EBDA). */
-    /* (2) Search upper memory: 16-byte boundaries in [0xE0000h .. 0xFFFFFh]. */
-
-    addr = acpi_mmap(ACPI_HI_RSDP_WINDOW_BASE, ACPI_HI_RSDP_WINDOW_SIZE);
-    if (!addr)
-        return 0;
-
-    rsdp = acpi_scan_mem_for_rsdp(addr, ACPI_HI_RSDP_WINDOW_SIZE);
-    acpi_unmap(addr, ACPI_HI_RSDP_WINDOW_SIZE);
-
-    if (rsdp)
-        return (phys_addr_t)(ACPI_HI_RSDP_WINDOW_BASE + ACPI_DIFF_PTR(rsdp, addr));
+    if (boot_params.acpi_rsdp_addr)
+        return boot_params.acpi_rsdp_addr;
 
     ulog_err("ACPI: A valid RSDP was not found.\n");
 
     return 0;
 }
-
-/* acpi__acquire_table
- * acpi__release_table
- *
- */
 
 static struct acpi_table_header __init *acpi__acquire_table(phys_addr_t paddr)
 {
@@ -123,7 +70,6 @@ static struct acpi_table_header __init *acpi__acquire_table(phys_addr_t paddr)
         return NULL;
 
     table_length = table->length;
-
     acpi_unmap(table, sizeof(*table));
 
     table = acpi_mmap(paddr, table_length);
@@ -139,76 +85,59 @@ static struct acpi_table_header __init *acpi__acquire_table(phys_addr_t paddr)
     return table;
 }
 
-static void __init acpi__release_table(struct acpi_table_header *table)
+/* Undo acpi__acquire_table(); suitable for __cleanup. */
+static void __init acpi__release_table(struct acpi_table_header **cleanup_ptr)
 {
-    acpi_unmap(table, table->length);
+    struct acpi_table_header *table = *cleanup_ptr;
+
+    if (table != NULL)
+        acpi_unmap(table, table->length);
 }
 
-static void __init acpi_add_table(phys_addr_t);
+static int __init acpi_add_table(phys_addr_t);
 static int __init acpi_parse_root_table(phys_addr_t rsdp_paddr)
 {
     int i;
     struct acpi_table_rsdp *rsdp;
-
+    struct acpi_table_header *table_header __cleanup(acpi__release_table) = NULL;
+    struct acpi_table_xsdt *xsdt;
     phys_addr_t paddr;
-    size_t entry_size;
-
-    /* RSDT/XSDT. */
-    struct acpi_table_header *table;
-    void *table_entry;
-    int table_count;
 
     rsdp = acpi_mmap(rsdp_paddr, sizeof(*rsdp));
     if (!rsdp)
         return -ENOMEM;
 
-    if (rsdp->revision > 1 && rsdp->xsdt_address) {
+    if (rsdp->revision == 2) {
         paddr = rsdp->xsdt_address;
-        entry_size = ACPI_XSDT_ENTRY_SIZE;
+        acpi_unmap(rsdp, sizeof(*rsdp));
     } else {
-        paddr = rsdp->rsdt_address;
-        entry_size = ACPI_RSDT_ENTRY_SIZE;
+        acpi_unmap(rsdp, sizeof(*rsdp));
+        ulog_err("ACPI version 1.0 not supported.");
+
+        return -EINVAL;
     }
 
-    acpi_unmap(rsdp, sizeof(*rsdp));
-
-    /* Get RSDT/XSDT. */
-    table = acpi__acquire_table(paddr);
-    if (!table)
+    table_header = acpi__acquire_table(paddr);
+    if (!table_header)
         return -ENOMEM;
 
-    /* Parse RSDT/XSDT. */
-    /* ''table_offset_entry[]''. */
-    table_count = ((table->length - sizeof(*table)) / entry_size);
-    table_entry = ACPI_ADD_PTR(table, sizeof(*table));
+    xsdt = (struct acpi_table_xsdt *)table_header;
 
-    for (i = 0; i < table_count; i++) {
-
-        if (entry_size == ACPI_XSDT_ENTRY_SIZE)
-            paddr = *(u64 *)(table_entry);
-
-        else /* 'ACPI_RSDT_ENTRY_SIZE'. */
-            paddr = *(u32 *)(table_entry);
-
-        /* NULL entries in RSDT/XSDT?! Skip. */
+    /* Parse XSDT. */
+    for (i = 0; i < ((xsdt->header.length - sizeof(xsdt->header)) / sizeof(xsdt->entry[0])); i++) {
+        paddr = xsdt->entry[i];
         if (!paddr)
-            goto next_entry;
+            continue;
 
         acpi_add_table(paddr);
-
-next_entry:
-
-        table_entry += entry_size;
     }
-
-    acpi__release_table(table);
 
     return SUCCESS;
 }
 
 /* Store entries for RSDT/XSDT in easier to access format. */
 
-# define ACPI_MAX_INIT_TABLES 128
+# define ACPI_MAX_INIT_TABLES 32
 struct acpi_table_desc {
     phys_addr_t address;
     size_t length;
@@ -218,20 +147,27 @@ struct acpi_table_desc {
 static int __initdata acpi_tables_count;
 static struct acpi_table_desc __initdata acpi_tables[ACPI_MAX_INIT_TABLES];
 
-static void __init acpi_add_table(phys_addr_t paddr)
+/* Add a table to 'acpi_tables'. */
+static int __init acpi_add_table(phys_addr_t paddr)
 {
-    struct acpi_table_header *table;
+    struct acpi_table_header *table __cleanup(acpi__release_table);
 
     table = acpi__acquire_table(paddr);
     if (table) {
+        if (acpi_tables_count == ACPI_MAX_INIT_TABLES) {
+            ulog_err("acpi_tables has no space %d.", acpi_tables_count);
+
+            return -ENOSPC;
+        }
+
         acpi_tables[acpi_tables_count].address = paddr;
         acpi_tables[acpi_tables_count].length = table->length;
-
         memcpy(acpi_tables[acpi_tables_count].signature, table->signature, 4);
 
-        acpi__release_table(table);
         acpi_tables_count++;
     }
+
+    return SUCCESS;
 }
 
 int __init acpi_get_table(char *signature, int instance,
@@ -252,21 +188,17 @@ int __init acpi_get_table(char *signature, int instance,
         *table = acpi_mmap(acpi_tables[i].address, acpi_tables[i].length);
         if (!*table)
             return -ENOMEM;
+
+        return SUCCESS;
     }
 
-    return SUCCESS;
+    return -EINVAL;
 }
 
 void __init acpi_put_table(struct acpi_table_header *table)
 {
     acpi_unmap(table, table->length);
 }
-
-/* acpi_initialise_tables
- * acpi_table_parse
- * acpi_subtable_parse
- *
- */
 
 int __init acpi_table_init(void)
 {
@@ -279,6 +211,8 @@ int __init acpi_table_init(void)
     return acpi_parse_root_table(paddr);
 }
 
+/* 'acpi_table_parse' and 'acpi_subtable_parse'. */
+
 int __init acpi_table_parse(char *signature,
     int (*handler)(struct acpi_table_header *))
 {
@@ -287,33 +221,32 @@ int __init acpi_table_parse(char *signature,
     if (acpi_get_table(signature, 1, &table))
         return -ENODEV;
 
-    else {
-        handler(table);
-        acpi_put_table(table);
-    }
+    handler(table);
+
+    acpi_put_table(table);
 
     return SUCCESS;
 }
 
-int __init acpi_subtable_parse(struct acpi_table_header *table,
-    size_t table_size, int type, int (*handler)(struct acpi_subtable_header *))
+int __init acpi_subtable_parse(struct acpi_table_header *table, size_t table_size,
+    int type, int (*handler)(struct acpi_subtable_header *))
 {
     int err, count = 0;
-    void *table_end = ACPI_ADD_PTR(table, table->length);
+    struct acpi_subtable_header *subtable = (struct acpi_subtable_header *)
+        ((unsigned long)table + table_size);
 
-    struct acpi_subtable_header *sub;
-
-    sub = ACPI_ADD_PTR(table, table_size);
-    while (ACPI_ADD_PTR(sub, sizeof(*sub)) < table_end) {
-        if (sub->type == type) {
-            err = handler(sub);
+    while ((unsigned long)(subtable + 1) < ((unsigned long)table + table->length)) {
+        if (subtable->type == type) {
+            err = handler(subtable);
             if (err)
                 return err;
 
             count++;
         }
 
-        sub = ACPI_ADD_PTR(sub, sub->length);
+        /* NEXT subtable. */
+        subtable = (struct acpi_subtable_header *)
+            ((unsigned long)subtable + subtable->length);
     }
 
     return count;

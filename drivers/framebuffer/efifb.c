@@ -16,7 +16,7 @@ static unsigned long cursor_x, cursor_y;
 static unsigned long screen_width, screen_height;
 static unsigned long pitch;
 
-# define PIXEL_WHITE ((PIXEL) { 160, 160, 160, 0 })
+# define PIXEL_WHITE ((PIXEL) { 255, 255, 255, 0 })
 
 typedef struct {
     u8 blue, green, red, reserved;

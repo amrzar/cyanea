@@ -3,6 +3,7 @@
 #ifndef __ASM_GENERIC_UNALIGNED_H__
 #define __ASM_GENERIC_UNALIGNED_H__
 
+#include <cyanea/types.h>
 #include <cyanea/byteorder.h>
 
 /* **/

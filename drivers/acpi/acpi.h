@@ -5,7 +5,8 @@
 
 #include <cyanea/acpi.h>
 
-/* RSDP - Root System Description Pointer. */
+/* 5.2.5. Root System Description Pointer (RSDP). */
+/* https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#root-system-description-pointer-rsdp. */
 
 #define ACPI_SIG_RSDP "RSD PTR "
 #define ACPI_RSDP_CHECKSUM_LENGTH 20
@@ -23,19 +24,20 @@ struct acpi_table_rsdp {
     u8 reserved[3];
 };
 
-/* RSDT/XSDT - Root System Description Tables. */
+/* 5.2.7. Root System Description Table (RSDT). */
+/* https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#root-system-description-table-rsdt. */
 
 struct acpi_table_rsdt {
     struct acpi_table_header header;
-    u32 table_offset_entry[1];
-};
+    u32 entry[];
+} __packed;
+
+/* 5.2.8. Extended System Description Table (XSDT). */
+/* https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#extended-system-description-table-xsdt. */
 
 struct acpi_table_xsdt {
     struct acpi_table_header header;
-    u64 table_offset_entry[1];
-};
-
-#define ACPI_RSDT_ENTRY_SIZE (sizeof(u32))
-#define ACPI_XSDT_ENTRY_SIZE (sizeof(u64))
+    u64 entry[];
+} __packed;
 
 #endif /* __ACPI_H__ */

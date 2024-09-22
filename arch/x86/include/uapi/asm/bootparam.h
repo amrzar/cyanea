@@ -28,14 +28,12 @@ struct boot_params {
     __u64 ramdisk_image;                /* 0x000. */
     __u64 ramdisk_size;                 /* 0x008. */
     __u64 cmd_line_ptr;                 /* 0x010. */
-
     struct screen_info screen_info;     /* 0x018. */
-
     __u8 e820_entries;                  /* 0x03C. */
     struct bios_e820_entry e820_table[BIOS_E820_MAX_ENTRIES];   /* 0x03D. */
     struct efi_info efi_info;           /* 0xA3D. */
-
-    __u8 __pad[0x1000 - 0xA5D];         /* 0xA5D. */
+    __u64 acpi_rsdp_addr;               /* 0xA5D. */
+    __u8 __pad[0x1000 - 0xA65];         /* 0xA65. */
 } __attribute__((__packed__));
 
 _Static_assert((sizeof(struct boot_params) == BOOT_PARAMS_SIZE),

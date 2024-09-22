@@ -5,13 +5,8 @@ ENTRY(__efi_header)
 SECTIONS
 {
     . = 0;
-    .head : {
-        *(.head)
-    }
-
-    .text : {
-        *(.text .text.*)
-    }
+    .head : { *(.head) }
+    .text : { *(.text .text.*) }
 
     . = ALIGN(8);
     .rodata : {

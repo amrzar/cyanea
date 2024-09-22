@@ -20,7 +20,7 @@ obj-y += header.o
 obj-y += efi.o
 
 UKERNEL.efi.elf: UKERNEL.gz.o .builtin.o
-	$(Q)$(LD) $(LDFLAGS) -T efi-boot.lds -o $@ $^
+	$(Q)$(LD) $(LDFLAGS) -T boot.lds -o $@ $^
 
 UKERNEL.efi: UKERNEL.efi.elf
 	$(Q)$(OBJCOPY) -O binary $< $@
