@@ -44,11 +44,9 @@ struct e820_entry {
 
 struct e820_table {
     int nr_entries;
-
     struct e820_entry entries[E820_MAX_ENTRIES];
 };
 
-unsigned long __init e820_end_pfn(unsigned long, enum e820_type);
 void __init e820__range_add(phys_addr_t, size_t, enum e820_type);
 void __init e820__memory_setup(void);
 void __init e820__memblock_setup(void);

@@ -37,8 +37,6 @@ static void __init e820_print_type(enum e820_type type)
     }
 }
 
-/* 'e820__print_table' prints 'e820_table' entries. */
-
 static void __init e820__print_table(void)
 {
     int e;
@@ -64,53 +62,15 @@ static void __init __e820__range_add(struct e820_table *table,
         table->entries[e].type = type;
 
         table->nr_entries++;
-    } else
+    } else {
         ulog_err("not enough space.\n");
+    }
 }
 
 void __init e820__range_add(phys_addr_t start, size_t size, enum e820_type type)
 {
     __e820__range_add(&e820_table, start, size, type);
 }
-
-# define PHYS_PFN(x) ((x) >> PAGE_SHIFT)
-
-/* 'e820_end_pfn' gets the highest pfn of specific type with upper limit. */
-
-unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type type)
-{
-    int i;
-
-    unsigned long max_pfn = 0;
-
-    for (i = 0; i < e820_table.nr_entries; i++) {
-        struct e820_entry *entry = &e820_table.entries[i];
-
-        if (entry->type != type)
-            continue;
-
-        unsigned long start_pfn = PHYS_PFN(entry->start);
-        unsigned long end_pfn = PHYS_PFN(entry->start + entry->size);
-
-        /* Range is above the requested limit. */
-        if (start_pfn >= limit_pfn)
-            continue;
-
-        if (end_pfn > limit_pfn) {
-            max_pfn = limit_pfn;
-
-            break;
-        }
-
-        /* Largest pfn so far. */
-        if (end_pfn > max_pfn)
-            max_pfn = end_pfn;
-    }
-
-    return max_pfn;
-}
-
-/* Copy the BIOS E820 map into a safe place. */
 
 static void __init append_e820_table(struct bios_e820_entry *entries,
     u8 nr_entries)
@@ -128,7 +88,6 @@ static void __init append_e820_table(struct bios_e820_entry *entries,
     }
 
     while (nr_entries) {
-
         e820__range_add(entry->addr, entry->size, entry->type);
 
         entry++;
@@ -149,9 +108,10 @@ void __init e820__memory_setup(void)
 void __init e820__memblock_setup(void)
 {
     int i;
+    struct e820_entry *entry;
 
     for (i = 0; i < e820_table.nr_entries; i++) {
-        struct e820_entry *entry = &e820_table.entries[i];
+        entry = &e820_table.entries[i];
 
         if (entry->type == E820_TYPE_RAM)
             memblock_add(entry->start, entry->size, -1, 0);
