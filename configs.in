@@ -38,15 +38,16 @@ menu "Debugging settings"
 
 	choice "ulog Log Level"
 		CONFIG_LOG_LEVEL
-		option 0
-		option 1 [default]
+		option 0 [default]
+		option 1
+		option 2
 		help
-			"Set the default log level [0 : error] [1 : info]"
+			"Set the default log level [0 : error] [1 : info] [2 : debug]"
 endmenu # debugging-setting
 
 config "Default command-line"
 	CONFIG_CMD_LINE
-	STRING ""
+	STRING "console=tty"
 	help
 		"Command-line used if nothing is specified at the boot time."
 

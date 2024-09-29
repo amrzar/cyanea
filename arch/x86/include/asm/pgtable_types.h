@@ -129,12 +129,17 @@ static inline pmdval_t pmd_flags(pmd_t pmd)
 #define _PAGE_NOCACHE (cachemode2protval(_PAGE_CACHE_MODE_UC))
 
 #define __PAGE_KERNEL_NOCACHE (__PAGE_KERNEL | _PAGE_NOCACHE)
+#define __PAGE_KERNEL_IO __PAGE_KERNEL
+#define __PAGE_KERNEL_IO_NOCACHE __PAGE_KERNEL_NOCACHE
 
 #define PAGE_KERNEL             __pgprot_t(__PAGE_KERNEL)
 #define PAGE_KERNEL_NOCACHE     __pgprot_t(__PAGE_KERNEL_NOCACHE)
 #define PAGE_KERNEL_EXEC        __pgprot_t(__PAGE_KERNEL_EXEC)
 #define PAGE_KERNEL_LARGE       __pgprot_t(__PAGE_KERNEL_LARGE)
 #define PAGE_KERNEL_LARGE_EXEC  __pgprot_t(__PAGE_KERNEL_LARGE_EXEC)
+
+#define PAGE_KERNEL_IO          __pgprot_t(__PAGE_KERNEL_IO)
+#define PAGE_KERNEL_IO_NOCACHE  __pgprot_t(__PAGE_KERNEL_IO_NOCACHE)
 
 enum page_size {
     PAGE_SIZE_NONE,

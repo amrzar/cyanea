@@ -3,23 +3,9 @@
 #ifndef __EFI_H__
 #define __EFI_H__
 
-#include <cyanea/types.h>
-
-/* Unified Extensible Firmware Interface (UEFI). */
-/* https://uefi.org/specs/UEFI/2.10/index.html. */
-
-#define EFI_PAGE_SIZE BIT_UL(12)
+#include <cyanea/efi.h>
 
 #define __efiapi __attribute__((ms_abi))
-
-#define UUID_SIZE 16
-typedef struct {
-    u8 b[UUID_SIZE];
-} efi_guid_t __aligned(__alignof__(u32));
-#define EFI_GUID(a, b, c, d...) ((efi_guid_t){ {   \
-            (a) & 0xff, ((a) >> 8) & 0xff, ((a) >> 16) & 0xff, ((a) >> 24) & 0xff,  \
-            (b) & 0xff, ((b) >> 8) & 0xff,          \
-            (c) & 0xff, ((c) >> 8) & 0xff, d } })
 
 #define ACPI_TABLE_GUID                     EFI_GUID(0xeb9d2d30, 0x2d88, 0x11d3, 0x9a, 0x16, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d)
 #define ACPI_20_TABLE_GUID                  EFI_GUID(0x8868e871, 0xe4f1, 0x11d3, 0xbc, 0x22, 0x00, 0x80, 0xc7, 0x3c, 0x88, 0x81)
@@ -29,7 +15,6 @@ typedef struct {
 typedef u64 efi_status_t;
 typedef u64 efi_handle_t;
 typedef u16 efi_char16_t;
-typedef u64 efi_physical_addr_t;
 
 struct efi_table_hdr {
     u64 signature;
@@ -47,18 +32,6 @@ struct efi_simple_text_output_protocol {
 struct efi_config_table {
     efi_guid_t guid;
     u64 table;
-};
-
-struct efi_memory_desc {
-# define EFI_RESERVED_TYPE          0
-# define EFI_LOADER_CODE            1
-# define EFI_LOADER_DATA            2
-    u32 type;
-    u32 pad;
-    efi_physical_addr_t phys_addr;
-    u64 virt_addr;
-    u64 num_pages;
-    u64 attribute;
 };
 
 /* 7. Services - Boot Services. */
@@ -161,10 +134,10 @@ struct efi_graphics_output_protocol {
     struct efi_graphics_output_protocol_mode *mode;
 };
 
-#define EFI_SUCCESS            0
-#define EFI_LOAD_ERROR         (1 | BIT_UL(BITS_PER_LONG - 1))
-#define EFI_INVALID_PARAMETER  (2 | BIT_UL(BITS_PER_LONG - 1))
-#define EFI_BUFFER_TOO_SMALL   (5 | BIT_UL(BITS_PER_LONG - 1))
-#define EFI_NOT_FOUND          (14 | BIT_UL(BITS_PER_LONG - 1))
+#define EFI_SUCCESS 0
+#define EFI_LOAD_ERROR (1 | BIT_UL(BITS_PER_LONG - 1))
+#define EFI_INVALID_PARAMETER (2 | BIT_UL(BITS_PER_LONG - 1))
+#define EFI_BUFFER_TOO_SMALL (5 | BIT_UL(BITS_PER_LONG - 1))
+#define EFI_NOT_FOUND (14 | BIT_UL(BITS_PER_LONG - 1))
 
 #endif /* __EFI_H__ */

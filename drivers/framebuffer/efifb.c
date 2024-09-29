@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/console.h>
-#include <cyanea/string.h>
 #include <cyanea/errno.h>
 #include <cyanea/init.h>
 
@@ -47,8 +46,8 @@ static void efifb_scroll_screen(void)
     size_t size = (screen_height - CHAR_HEIGHT) * pitch;
 
     /* SCROLL up! */
-    memcpy(&framebuffer[0], &framebuffer[CHAR_HEIGHT * pitch], size);
-    memset(&framebuffer[size], 0, pitch * CHAR_HEIGHT);
+    __builtin_memcpy(&framebuffer[0], &framebuffer[CHAR_HEIGHT * pitch], size);
+    __builtin_memset(&framebuffer[size], 0, pitch * CHAR_HEIGHT);
 
     cursor_y -= CHAR_HEIGHT;
 }
@@ -77,7 +76,7 @@ static void efifb_put_char(char ch)
 
 static void efifb_clear_screen(void)
 {
-    memset(framebuffer, 0, screen_height * pitch);
+    __builtin_memset(framebuffer, 0, screen_height * pitch);
 
     cursor_x = 0;
     cursor_y = 0;
@@ -97,8 +96,10 @@ static int con_setup(struct console *con, char *options)
     screen_height = boot_params.screen_info.screen_height;
     pitch = boot_params.screen_info.pixels_per_scan_line * sizeof(PIXEL);
 
-    framebuffer = ioremap(boot_params.screen_info.framebuffer, boot_params.screen_info.framebuffer_size,
-            PAGE_KERNEL_NOCACHE);
+    /* TODO. Check mapping type from efi mapping and use same pgprot. */
+
+    framebuffer = __ioremap(boot_params.screen_info.framebuffer,
+            boot_params.screen_info.framebuffer_size, PAGE_KERNEL_NOCACHE);
     if (!framebuffer)
         return -ENOMEM;
 

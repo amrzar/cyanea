@@ -236,14 +236,14 @@ static void __init init_range_memory_mapping(phys_addr_t range_start,
         limit_pfn = PFN_DOWN(end);
 
         /* The range that should be mapped [start .. end). */
-
-        ulog_debug("[mem %#018llx .. %#018llx]", start, end - 1);
+        ulog_debug("[%s]: [mem %#018llx .. %#018llx]\n",
+            __FUNCTION__, start, end - 1);
 
         /* We prefer 1GiB mapping. However, on the head (or tail) use 4Kib or 2Mib
          * pages to get to the required alignments.
          */
 
-        /*  - 4Kib mapping from 'start' to the next multiple of 2MiB. */
+        /*  - 4KiB mapping from 'start' to the next multiple of 2MiB. */
 
         pfn = start_pfn = PFN_DOWN(start);
         end_pfn = ROUND_UP(pfn, PFN_DOWN(PMD_SIZE));
@@ -258,7 +258,7 @@ static void __init init_range_memory_mapping(phys_addr_t range_start,
             pfn = end_pfn;
         }
 
-        /* - 2Mib mapping from 'pfn' to the next multiple of 1GiB. */
+        /* - 2MiB mapping from 'pfn' to the next multiple of 1GiB. */
 
         start_pfn = ROUND_UP(pfn, PFN_DOWN(PMD_SIZE));
         end_pfn = ROUND_UP(pfn, PFN_DOWN(PUD_SIZE));

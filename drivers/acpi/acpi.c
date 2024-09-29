@@ -14,12 +14,12 @@ int acpi_disabled;
 
 # define acpi_compare_sig(a, sig) (!strncmp((a), (sig), 4))
 
-# define acpi_unmap(a, b) iounmap((a), (b))
+# define acpi_unmap(a, b) memunmap((a), (b))
 static void __init *acpi_mmap(phys_addr_t phys_addr, size_t size)
 {
     void *virt_addr;
 
-    virt_addr = ioremap(phys_addr, size, PAGE_KERNEL);
+    virt_addr = memremap(phys_addr, size);
     if (!virt_addr) {
         ulog_err("ACPI: Could not map memory at 0x%8.8X for length %u.\n",
             phys_addr, size);

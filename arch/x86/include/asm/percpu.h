@@ -12,10 +12,8 @@
 /* PER-CPU SECTIONS. */
 
 #define __percpu __section(".data..percpu")
-
 #define __percpu_cache_aligned __section(".data..percpu..cache_aligned") \
     ____cacheline_aligned
-
 #define __percpu_page_aligned __section(".data..percpu..page_aligned") \
     __aligned(PAGE_SIZE)
 
@@ -44,7 +42,7 @@ extern unsigned long this_cpu_off __percpu;
         *(qual __seg_gs_as_type(pcp) *)__seg_gs_as_ptr(&(pcp)) = (val); \
     } while(0)
 
-/* See: https://github.com/torvalds/linux/commit/0b9ccc0a9b146b49e83bf1e32f70d2396a694bfb. */
+/* https://github.com/torvalds/linux/commit/0b9ccc0a9b146b49e83bf1e32f70d2396a694bfb. */
 
 #define raw_cpu_read(pcp) __raw_cpu_read(, pcp)
 #define raw_cpu_write(pcp, val) __raw_cpu_write(, pcp, val)
@@ -52,8 +50,7 @@ extern unsigned long this_cpu_off __percpu;
 #define this_cpu_read(pcp) __raw_cpu_read(volatile, pcp)
 #define this_cpu_write(pcp, val) __raw_cpu_write(volatile, pcp, val)
 
-/* Get a generic address space pointer from a per-cpu pointer. */
-
+/* Generic address space pointer from a per-cpu pointer, i.e. GS address space. */
 #define arch_raw_cpu_ptr(ptr) ({ \
         unsigned long __ptr = raw_cpu_read(this_cpu_off); \
         __ptr += (unsigned long)(ptr); \

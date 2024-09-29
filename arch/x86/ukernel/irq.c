@@ -22,9 +22,7 @@ DECLARE_IDTENTRY_WITH_ERROR_CODE(exc_page_fault);
 #define DPL0 0x0
 #define DPL3 0x3
 
-/* Use modified version of the legacy stack-switching mechanism.
- * See comments in desc_types.h.
- */
+/* Use modified legacy stack-switching mechanism; See comments in desc_types.h. */
 
 #define DEFAULT_STACK 0
 
@@ -60,8 +58,7 @@ static __init void init_gate_desc(gate_desc_t *gate, const struct idt_data *d)
     gate->reserved = 0;
 }
 
-static __init void idt_setup_from_table(gate_desc_t idt[],
-    const struct idt_data t[], int n)
+static __init void idt_setup_from_table(gate_desc_t idt[], const struct idt_data t[], int n)
 {
     int i;
 
@@ -77,16 +74,13 @@ static __init void idt_setup_from_table(gate_desc_t idt[],
 
 static gate_desc_t idt_table[IDT_ENTRIES] __section(".bss..page_aligned");
 
-#define IDT_TABLE_SIZE (IDT_ENTRIES * sizeof(gate_desc_t))
-
 static struct dt_ptr idt __ro_after_init = {
+# define IDT_TABLE_SIZE (IDT_ENTRIES * sizeof(gate_desc_t))
     IDT_TABLE_SIZE - 1, (unsigned long) idt_table,
 };
 
 /* See comments in head_64.S for the reason to use '9'. */
-
 extern char boot_idt_handler_array[IDT_EXCEPTION_ENTRIES][9];
-
 void __init idt_setup_early_handler(void)
 {
     int i;

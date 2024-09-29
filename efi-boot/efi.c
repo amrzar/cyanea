@@ -99,7 +99,7 @@ struct efi_boot_memmap {
     u32 desc_ver;
     u64 map_key;
 # define EFI_MMAP_NR_SLACK_SLOTS 8
-    struct efi_memory_desc memmap[];
+    struct efi_memory_desc descs[];
 };
 
 static efi_status_t efi_allocate_pages(size_t size, efi_physical_addr_t *alloc_addr,
@@ -179,7 +179,7 @@ static efi_status_t efi_exit_boot_services(efi_handle_t handle, struct efi_boot_
         return status;
 
     m->map_size = size;
-    status = efi_get_memory_map(m, m->memmap);
+    status = efi_get_memory_map(m, m->descs);
     if (status != EFI_SUCCESS) {
         efi_free(m);
 
@@ -191,7 +191,7 @@ static efi_status_t efi_exit_boot_services(efi_handle_t handle, struct efi_boot_
     if (status == EFI_INVALID_PARAMETER) {
 
         m->map_size = size;
-        status = efi_get_memory_map(m, m->memmap);
+        status = efi_get_memory_map(m, m->descs);
         if (status != EFI_SUCCESS)
             /* 'exit_boot_services' already called, cannot call 'efi_free'. */
             return status;
@@ -350,7 +350,7 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_s
 {
     efi_status_t status;
 
-    struct efi_boot_memmap *mmap;
+    struct efi_boot_memmap *memmap;
 
     struct boot_params *boot_params;
     /* ''UKERNEL @ (ukernel_addr, ukernel_size)''. */
@@ -367,8 +367,6 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_s
     boot_params->ramdisk_image = 0;
     boot_params->ramdisk_size = 0;
     boot_params->cmd_line_ptr = 0;
-    boot_params->e820_entries = 0;
-
     boot_params->acpi_rsdp_addr = efi_get_rsdp_addr();
 
     /* ''Decompressing ukernel''. */
@@ -388,7 +386,7 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_s
     if (status != EFI_SUCCESS)
         efi_puts("err. 'setup_graphics'.\n");
 
-    status = efi_exit_boot_services(handle, &mmap);
+    status = efi_exit_boot_services(handle, &memmap);
     if (status != EFI_SUCCESS) {
         efi_puts("err. 'efi_exit_boot_services'.\n");
 
@@ -396,9 +394,9 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_s
     }
 
     boot_params->efi_info.efi_systab = (u64)systab;
-    boot_params->efi_info.efi_memdesc_size = mmap->desc_size;
-    boot_params->efi_info.efi_memmap_size = mmap->map_size;
-    boot_params->efi_info.efi_memmap = (u64)mmap->memmap;
+    boot_params->efi_info.efi_memdesc_size = memmap->desc_size;
+    boot_params->efi_info.efi_memmap_size = memmap->map_size;
+    boot_params->efi_info.efi_memmap = (u64)memmap->descs;
 
     enter_kernel(ukernel_addr, boot_params);
 

@@ -8,7 +8,9 @@
 #include <cyanea/pgtable.h>
 #include <cyanea/stddef.h>
 
-void __init *ioremap(phys_addr_t, size_t, pgprot_t);
+void __init *__ioremap(phys_addr_t, size_t, pgprot_t);
+void __init *memremap(phys_addr_t, size_t);
+# define memunmap iounmap
 void __init iounmap(void *, size_t);
 
 #endif /* __ASM_GENERIC_IOREMAP_H__ */

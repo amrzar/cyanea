@@ -16,6 +16,7 @@ void __init early_cpuinfo_init(void);
 int __init reserve_real_mode(void);
 void __init init_mem_mapping(void);
 void __init acpi_x86_table_init(void);
+int __init efi_add_memmap(void);
 
 # ifndef CONFIG_NUMA
 static void __init x86_numa_init(void)
@@ -69,7 +70,7 @@ static void setup_arch(void)
 
     early_cpuinfo_init();
 
-    e820__memory_setup();
+    efi_add_memmap();
     e820__memblock_setup();
 
     reserve_memory();

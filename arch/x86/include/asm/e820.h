@@ -4,8 +4,8 @@
 #define __X86_ASM_E820_H__
 
 #include <cyanea/types.h>
+#include <cyanea/stddef.h>
 #include <cyanea/init.h>
-#include <uapi/asm/bootparam.h>
 
 /* */
 /* The ''INT 15h, E820h'' BIOS interrupt call returns a system memory map, showing the
@@ -34,21 +34,9 @@ enum e820_type {
     E820_TYPE_PMEM = 7
 };
 
-struct e820_entry {
-    phys_addr_t start;
-    size_t size;
-    enum e820_type type;
-};
-
-#define E820_MAX_ENTRIES BIOS_E820_MAX_ENTRIES
-
-struct e820_table {
-    int nr_entries;
-    struct e820_entry entries[E820_MAX_ENTRIES];
-};
-
 void __init e820__range_add(phys_addr_t, size_t, enum e820_type);
-void __init e820__memory_setup(void);
+void __init e820__update_table(void);
 void __init e820__memblock_setup(void);
+void __init __used e820__print_table(void);
 
 #endif /* __X86_ASM_E820_H__ */

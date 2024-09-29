@@ -3,17 +3,9 @@
 #ifndef __ULOG_H__
 #define __ULOG_H__
 
-#define DEBUG
-
 #ifndef __ASSEMBLY__
 
 void ulog(const char *, ...);
-
-#if (CONFIG_LOG_LEVEL < 1)
-# define ulog_info(...) ulog(__VA_ARGS__)
-#else
-# define ulog_info(...)
-#endif
 
 #define ulog_err(...) do { \
         ulog("[%s][%d]: ", __FUNCTION__, __LINE__); \
@@ -21,13 +13,14 @@ void ulog(const char *, ...);
         ulog("\n"); \
     } while (0)
 
-#ifdef DEBUG
-# define ulog_debug(...) do { \
-        ulog("[%s][%d]: ", __FUNCTION__, __LINE__); \
-        ulog(__VA_ARGS__); \
-        ulog("\n"); \
-    } while (0)
+#if (CONFIG_LOG_LEVEL > 0)
+# define ulog_info(...) ulog(__VA_ARGS__)
+#else
+# define ulog_info(...)
+#endif
 
+#if (CONFIG_LOG_LEVEL > 1)
+# define ulog_debug(...) ulog(__VA_ARGS__)
 #else
 # define ulog_debug(...)
 #endif

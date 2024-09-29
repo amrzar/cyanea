@@ -78,7 +78,7 @@ static void __init __set_fixmap(enum fixed_addresses idx,
     flush_tlb_one(address);
 }
 
-void __init *ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
+void __init *__ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
 {
     int i, slot;
     unsigned int nrpages;
@@ -109,13 +109,22 @@ void __init *ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
     return (void *)(fix_to_virt(slot) + offset);
 }
 
+void __init *memremap(phys_addr_t phys_addr, size_t size)
+{
+    return __ioremap(phys_addr, size, PAGE_KERNEL);
+}
+
 void __init iounmap(void *virt_addr, size_t size)
 {
     int i, slot;
     unsigned int nrpages;
     unsigned long offset;
-    unsigned long addr = (unsigned long)virt_addr;
+    unsigned long addr;
 
+    if (!virt_addr)
+        return;
+
+    addr = (unsigned long)virt_addr;
     if ((addr < fix_to_virt(FIX_BITMAP_BEGIN)) ||
         (addr > fix_to_virt(FIX_BITMAP_END)))
         return;
