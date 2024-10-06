@@ -4,10 +4,9 @@
 #include <cyanea/errno.h>
 #include <cyanea/init.h>
 #include <cyanea/string.h>
+#include <cyanea/minmax.h>
 
 #include <asm/page_types.h>
-
-#include <cyanea/minmax.h>
 
 static int memblock_debug = 0;
 
@@ -30,25 +29,16 @@ static struct memblock memory = {
 #define for_each_memblock_region(i, reg) \
     for (i = 0, reg = memory.regions; i < memory.n; i++, reg = &memory.regions[i])
 
-static int insert_region(int i, phys_addr_t base, size_t size, int nid,
-    enum memblock_flags flags)
+static void insert_region(int i, phys_addr_t base, size_t size, int nid, enum memblock_flags flags)
 {
-    struct memblock_region *region;
+    struct memblock_region *region = &memory.regions[i];
 
-    if (memory.n + 1 > memory.max) {
+    assert(memory.n + 1 <= memory.max, "out-of-space.");
 
-        /* TODO. Support to extend 'regions'. */
-
-        assert(0, "out-of-space.");
-
-        return -ENOSPC;
-    }
-
-    region = &memory.regions[i];
-
-    /* Free up an entry in the region array, move everything one up. */
+    /* Free up an entry in the region array; move everything one up. */
     memmove(region + 1, region, (memory.n - i) * sizeof(*region));
 
+    /* INSERT. */
     region->base = base;
     region->size = size;
     region->flags = flags;
@@ -56,8 +46,6 @@ static int insert_region(int i, phys_addr_t base, size_t size, int nid,
 
     memory.n++;
     memory.size += size;
-
-    return SUCCESS;
 }
 
 static void remove_region(int i)
@@ -108,8 +96,7 @@ static void merge_regions(int start_region, int end_region)
     }
 }
 
-static int add_range(phys_addr_t base, size_t size, int nid,
-    enum memblock_flags flags)
+static int add_range(phys_addr_t base, size_t size, int nid, enum memblock_flags flags)
 {
     int i, start_region = -1, end_region;
     struct memblock_region *region;
@@ -140,23 +127,19 @@ static int add_range(phys_addr_t base, size_t size, int nid,
          *  (1) 'region' is already after the new region.
          *  (2) 'region' does not have overlap with the new region.
          *  (3) 'region' has overlap with the new region.
-         */
+         *
+         * */
 
         if (r_base >= end)
-            /* (1) */
-            break;
+            break;                  /* (1) */
 
         if (r_end <= base)
-            /* (2) */
-            continue;
+            continue;               /* (2) */
 
         /* (3) */
-
         /* Add the area before 'region' [base .. r_base] if exists. */
         if (r_base > base) {
-            if (insert_region(i, base, r_base - base, nid, flags))
-                goto out;
-
+            insert_region(i, base, r_base - base, nid, flags);
             if (start_region == -1)
                 start_region = i;
             end_region = i + 1;
@@ -170,14 +153,11 @@ static int add_range(phys_addr_t base, size_t size, int nid,
 
     /* Check if any area left to add, then insert it. */
     if (base < end) {
-        if (!insert_region(i, base, end - base, nid, flags)) {
-            if (start_region == -1)
-                start_region = i;
-            end_region = i + 1;
-        }
+        insert_region(i, base, end - base, nid, flags);
+        if (start_region == -1)
+            start_region = i;
+        end_region = i + 1;
     }
-
-out:
 
     /* Try to merge [start_region .. end_region]. */
     if (start_region != -1)
@@ -186,8 +166,7 @@ out:
     return SUCCESS;
 }
 
-static int isolate_range(phys_addr_t base, size_t size, int *start_range,
-    int *end_range)
+static int isolate_range(phys_addr_t base, size_t size, int *start_range, int *end_range)
 {
     int i;
     struct memblock_region *region;
@@ -202,10 +181,7 @@ static int isolate_range(phys_addr_t base, size_t size, int *start_range,
 
     /* We require two extra regions. */
     if (memory.n + 2 > memory.max) {
-
-        /* TODO. Support to extend 'regions'. */
-
-        assert(0, "out-of-space.");
+        ulog_err("out-of-space.");
 
         return -ENOSPC;
     }
@@ -220,15 +196,14 @@ static int isolate_range(phys_addr_t base, size_t size, int *start_range,
          *  (3) 'region' has overlap with the beginning of the new region.
          *  (4) 'region' has overlap with the end of the new region.
          *  (5) 'region' is fully contained in the new region.
-         */
+         *
+         * */
 
         if (r_base >= end)
-            /* (1) */
-            break;
+            break;                  /* (1) */
 
         if (r_end <= base)
-            /* (2) */
-            continue;
+            continue;               /* (2) */
 
         if (r_base < base) {
             /* (3) */
@@ -243,8 +218,7 @@ static int isolate_range(phys_addr_t base, size_t size, int *start_range,
             region->size -= end - r_base;
             memory.size -= end - r_base;
             /* --i so next iteration, the new region will be fully contained. */
-            insert_region(i--, r_base, end - r_base, region->nid,
-                region->flags);
+            insert_region(i--, r_base, end - r_base, region->nid, region->flags);
         } else {
             /* (5) */
             if (!*end_range)
@@ -256,7 +230,6 @@ static int isolate_range(phys_addr_t base, size_t size, int *start_range,
     return SUCCESS;
 }
 
-# define START_PHYSICAL_ADDRESS ((phys_addr_t)(PAGE_SIZE))
 static phys_addr_t find_in_range_node(size_t size, unsigned long align,
     phys_addr_t start, phys_addr_t end, int nid, enum memblock_flags flags)
 {
@@ -264,6 +237,7 @@ static phys_addr_t find_in_range_node(size_t size, unsigned long align,
     struct memblock_region *region;
     phys_addr_t base, r_base, r_end;
 
+# define START_PHYSICAL_ADDRESS ((phys_addr_t)(PAGE_SIZE))
     start = max(start, START_PHYSICAL_ADDRESS);
     end = max(start, end);
 
@@ -286,13 +260,13 @@ static phys_addr_t find_in_range_node(size_t size, unsigned long align,
 
 /* ''EXTERNAL API''. */
 
-# define PFN_UP(x) (ROUND_UP(x, PAGE_SIZE) >> PAGE_SHIFT)
-# define PFN_DOWN(x) (ROUND_DOWN(x, PAGE_SIZE) >> PAGE_SHIFT)
-
 void __next_mem_pfn_range(int *i, int nid, unsigned long *start_pfn,
     unsigned long *end_pfn, int *out_nid)
 {
     struct memblock_region *reg;
+
+# define PFN_UP(x)   (ROUND_UP(x, PAGE_SIZE) >> PAGE_SHIFT)
+# define PFN_DOWN(x) (ROUND_DOWN(x, PAGE_SIZE) >> PAGE_SHIFT)
 
     while (++*i < memory.n) {
         reg = &memory.regions[*i];
@@ -321,18 +295,12 @@ void __next_mem_pfn_range(int *i, int nid, unsigned long *start_pfn,
     }
 }
 
-int memblock_add(phys_addr_t base, size_t size, int nid,
-    enum memblock_flags flags)
+int memblock_add(phys_addr_t base, size_t size, int nid, enum memblock_flags flags)
 {
-    /* User can not directly pass 'MEMBLOCK_RESERVED' as flag.
-     * Used by 'memblock_alloc' and 'memblock_free' to flag the reserved memory !!
-     */
-
-    flags &= ~MEMBLOCK_RESERVED;
-
     memblock_dbg("[mem %#018llx .. %#018llx]", base, base + size - 1);
 
-    return add_range(base, size, nid, flags);
+    /* User can not directly pass 'MEMBLOCK_RESERVED' as flag. */
+    return add_range(base, size, nid, flags & ~MEMBLOCK_RESERVED);
 }
 
 int memblock_remove(phys_addr_t base, size_t size)
@@ -344,7 +312,6 @@ int memblock_remove(phys_addr_t base, size_t size)
         return err;
 
     /* Reserve interation to avoid 'memmove' of entries that will be removed. */
-
     for (i = end - 1; i >= start; i--)
         remove_region(i);
 
@@ -396,7 +363,6 @@ phys_addr_t memblock_alloc(size_t size, unsigned long align,
 again:
 
     found = find_in_range_node(size, align, start, end, nid, MEMBLOCK_NONE);
-
     if (found && !memblock_setclr_flag(found, size, 1, MEMBLOCK_RESERVED)) {
         memblock_dbg("[mem %#018llx .. %#018llx]", found, found + size - 1);
 
@@ -415,8 +381,6 @@ again:
 
 void memblock_free(phys_addr_t base, size_t size)
 {
-    /* Ignore the return value; On failure the area remains reserved. */
-
     memblock_setclr_flag(base, size, 0, MEMBLOCK_RESERVED);
 }
 
@@ -436,9 +400,9 @@ void memblock_dump(void)
     struct memblock_region *region;
 
     for_each_memblock_region(i, region) {
-        ulog("%s[%d]\t[%#018llx .. %#018llx] %#llx bytes, %x flag",
-            memory.name, i, region->base, region->base + region->size - 1,
-            region->size, region->flags);
+        ulog("[%#2d][%#018llx .. %#018llx] %#18llx %s", i,
+            region->base, region->base + region->size - 1,
+            region->size, region->flags ? "[R]" : "");
 
         if (region->nid != -1)
             ulog(" on node %d\n", region->nid);
