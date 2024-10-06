@@ -68,8 +68,8 @@ static void __init *alloc_pages(unsigned int num)
  * Halt if we fail on any of these functions.
  */
 
-static void __init physical_pt_init(pte_t pt[], phys_addr_t start,
-    phys_addr_t end, enum page_size ps)
+static void __init physical_pt_init(pte_t pt[], phys_addr_t start, phys_addr_t end,
+    enum page_size ps)
 {
     unsigned long vaddr = (unsigned long)__va(start);
     unsigned long vaddr_end = (unsigned long)__va(end);
@@ -86,8 +86,8 @@ static void __init physical_pt_init(pte_t pt[], phys_addr_t start,
     }
 }
 
-static void __init physical_pmd_init(pmd_t pmd[], phys_addr_t start,
-    phys_addr_t end, enum page_size ps)
+static void __init physical_pmd_init(pmd_t pmd[], phys_addr_t start, phys_addr_t end,
+    enum page_size ps)
 {
     unsigned long vaddr = (unsigned long)__va(start);
     unsigned long vaddr_end = (unsigned long)__va(end);
@@ -110,13 +110,8 @@ static void __init physical_pmd_init(pmd_t pmd[], phys_addr_t start,
             physical_pt_init(pt, __pa(vaddr), __pa(vaddr_end), ps);
 
         } else {
-
             if (ps == PAGE_SIZE_2M) {
-
-                /* Map a 2MiB page. */
-
-                pmd_set(&pmd[i],
-                    __pmd_t(__pa(vaddr) | check_pgprot(PAGE_KERNEL_LARGE)));
+                pmd_set(&pmd[i], __pmd_t(__pa(vaddr) | check_pgprot(PAGE_KERNEL_LARGE)));
             } else {
                 pt = alloc_pages(1);
                 physical_pt_init(pt, __pa(vaddr), __pa(vaddr_end), ps);
@@ -129,8 +124,8 @@ static void __init physical_pmd_init(pmd_t pmd[], phys_addr_t start,
     }
 }
 
-static void __init physical_pud_init(pud_t pud[], phys_addr_t start,
-    phys_addr_t end, enum page_size ps)
+static void __init physical_pud_init(pud_t pud[], phys_addr_t start, phys_addr_t end,
+    enum page_size ps)
 {
     unsigned long vaddr = (unsigned long)__va(start);
     unsigned long vaddr_end = (unsigned long)__va(end);
@@ -154,11 +149,7 @@ static void __init physical_pud_init(pud_t pud[], phys_addr_t start,
 
         } else {
             if (ps == PAGE_SIZE_1G) {
-
-                /* Map a 1GiB page. */
-
-                pud_set(&pud[i],
-                    __pud_t(__pa(vaddr) | check_pgprot(PAGE_KERNEL_LARGE)));
+                pud_set(&pud[i], __pud_t(__pa(vaddr) | check_pgprot(PAGE_KERNEL_LARGE)));
             } else {
                 pmd = alloc_pages(1);
                 physical_pmd_init(pmd, __pa(vaddr), __pa(vaddr_end), ps);
@@ -171,8 +162,7 @@ static void __init physical_pud_init(pud_t pud[], phys_addr_t start,
     }
 }
 
-static void __init physical_mapping_init(phys_addr_t start, phys_addr_t end,
-    enum page_size ps)
+static void __init physical_mapping_init(phys_addr_t start, phys_addr_t end, enum page_size ps)
 {
     unsigned long vaddr = (unsigned long)__va(start);
     unsigned long vaddr_end = (unsigned long)__va(end);
@@ -214,17 +204,14 @@ static void add_range_mapped(unsigned long start_pfn, unsigned long end_pfn)
                     1UL << (32 - PAGE_SHIFT)));
 }
 
-# define PFN_PHYS(x) ((phys_addr_t)(x) << PAGE_SHIFT)
-# define PFN_UP(x) (ROUND_UP(x, PAGE_SIZE) >> PAGE_SHIFT)
-# define PFN_DOWN(x) (ROUND_DOWN(x, PAGE_SIZE) >> PAGE_SHIFT)
-
 /* Setup the direct mapping of the physical memory at PAGE_OFFSET. */
-
-static void __init init_range_memory_mapping(phys_addr_t range_start,
-    phys_addr_t range_end)
+static void __init init_range_memory_mapping(phys_addr_t range_start, phys_addr_t range_end)
 {
     int i;
     unsigned long start_pfn, end_pfn, limit_pfn, pfn;
+
+# define PFN_PHYS(x) ((phys_addr_t)(x) << PAGE_SHIFT)
+# define PFN_DOWN(x) (ROUND_DOWN(x, PAGE_SIZE) >> PAGE_SHIFT)
 
     for_each_mem_pfn_range(i, -1, &start_pfn, &end_pfn, NULL) {
         phys_addr_t start = clamp(PFN_PHYS(start_pfn), range_start, range_end);
