@@ -187,7 +187,7 @@ hlt_loop:
 
 /* Here, we are running on direct mapping. */
 
-static always_inline __pure void *rip_rel_ptr(void *p)
+static __always_inline __pure void *rip_rel_ptr(void *p)
 {
     /* This compiles only with '-O2'. */
     /* Probably, it relies on constant-propagation through the function argument 'p' to

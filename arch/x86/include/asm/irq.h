@@ -57,7 +57,7 @@
 
 #ifndef __ASSEMBLY__
 
-static always_inline unsigned long arch_local_save_flags(void)
+static __always_inline unsigned long arch_local_save_flags(void)
 {
     unsigned long flags;
 
@@ -71,42 +71,42 @@ static always_inline unsigned long arch_local_save_flags(void)
     return flags;
 }
 
-static always_inline void arch_local_irq_disable(void)
+static __always_inline void arch_local_irq_disable(void)
 {
     asm volatile("cli" : : : "memory");
 }
 
-static always_inline void arch_local_irq_enable(void)
+static __always_inline void arch_local_irq_enable(void)
 {
     asm volatile("sti" : : : "memory");
 }
 
-static always_inline int arch_irqs_disabled_flags(unsigned long flags)
+static __always_inline int arch_irqs_disabled_flags(unsigned long flags)
 {
     return !(flags & _EFLAGS_IF);
 }
 
-static always_inline int arch_irqs_disabled(void)
+static __always_inline int arch_irqs_disabled(void)
 {
     unsigned long flags = arch_local_save_flags();
 
     return arch_irqs_disabled_flags(flags);
 }
 
-static always_inline unsigned long arch_local_irq_save(void)
+static __always_inline unsigned long arch_local_irq_save(void)
 {
     unsigned long flags = arch_local_save_flags();
     arch_local_irq_disable();
     return flags;
 }
 
-static always_inline void arch_local_irq_restore(unsigned long flags)
+static __always_inline void arch_local_irq_restore(unsigned long flags)
 {
     if (!arch_irqs_disabled_flags(flags))
         arch_local_irq_enable();
 }
 
-static always_inline void halt(void)
+static __always_inline void halt(void)
 {
     asm volatile("hlt" : : : "memory");
 }

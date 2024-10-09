@@ -13,7 +13,7 @@
 
 extern phys_addr_t phys_base;
 
-static always_inline phys_addr_t __phys_addr(unsigned long x)
+static __always_inline phys_addr_t __phys_addr(unsigned long x)
 {
     /* There are two mappings:
      *   (1) '__START_KERNEL_map' to 'phys_base' and

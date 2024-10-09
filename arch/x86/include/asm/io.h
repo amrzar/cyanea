@@ -11,13 +11,13 @@ static inline void slow_down_io(void)
 }
 
 #define BUILDIO(bwl, bw, type) \
-static always_inline void out ## bwl (type value, u16 port) \
+static __always_inline void out ## bwl (type value, u16 port) \
 { \
     asm volatile("out" #bwl " %" #bw "0, %w1"   \
         : : "a"(value), "Nd"(port));            \
 } \
   \
-static always_inline type in ## bwl (u16 port)  \
+static __always_inline type in ## bwl (u16 port)  \
 { \
     type value;                                 \
     asm volatile("in" #bwl " %w1, %" #bw "0"    \

@@ -14,7 +14,7 @@
 #define __always_unused __attribute__((__unused__))
 #define __maybe_unused __attribute__((__unused__))
 
-#define always_inline inline __attribute__((__always_inline__))
+#define __always_inline inline __attribute__((__always_inline__))
 #define noinline __attribute__((__noinline__))
 #define fallthrough __attribute__((__fallthrough__))
 

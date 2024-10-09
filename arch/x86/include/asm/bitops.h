@@ -8,7 +8,7 @@
 #endif
 
 # define arch_set_bit arch_set_bit
-static always_inline void arch_set_bit(long bit, volatile unsigned long *addr)
+static __always_inline void arch_set_bit(long bit, volatile unsigned long *addr)
 {
     asm volatile("lock; btsq %1, %0"
         : : "m" (*addr), "Ir" (bit)
@@ -16,7 +16,7 @@ static always_inline void arch_set_bit(long bit, volatile unsigned long *addr)
 }
 
 # define arch__set_bit arch__set_bit
-static always_inline void arch__set_bit(unsigned long bit,
+static __always_inline void arch__set_bit(unsigned long bit,
     volatile unsigned long *addr)
 {
     asm volatile("btsq %1, %0"
@@ -25,7 +25,7 @@ static always_inline void arch__set_bit(unsigned long bit,
 }
 
 # define arch_clear_bit arch_clear_bit
-static always_inline void arch_clear_bit(long bit, volatile unsigned long *addr)
+static __always_inline void arch_clear_bit(long bit, volatile unsigned long *addr)
 {
     asm volatile("lock; btrq %1, %0"
         : : "m" (*addr), "Ir" (bit)
@@ -33,7 +33,7 @@ static always_inline void arch_clear_bit(long bit, volatile unsigned long *addr)
 }
 
 # define arch__clear_bit arch__clear_bit
-static always_inline void arch__clear_bit(unsigned long bit,
+static __always_inline void arch__clear_bit(unsigned long bit,
     volatile unsigned long *addr)
 {
     asm volatile("btrq %1, %0"

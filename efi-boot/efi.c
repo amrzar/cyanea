@@ -9,7 +9,7 @@
 
 #ifdef CONFIG_X86
 # define REL_REF(x) (*(typeof(&(x)))(rip_rel_ptr(&(x))))
-static always_inline __pure void *rip_rel_ptr(void *p)
+static __always_inline __pure void *rip_rel_ptr(void *p)
 {
     asm("leaq %c1(%%rip), %0" : "=r"(p) : "i"(p));
 
