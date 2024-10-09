@@ -17,8 +17,7 @@ menu "Architecture dependant configurations" # arch-dep-config
 			CONFIG_NR_CPUS
 			INTEGER 16
 			help
-				"This allows you to specify the maximum number of CPUs which
-				this kernel will support."
+				"Number of CPUs which ukernel supports."
 
 		choice "Processor family"
 			CONFIG_PROCESSOR
@@ -33,33 +32,22 @@ menu "Architecture dependant configurations" # arch-dep-config
 					CONFIG_PROCESSOR == "Broadwell"
 	endmenu # x86-processor
 
-	menu "ukernel image ''ukernel'' configurations" # ukernel-image-config
+	menu "''ukernel'' image configurations" # ukernel-image-config
 		config "ukernel physical address"
 			CONFIG_PHYSICAL_START
 			INTEGER 0x400000
 			help
-				"This is the physical address where the ukernel is loaded.
-				
-				If ukernel is a not relocatable ''CONFIG_RELOCATABLE is not set''
-				then ukernel will decompress itself to above physical address
-				and run from there. Otherwise, it will run from the address where
-				it has been	loaded by the boot-loader and will ignore this physical
-				address."
+				"Physical address where the ukernel is loaded."
 
 		config "ukernel alignment"
 			CONFIG_PHYSICAL_ALIGN
 			INTEGER 0x400000
 			help
-				"The alignment for the physical address where the ukernel is
+				"Alignment for the physical address where the ukernel is
 				loaded and run from. ''CONFIG_PHYSICAL_START'' must meet this
 				alignment restriction."
 
-		config "relocatable ukernel"
-			CONFIG_RELOCATABLE BOOL
-			help
-				"This builds a ukernel image that is relocatable."
-
-		config "boot break size"
+		config "Boot BRK size"
 			CONFIG_BRK_ALLOC_PAGES
 			INTEGER 256
 			help
@@ -68,18 +56,12 @@ menu "Architecture dependant configurations" # arch-dep-config
 	endmenu # ukernel-image-config
 
 	menu "NUMA (Non-Uniform Memory Access) support"
-		config "Enable NUMA Memory Allocation and Scheduler Support "
-			CONFIG_NUMA
-			BOOL false
-			help
-				"Enable NUMA (Non-Uniform Memory Access) support."
-
-		config "Maximum NUMA Nodes (as a power of 2)"
+		config "Maximum NUMA nodes (as a power of 2)"
 			CONFIG_NODES_SHIFT
 			INTEGER 6
 			depends CONFIG_NUMA
 			help
-				"Specify the maximum number of NUMA Nodes available on the target system."
+				"Number of NUMA Nodes available on the target system."
 	endmenu # numa-support
 
 	menu "Platform (PC99)" # pc99-platform

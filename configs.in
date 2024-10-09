@@ -3,7 +3,6 @@
 choice "Architecture"
 	CONFIG_ARCH
 	option "x86" [default]
-	option "ARM"
 	help
 		"Choose the architecture for the the current build."
 
@@ -21,14 +20,12 @@ menu "Hardware setting" # hardware-setting
 			"Number of memory regions."
 endmenu # hardware-setting
 
-menu "Extensible Firmware Interface (EFI) support" # efi-support
-	config "EFI stub"
+menu "Extensible Firmware Interface (EFI)" # efi
+	config "Enable EFI support"
 		CONFIG_EFI_STUB BOOL
-		select CONFIG_RELOCATABLE
 		help
-			"This feature allows the ''ukernel'' to be loaded directly by EFI
-			firmware without the use of a boot-loader."
-endmenu # efi-support
+			"Load ''ukernel'' to directly by EFI firmware without the use of a boot-loader."
+endmenu # efi
 
 menu "Debugging settings"
 	config "Build debug version"
