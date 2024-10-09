@@ -309,8 +309,8 @@ static efi_status_t efi_setup_gop(struct screen_info *si, efi_guid_t *proto,
 #include <uapi/asm/bootparam.h>
 
 # define MIN_KERNEL_ALIGN PMD_SIZE
-_Static_assert((CONFIG_PHYSICAL_ALIGN >= MIN_KERNEL_ALIGN),
-    "'CONFIG_PHYSICAL_ALIGN' is less than minimum kernel alignment.");
+_Static_assert(!((CONFIG_PHYSICAL_START & (CONFIG_PHYSICAL_ALIGN - 1))),
+    "'CONFIG_PHYSICAL_START' is not aligned to 'CONFIG_PHYSICAL_ALIGN'.");
 
 static efi_status_t setup_graphics(struct boot_params *boot_params)
 {
