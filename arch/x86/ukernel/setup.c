@@ -30,20 +30,10 @@ void __init x86_numa_init(void);
 
 int __init acpi_boot_init(void);
 
-static phys_addr_t __init get_ramdisk_image(void)
-{
-    return boot_params.ramdisk_image;
-}
-
-static size_t __init get_ramdisk_size(void)
-{
-    return boot_params.ramdisk_size;
-}
-
 static void __init reserve_initrd(void)
 {
-    phys_addr_t ramdisk_image = get_ramdisk_image();
-    size_t ramdisk_size = get_ramdisk_size();
+    phys_addr_t ramdisk_image = boot_params.ramdisk_image;
+    size_t ramdisk_size = boot_params.ramdisk_size;
 
     if (!ramdisk_image || !ramdisk_size)
         return;
