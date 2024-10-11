@@ -49,7 +49,8 @@ void __init __used e820__print_table(void)
     int e;
 
     for (e = 0; e < e820_table.nr_entries; e++) {
-        ulog_debug("[mem %#018llx] [%#10lu] ", e820_table.entries[e].start,
+        ulog_debug("[mem %#018llx .. %#018llx] [%#10lu] ", e820_table.entries[e].start,
+            e820_table.entries[e].start + e820_table.entries[e].size - 1,
             e820_table.entries[e].size >> PAGE_SHIFT);
         e820_print_type(e820_table.entries[e].type);
         ulog_debug("\n");
