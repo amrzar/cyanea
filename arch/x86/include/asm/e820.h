@@ -37,6 +37,6 @@ enum e820_type {
 void __init e820__range_add(phys_addr_t, size_t, enum e820_type);
 void __init e820__update_table(void);
 void __init e820__memblock_setup(void);
-void __init __used e820__print_table(void);
+void __init e820__print_table(void);
 
 #endif /* __X86_ASM_E820_H__ */

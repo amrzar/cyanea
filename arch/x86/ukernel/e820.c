@@ -44,7 +44,7 @@ static void __init e820_print_type(enum e820_type type)
     }
 }
 
-void __init __used e820__print_table(void)
+void __init e820__print_table(void)
 {
     int e;
 
