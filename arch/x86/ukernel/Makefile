@@ -10,7 +10,7 @@ obj-y += irq.o
 obj-y += entry_64.o
 obj-y += __entry_64.o
 obj-y += cpu.o
-obj-y += efi.o
+obj-$(EFI_STUB) += efi.o
 obj-$(NUMA) += numa.o
 
 obj-y += apic/
