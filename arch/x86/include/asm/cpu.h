@@ -82,8 +82,30 @@
 
 #define MSR_MTRRcap         0x000000FE
 #define MSR_MTRRdefType     0x000002FF
+# define MTRR_DEF_TYPE_TYPE 0x0FFUL
+# define MTRR_DEF_TYPE_FE   0x400UL
+# define MTRR_DEF_TYPE_E    0x800UL
+
+#define MSR_IA32_CR_PAT     0x00000277
 
 #ifndef __ASSEMBLY__
+
+static __always_inline unsigned long rdmsr(unsigned int msr)
+{
+    unsigned long low, high;
+    asm volatile("rdmsr" : "=a" (low), "=d" (high) : "c" (msr));
+    return ((low) | (high) << 32);
+}
+
+static __always_inline void __wrmsr(unsigned int msr, u32 low, u32 high)
+{
+    asm volatile("wrmsr" : : "c" (msr), "a"(low), "d" (high) : "memory");
+}
+
+static inline void wrmsrl(unsigned int msr, unsigned long val)
+{
+    __wrmsr(msr, (u32)(val & 0xFFFFFFFFUL), (u32)(val >> 32));
+}
 
 /* Notes on CRx registers accessors:
  *
@@ -163,6 +185,13 @@ void cr4_init_shadow(void);
 void cr4_set_bits(unsigned long);
 void cr4_clear_bits(unsigned long);
 unsigned long read_cr4(void);
+
+static __always_inline void native_wbinvd(void)
+{
+    asm volatile("wbinvd": : :"memory");
+}
+
+# define wbinvd() native_wbinvd()
 
 /* 8.7 TASK MANAGEMENT IN 64-BIT MODE. */
 
