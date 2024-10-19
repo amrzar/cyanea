@@ -61,6 +61,7 @@ static inline void invpcid_flush_all_nonglobals(void)
     invpcid(0, 0, INVPCID_TYPE_ALL_CONTEXT_NO_GLOBAL);
 }
 
+/* Flush one page. */
 static inline void __flush_tlb_one(unsigned long addr)
 {
     /* It invalidates any TLB entries that are for a page number corresponding
@@ -75,25 +76,59 @@ static inline void __flush_tlb_one(unsigned long addr)
     asm volatile("invlpg (%0)" : : "r"(addr) : "memory");
 }
 
+/* Flush everything. */
 static inline void __flush_tlb_global(void)
 {
-    if (this_cpu_has(_CPUID_BIT_INVPCID))
+    unsigned long flags, cr4;
+
+    if (this_cpu_has(_CPUID_BIT_INVPCID)) {
         invpcid_flush_all();
-
-    else {
-        unsigned long flags, cr4;
-
-        local_irq_save(flags);
-        cr4 = read_cr4();
-
-        /* Write to CR4 invalidates all TLB entries (including global entries) and
-         * all entries in all paging-structure caches (for all PCIDs).
-         */
-
-        __write_cr4(cr4 ^ _CR4_PGE);
-        __write_cr4(cr4);
-        local_irq_restore(flags);
+        return;
     }
+
+    /* 4.10.4.1 Operations that Invalidate TLBs and Paging-Structure Caches. */
+    /* MOV to CR4. */
+    /* The instruction invalidates all TLB entries (including global entries) and all
+     * entries in all paging-structure caches (for all PCIDs) if
+     *   (1) it changes the value of CR4.PGE; or
+     *   (2) it changes the value of the CR4.PCIDE.
+     */
+
+    local_irq_save(flags);
+    cr4 = read_cr4();
+    __write_cr4(cr4 ^ _CR4_PGE);
+    __write_cr4(cr4);
+    local_irq_restore(flags);
+}
+
+/* Flush the entire current mapping. */
+static inline void __flush_tlb_local(void)
+{
+    unsigned long flags;
+
+    /* 4.10.4.1 Operations that Invalidate TLBs and Paging-Structure Caches. */
+    /* MOV to CR3. */
+    /* If CR4.PCIDE = 0, the instruction invalidates all TLB entries associated
+     * with PCID 000H except those for global pages. It also invalidates all entries
+     * in all paging-structure caches associated with PCID 000H.
+     *
+     * If CR4.PCIDE = 1 and bit 63 of the instruction’s source operand is 0, the
+     * instruction invalidates all TLB entries associated with the PCID specified in
+     * bits 11:0 of the instruction’s source operand except those for global pages.
+     * It also invalidates all entries in all paging-structure caches associated with
+     * that PCID. It is not required to invalidate entries in the TLBs and
+     * paging-structure caches that are associated with other PCIDs.
+     *
+     * If CR4.PCIDE = 1 and bit 63 of the instruction’s source operand is 1, the
+     * instruction is not required to invalidate any TLB entries or entries in
+     * paging-structure caches.
+     */
+
+    /* Without PTI, it always flush the user mapping. */
+
+    local_irq_save(flags);
+    write_cr3(read_cr3());
+    local_irq_restore(flags);
 }
 
 /* TLB FLUSHING API. */
@@ -106,6 +141,11 @@ static inline void flush_tlb_one(unsigned long addr)
 static inline void flush_tlb_all(void)
 {
     __flush_tlb_global();
+}
+
+static inline void flush_tlb_local(void)
+{
+    __flush_tlb_local();
 }
 
 #endif /* __X86_ASM_TLB_H__ */
