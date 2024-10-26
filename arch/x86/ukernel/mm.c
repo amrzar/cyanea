@@ -39,7 +39,7 @@ pgprotval_t __supported_pte_mask = -1;
 
 typedef char page_array_t[CONFIG_BRK_ALLOC_PAGES][PAGE_SIZE];
 
-static page_array_t *__brk_alloc = (page_array_t *) __brk_base;
+static page_array_t *__brk_alloc = (page_array_t *)__brk_base;
 # define __brk_end ((*__brk_alloc)[next_page])
 
 static unsigned int __initdata next_page;
