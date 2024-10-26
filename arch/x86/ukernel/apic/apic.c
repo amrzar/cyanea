@@ -6,4 +6,6 @@
 
 #include <asm/apic.h>
 
-struct apic *apic;
+void __init register_boot_apic_id(u32);
+
+u32 boot_cpu_apic_id __ro_after_init;

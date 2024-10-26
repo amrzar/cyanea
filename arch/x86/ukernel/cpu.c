@@ -10,10 +10,10 @@
 #include <asm/current.h>
 #include <asm/cpu.h>
 
-u32 boot_cpu_apicid __ro_after_init;
+extern u32 boot_cpu_apic_id __ro_after_init;
 
-u32 __initdata cpuid_to_apicid[NR_CPUS];
-u32 __initdata cpuid_to_acpiid[NR_CPUS];
+u32 __initdata cpuid_to_apic_id[NR_CPUS];
+u32 __initdata cpuid_to_acpi_id[NR_CPUS];
 
 /* BSP gets CPU# 0. */
 static int __initdata assigned_cpus = 1;
@@ -21,15 +21,20 @@ void __init register_apic_id(u32 apic_id, u32 acpi_id)
 {
     int cpu;
 
-    cpu = (apic_id == boot_cpu_apicid) ? 0 : assigned_cpus++;
+    cpu = (apic_id == boot_cpu_apic_id) ? 0 : assigned_cpus++;
     if (cpu < NR_CPUS) {
-        cpuid_to_apicid[cpu] = apic_id;
-        cpuid_to_acpiid[cpu] = acpi_id;
+        cpuid_to_apic_id[cpu] = apic_id;
+        cpuid_to_acpi_id[cpu] = acpi_id;
 
         ulog_info("CPU (%u), acpi_id (%u).\n", apic_id, acpi_id);
-
-    } else /* 'CONFIG_NR_CPUS'. */
+    } else { /* 'CONFIG_NR_CPUS'. */
         ulog_err("CPU (%u), acpi_id (%u) dropped.", apic_id, acpi_id);
+    }
+}
+
+void __init register_boot_apic_id(u32 apic_id)
+{
+    boot_cpu_apic_id = apic_id;
 }
 
 /* CPU. */
