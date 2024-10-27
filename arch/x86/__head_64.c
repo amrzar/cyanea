@@ -37,7 +37,7 @@ phys_addr_t phys_base __section(".data");
 /* Used during boot until 'init_top_pgt' get initialised and enabled, mm.c. */
 pgd_t __initdata early_top_pgt[PTRS_PER_PGD] __aligned(PAGE_SIZE) = { 0 };
 
-#define EARLY_FREE_PAGES 64
+# define EARLY_FREE_PAGES 64
 
 static unsigned int __initdata next_page;
 static char __initdata early_pages[EARLY_FREE_PAGES][PAGE_SIZE]
@@ -121,7 +121,7 @@ static void __init *get_free_zero_page(void)
 }
 
 /* All page-tables are present in kernel mapping; use it to get virtual address. */
-#define __va_symbol(x) ((x) + __START_KERNEL_map - phys_base)
+# define __va_symbol(x) ((x) + __START_KERNEL_map - phys_base)
 
 static bool __init do_early_map(unsigned long address)
 {
@@ -136,15 +136,13 @@ static bool __init do_early_map(unsigned long address)
     i = pgd_index(address);
 
     /* Everything should fit in a PUD allocated in '__startup_64'. */
-
     assert(pgd_val(pgd[i]), "out-of-bound memory access during boot.");
 
-    pud = (pud_t *) __va_symbol((pgd_val(pgd[i]) & PG_PFN_MASK));
+    pud = (pud_t *)__va_symbol((pgd_val(pgd[i]) & PG_PFN_MASK));
 
     i = pud_index(address);
-
     if (pud_val(pud[i]))
-        pmd = (pmd_t *) __va_symbol((pud_val(pud[i]) & PG_PFN_MASK));
+        pmd = (pmd_t *)__va_symbol((pud_val(pud[i]) & PG_PFN_MASK));
     else {
 
         /* 'PMD' is not present for 'address', allocate and map. */
@@ -153,12 +151,12 @@ static bool __init do_early_map(unsigned long address)
         if (!pmd)
             return false;
 
-        pud[i] = __pud_t((pudval_t) __pa_symbol(pmd) | _KERNPG_TABLE);
+        pud[i] = __pud_t((pudval_t)__pa_symbol(pmd) | _KERNPG_TABLE);
     }
 
-#define __PAGE_KERNEL_LARGE_NO_GLOBAL (__PAGE_KERNEL_LARGE & ~_PAGE_GLOBAL)
+# define __PAGE_KERNEL_LARGE_NO_GLOBAL (__PAGE_KERNEL_LARGE & ~_PAGE_GLOBAL)
 
-    /* Page is not present for 'address', map it . */
+    /* Page is not present for 'address', map it. */
 
     pmd[pmd_index(address)] =
         __pmd_t((pmdval_t)(phys_addr & PMD_MASK) |
