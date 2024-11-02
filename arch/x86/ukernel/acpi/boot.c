@@ -225,7 +225,7 @@ int __init acpi_boot_init(void)
     return SUCCESS;
 }
 
-void __init acpi_x86_table_init(void)
+void __init acpi_boot_table_init(void)
 {
     assert(!acpi_table_init(), "ACPI: failed.");
 }
