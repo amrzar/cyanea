@@ -213,15 +213,6 @@ static int __init acpi_parse_madt(struct acpi_table_header *table_header)
     return SUCCESS;
 }
 
-/* Parse HPET. */
-
-static int __init acpi_parse_hpet(struct acpi_table_header *table_header)
-{
-    /* TODO. Parse HPET. */
-
-    return SUCCESS;
-}
-
 int __init acpi_boot_init(void)
 {
     int err;
@@ -230,8 +221,6 @@ int __init acpi_boot_init(void)
     if (err) {
         /* ACPI found no MADT. */
     }
-
-    err = acpi_table_parse(ACPI_SIG_HPET, acpi_parse_hpet);
 
     return SUCCESS;
 }
