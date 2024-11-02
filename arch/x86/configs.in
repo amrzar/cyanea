@@ -55,15 +55,6 @@ menu "Architecture dependant configurations" # arch-dep-config
 				(Default to 1MiB)."
 	endmenu # ukernel-image-config
 
-	menu "NUMA (Non-Uniform Memory Access) support"
-		config "Maximum NUMA nodes (as a power of 2)"
-			CONFIG_NODES_SHIFT
-			INTEGER 6
-			depends CONFIG_NUMA
-			help
-				"Number of NUMA Nodes available on the target system."
-	endmenu # numa-support
-
 	menu "Platform (PC99)" # pc99-platform
 		config "Maximum number of IO APICs"
 			CONFIG_NR_IOAPIC

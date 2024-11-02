@@ -126,49 +126,4 @@ struct acpi_madt_local_apic_override {
     u64 address;
 };
 
-/* 5.2.16. System Resource Affinity Table (SRAT). */
-/* https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#system-resource-affinity-table-srat. */
-
-struct acpi_table_srat {
-    struct acpi_table_header header;
-    u32 reserved1;
-    u64 reserved2;
-};
-
-enum acpi_srat_type {
-    ACPI_SRAT_TYPE_CPU_AFFINITY = 0,            /* 5.2.16.1. Processor Local APIC/SAPIC Affinity Structure. */
-    ACPI_SRAT_TYPE_MEMORY_AFFINITY = 1,         /* 5.2.16.2. Memory Affinity Structure. */
-};
-
-/* SRAT Subtables: */
-
-/* 'ACPI_SRAT_TYPE_CPU_AFFINITY'. */
-struct acpi_srat_cpu_affinity {
-    struct acpi_subtable_header header;
-    u8 proximity_domain_lo;
-    u8 apic_id;
-# define ACPI_SRAT_CPU_USE_AFFINITY  1          /* Use affinity structure */
-    u32 flags;
-    u8 local_sapic_eid;
-    u8 proximity_domain_hi[3];
-    u32 clock_domain;
-};
-
-/* 'ACPI_SRAT_TYPE_MEMORY_AFFINITY'. */
-struct acpi_srat_mem_affinity {
-    struct acpi_subtable_header header;
-    u32 proximity_domain;
-    u16 reserved;
-    u64 base_address;
-    u64 length;
-    u32 reserved1;
-# define ACPI_SRAT_MEM_ENABLED       (1 << 0)   /* Use affinity structure. */
-# define ACPI_SRAT_MEM_HOT_PLUGGABLE (1 << 1)   /* Memory region is hot pluggable. */
-# define ACPI_SRAT_MEM_NON_VOLATILE  (1 << 2)   /* Memory region is non-volatile. */
-    u32 flags;
-    u64 reserved2;
-};
-
-int __init acpi_numa_init(void);
-
 #endif /* __CYANEA_ACPI_H__ */
