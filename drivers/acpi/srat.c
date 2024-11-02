@@ -54,9 +54,6 @@ static int __init acpi_parse_srat(struct acpi_table_header *table_header)
 
 int __init acpi_numa_init(void)
 {
-    if (acpi_disabled)
-        return -EINVAL;
-
     acpi_table_parse(ACPI_SIG_SRAT, acpi_parse_srat);
 
     return SUCCESS;

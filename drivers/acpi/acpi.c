@@ -10,8 +10,6 @@
 
 #include "acpi.h"
 
-int acpi_disabled;
-
 # define acpi_compare_sig(a, sig) (!strncmp((a), (sig), 4))
 
 # define acpi_unmap(a, b) memunmap((a), (b))

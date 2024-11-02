@@ -10,8 +10,6 @@
 /* Advanced Configuration and Power Interface (ACPI). */
 /* https://uefi.org/specs/ACPI/6.5/index.html. */
 
-extern int acpi_disabled;
-
 #define ACPI_SIG_SRAT "SRAT"    /* System Resource Affinity Table. */
 #define ACPI_SIG_FADT "FACP"    /* Fixed ACPI Description Table. */
 #define ACPI_SIG_MADT "APIC"    /* Multiple APIC Description Table. */

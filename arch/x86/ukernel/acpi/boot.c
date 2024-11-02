@@ -226,9 +226,6 @@ int __init acpi_boot_init(void)
 {
     int err;
 
-    if (acpi_disabled)
-        return -EINVAL;
-
     err = acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt);
     if (err) {
         /* ACPI found no MADT. */
@@ -241,23 +238,5 @@ int __init acpi_boot_init(void)
 
 void __init acpi_x86_table_init(void)
 {
-    if (acpi_disabled)
-        return;
-
-    if (acpi_table_init()) {
-        acpi_disabled = 1;
-    }
+    assert(!acpi_table_init(), "ACPI: failed.");
 }
-
-static int __init acpi_setup(char *arg)
-{
-    if (!strcmp(arg, "off")) {
-        acpi_disabled = 1;
-
-        return SUCCESS;
-    }
-
-    return -EINVAL;
-}
-
-early_param("acpi", acpi_setup);
