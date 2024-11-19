@@ -3,9 +3,9 @@
 #ifndef __CYANEA_STRTOX_H__
 #define __CYANEA_STRTOX_H__
 
-int strtoull(const char *, int, unsigned long long *);
-int strtoul(const char *, int, unsigned long *);
-int strtoll(const char *, int, long long *);
-int strtol(const char *, int, long *);
+int strtoull(const char *str, int base, unsigned long long *result_ret);
+int strtoul(const char *str, int base, unsigned long *result_ret);
+int strtoll(const char *str, int base, long long *result_ret);
+int strtol(const char *str, int base, long *result_ret);
 
 #endif /* __CYANEA_STRTOX_H__ */

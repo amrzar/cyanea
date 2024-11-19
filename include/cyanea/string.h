@@ -5,22 +5,22 @@
 
 #include <cyanea/stddef.h>
 
-int strcmp(const char *, const char *);
-int strncmp(const char *, const char *, size_t);
+int strcmp(const char *str1, const char *str2);
+int strncmp(const char *str1, const char *str2, size_t n);
 
-size_t strlen(const char *);
-size_t strnlen(const char *, size_t);
+size_t strlen(const char *str);
+size_t strnlen(const char *str, size_t n);
 
-char *strstr(const char *, const char *);
-char *strnstr(const char *, const char *, size_t);
-char *strchr(const char *, int);
-char *strcpy(char *, const char *);
-char *strcat(char *, const char *);
-char *strncpy(char *, const char *, size_t);
+char *strstr(const char *str1, const char *str2);
+char *strnstr(const char *str1, const char *str2, size_t n);
+char *strchr(const char *str, int c);
+char *strcpy(char *dest, const char *src);
+char *strcat(char *dest, const char *src);
+char *strncpy(char *dest, const char *src, size_t n);
 
-void *memcpy(void *, const void *, size_t);
-void *memset(void *, int, size_t);
-void *memmove(void *, const void *, size_t);
-int memcmp(const void *, const void *, size_t);
+void *memcpy(void *dest, const void *src, size_t n);
+void *memset(void *str, int c, size_t n);
+void *memmove(void *dest, const void *src, size_t n);
+int memcmp(const void *str1, const void *str2, size_t n);
 
 #endif /* __CYANEA_STRING_H__ */

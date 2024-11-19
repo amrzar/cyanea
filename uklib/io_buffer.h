@@ -13,9 +13,9 @@ enum io_bufmode { _IONBF, _IOLBF, _IOFBF };
 
 struct io_buffer;
 struct io_buffer_operations {
-    size_t (*read)(struct io_buffer *, char *, size_t);
-    size_t (*write)(struct io_buffer *, const char *, size_t);
-    int (*flush)(struct io_buffer *);
+	size_t (*read)(struct io_buffer *, char *, size_t);
+	size_t (*write)(struct io_buffer *, const char *, size_t);
+	int (*flush)(struct io_buffer *);
 };
 
 /**
@@ -32,27 +32,27 @@ struct io_buffer_operations {
  * can not be non-zero.
  */
 struct io_buffer {
-    enum io_bufmode mode;
-    size_t in, out;
-    char *buffer;
-    size_t buf_size;
-    char *inptr;
-    size_t io_unget_slop;
+	enum io_bufmode mode;
+	size_t in, out;
+	char *buffer;
+	size_t buf_size;
+	char *inptr;
+	size_t io_unget_slop;
 
-    struct io_buffer_operations *ops;
+	struct io_buffer_operations *ops;
 };
 
 typedef struct io_buffer *_IO_BUFFER;
 
 #define _IO_UNGET_SLOP_FULL(io) ((io)->inptr == (io)->buffer)
 
-size_t __iob_write(_IO_BUFFER, const char *, size_t);
-size_t __iob_read(_IO_BUFFER, char *, size_t);
-int __iob_ungetc(_IO_BUFFER, char);
+size_t __iob_write(_IO_BUFFER io, const char *buffer, size_t count);
+size_t __iob_read(_IO_BUFFER io, char *buffer, size_t count);
+int __iob_ungetc(_IO_BUFFER io, char c);
 
-int iob_strtoull(_IO_BUFFER, int, unsigned long long *);
-int iob_strtoll(_IO_BUFFER, int, long long *);
+int iob_strtoull(_IO_BUFFER io, int base, unsigned long long *result_ret);
+int iob_strtoll(_IO_BUFFER io, int base, long long *result_ret);
 
-int iob_vsnprintf(_IO_BUFFER, const char *, va_list);
+int iob_vsnprintf(_IO_BUFFER io, const char *format, va_list _ap);
 
 #endif /* __UKLIB_IO_BUFFER_H__ */

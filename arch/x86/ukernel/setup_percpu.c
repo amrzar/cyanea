@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/percpu.h>
-
 #include <asm/ukernel.lds.h>
 
 #define BOOT_PERCPU_OFFSET ((unsigned long)__per_cpu_load)
@@ -18,7 +17,7 @@
  */
 
 unsigned long __per_cpu_offset[NR_CPUS] __ro_after_init = {
-    [0 ... NR_CPUS - 1] = BOOT_PERCPU_OFFSET
+	[0 ... NR_CPUS - 1] = BOOT_PERCPU_OFFSET
 };
 
 /* Store offset in percpu area, so it can be accessed for current cpu easily. */

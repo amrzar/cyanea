@@ -8,162 +8,162 @@
 
 static size_t wbuffer_no_flush(_IO_BUFFER io, const char *buffer, size_t count)
 {
-    size_t n, written = 0;
+	size_t n, written = 0;
 
-    if (io->in != 0) {
-        if (io->ops->flush(io))
-            return 0;
-    }
+	if (io->in != 0) {
+		if (io->ops->flush(io))
+			return 0;
+	}
 
-    while (count != 0) {
-        if (io->out == io->buf_size) {
-            if (io->ops->flush(io))
-                break;
-        }
+	while (count != 0) {
+		if (io->out == io->buf_size) {
+			if (io->ops->flush(io))
+				break;
+		}
 
-        if (io->out == 0 && io->buf_size <= count) {
-            /* Output buffer is empty and the requested size is greater then the buffer,
-             * bypass the buffer.
-             */
+		if (io->out == 0 && io->buf_size <= count) {
+			/* Output buffer is empty and the requested size is greater then the buffer,
+			 * bypass the buffer.
+			 */
 
-            n = io->ops->write(io, buffer, count);
-            if (!n)
-                break;
-        } else { /* io->out != 0 || io->buf_size > count */
-            /* Output buffer is not empty, fill it, or buffer is empty and the requested
-             * size is smaller than the buffer.
-             */
+			n = io->ops->write(io, buffer, count);
+			if (!n)
+				break;
+		} else { /* io->out != 0 || io->buf_size > count */
+			/* Output buffer is not empty, fill it, or buffer is empty and the requested
+			 * size is smaller than the buffer.
+			 */
 
-            n = min(count, io->buf_size - io->out);
+			n = min(count, io->buf_size - io->out);
 
-            memcpy(&io->buffer[io->out], buffer, n);
+			memcpy(&io->buffer[io->out], buffer, n);
 
-            io->out += n;
-        }
+			io->out += n;
+		}
 
-        buffer += n;
-        written += n;
-        count -= n;
-    }
+		buffer += n;
+		written += n;
+		count -= n;
+	}
 
-    return written;
+	return written;
 }
 
 size_t __iob_write(_IO_BUFFER io, const char *buffer, size_t count)
 {
-    size_t written = 0;
-    size_t f_len;               /* Size of buffer should be flushed.     */
-    size_t u_len;               /* Size of buffer shoule not be flushed. */
+	size_t written = 0;
+	size_t f_len;               /* Size of buffer should be flushed.     */
+	size_t u_len;               /* Size of buffer shoule not be flushed. */
 
-    switch (io->mode) {
-    case _IOFBF:
-        f_len = 0;
-        u_len = count;
-        break;
+	switch (io->mode) {
+	case _IOFBF:
+		f_len = 0;
+		u_len = count;
+		break;
 
-    case _IOLBF:
-        f_len = count;
-        u_len = 0;
+	case _IOLBF:
+		f_len = count;
+		u_len = 0;
 
-        /* Flush up to new line. */
-        while ((f_len != 0) && (buffer[f_len - 1] != '\n')) {
-            f_len--;
-            u_len++;
-        }
+		/* Flush up to new line. */
+		while ((f_len != 0) && (buffer[f_len - 1] != '\n')) {
+			f_len--;
+			u_len++;
+		}
 
-        break;
+		break;
 
-    /*case _IONBF: */
-    default:
-        f_len = count;
-        u_len = 0;
-    }
+	/*case _IONBF: */
+	default:
+		f_len = count;
+		u_len = 0;
+	}
 
-    if (f_len != 0) {
-        written = wbuffer_no_flush(io, buffer, f_len);
+	if (f_len != 0) {
+		written = wbuffer_no_flush(io, buffer, f_len);
 
-        if (written != f_len)
-            return written;
+		if (written != f_len)
+			return written;
 
-        /* We have written 'f_len' byte, let's flush it. */
-        if (io->ops->flush(io))
-            return written;
+		/* We have written 'f_len' byte, let's flush it. */
+		if (io->ops->flush(io))
+			return written;
 
-        buffer += written;
-    }
+		buffer += written;
+	}
 
-    if (u_len != 0)
-        written += wbuffer_no_flush(io, buffer, u_len);
+	if (u_len != 0)
+		written += wbuffer_no_flush(io, buffer, u_len);
 
-    return written;
+	return written;
 }
 
 size_t __iob_read(_IO_BUFFER io, char *buffer, size_t count)
 {
-    char *buffer_ptr;
-    size_t n, read = 0;
+	char *buffer_ptr;
+	size_t n, read = 0;
 
-    /* It is an ouput buffer?! Flush the 'io'; push data back to IO. */
+	/* It is an ouput buffer?! Flush the 'io'; push data back to IO. */
 
-    if (io->out != 0) {
-        if (io->ops->flush(io))
-            return 0;
-    }
+	if (io->out != 0) {
+		if (io->ops->flush(io))
+			return 0;
+	}
 
-    while (count != 0) {
-        while (io->in == 0) {
+	while (count != 0) {
+		while (io->in == 0) {
 
-            /* Check if we should bypass buffering. */
-            int buffered = (count < io->buf_size);
-            if (buffered) {
-                buffer_ptr = io->buffer + io->io_unget_slop;
-                n = io->buf_size;
-            } else {
-                buffer_ptr = buffer;
-                n = count;
-            }
+			/* Check if we should bypass buffering. */
+			int buffered = (count < io->buf_size);
+			if (buffered) {
+				buffer_ptr = io->buffer + io->io_unget_slop;
+				n = io->buf_size;
+			} else {
+				buffer_ptr = buffer;
+				n = count;
+			}
 
-            if (!(n = io->ops->read(io, buffer_ptr, n)))
-                return read;
+			if (!(n = io->ops->read(io, buffer_ptr, n)))
+				return read;
 
-            if (buffered) {
-                io->inptr = buffer_ptr;
-                io->in = n;
-            } else {
-                buffer += n;
-                read += n;
-                count -= n;
-            }
+			if (buffered) {
+				io->inptr = buffer_ptr;
+				io->in = n;
+			} else {
+				buffer += n;
+				read += n;
+				count -= n;
+			}
 
-            if (count == 0)
-                return read;
-        }
+			if (count == 0)
+				return read;
+		}
 
-        n = min(count, io->in);
-        memcpy(buffer, io->inptr, n);
+		n = min(count, io->in);
+		memcpy(buffer, io->inptr, n);
 
-        buffer += n;
-        read += n;
-        count -= n;
+		buffer += n;
+		read += n;
+		count -= n;
 
-        io->inptr += n;
-        io->in -= n;
-    }
+		io->inptr += n;
+		io->in -= n;
+	}
 
-    return read;
+	return read;
 }
 
 int __iob_ungetc(_IO_BUFFER io, char c)
 {
-    if (io->out != 0)
-        return -EINVAL;
+	if (io->out != 0)
+		return -EINVAL;
 
-    if (_IO_UNGET_SLOP_FULL(io))
-        return -ENOSPC;
+	if (_IO_UNGET_SLOP_FULL(io))
+		return -ENOSPC;
 
-    io->inptr--;
-    io->inptr[0] = c;
-    io->in++;
+	io->inptr--;
+	io->inptr[0] = c;
+	io->in++;
 
-    return c;
+	return c;
 }

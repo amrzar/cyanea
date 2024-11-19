@@ -10,13 +10,14 @@
 # RSI holds the physical address of the bootparams provided by the boot-loader.
 #
 
-#include <cyanea/pgtable.h>
-#include <cyanea/irq.h>
-
 #include <asm-offsets.h>
-#include <asm/setup.h>
-#include <asm/cpu.h>
+#include <cyanea/pgtable.h>
+#include <asm/segment.h>
+#include <asm/cr_eflags_defs.h>
+#include <asm/irq_vector.h>
+#include <asm/msr.h>
 #include <asm/page.h>
+#include <asm/setup.h>
 
     .section ".head.text", "ax"
 

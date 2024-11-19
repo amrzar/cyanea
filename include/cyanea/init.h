@@ -19,20 +19,20 @@ extern char __initdata boot_command_line[COMMAND_LINE_SIZE];
 /* ''THIS IS SIMILAR TO LINUX OBSOLETE PARAMETER FORMAT''. */
 
 struct setup_param {
-    const char *param;
-    int (*setup_func)(char *);
-    int early;
+	const char *param;
+	int (*setup_func)(char *);
+	int early;
 };
 
 extern const struct setup_param __setup_start[], __setup_end[];
 
-# define __setup_param(str, uid, f, early) \
-    static const char __sstr_ ## uid[] __initconst = str; \
-    static struct setup_param __sp_ ## uid __used  \
-    __aligned(__alignof__(struct setup_param)) \
-    __section(".init.setup") = { __sstr_ ## uid, f, early }
+# define __setup_param(str, uid, f, early)                  \
+	static const char __sstr_ ## uid[] __initconst = str;   \
+	static struct setup_param __sp_ ## uid __used           \
+	__aligned(__alignof__(struct setup_param))          \
+	__section(".init.setup") = { __sstr_ ## uid, f, early }
 
-# define __setup(str, f) __setup_param(str, f, f, 0)
+# define __setup(str, f)     __setup_param(str, f, f, 0)
 # define early_param(str, f) __setup_param(str, f, f, 1)
 
 /* Constructors. */

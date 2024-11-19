@@ -5,196 +5,196 @@
 #ifndef __HAVE_ARCH_STRCMP
 int strcmp(const char *str1, const char *str2)
 {
-    const unsigned char *s1 = (const unsigned char *)(str1);
-    const unsigned char *s2 = (const unsigned char *)(str2);
+	const unsigned char *s1 = (const unsigned char *)(str1);
+	const unsigned char *s2 = (const unsigned char *)(str2);
 
-    while ((*s1 == *s2) && (*s1)) {
-        s1++;
-        s2++;
-    }
+	while ((*s1 == *s2) && (*s1)) {
+		s1++;
+		s2++;
+	}
 
-    return (*s1 - *s2);
+	return (*s1 - *s2);
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRNCMP
 int strncmp(const char *str1, const char *str2, size_t n)
 {
-    const unsigned char *s1 = (const unsigned char *)(str1);
-    const unsigned char *s2 = (const unsigned char *)(str2);
-    unsigned char ch;
-    int d = 0;
+	const unsigned char *s1 = (const unsigned char *)(str1);
+	const unsigned char *s2 = (const unsigned char *)(str2);
+	unsigned char ch;
+	int d = 0;
 
-    while (n--) {
-        d = (int)(ch = *s1++) - (int)(*s2++);
-        if (d || !ch)
-            break;
-    }
+	while (n--) {
+		d = (int)(ch = *s1++) - (int)(*s2++);
+		if (d || !ch)
+			break;
+	}
 
-    return d;
+	return d;
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRLEN
 size_t strlen(const char *str)
 {
-    const char *s = str;
+	const char *s = str;
 
-    while (*s)
-        s++;
+	while (*s)
+		s++;
 
-    return (s - str);
+	return (s - str);
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRNLEN
 size_t strnlen(const char *str, size_t n)
 {
-    const char *s = str;
+	const char *s = str;
 
-    while ((n--) && (*s))
-        s++;
+	while ((n--) && (*s))
+		s++;
 
-    return (s - str);
+	return (s - str);
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRSTR
 char *strstr(const char *str1, const char *str2)
 {
-    return strnstr(str1, str2, strlen(str1));
+	return strnstr(str1, str2, strlen(str1));
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRNSTR
 char *strnstr(const char *str1, const char *str2, size_t n)
 {
-    size_t n2;
+	size_t n2;
 
-    n2 = strlen(str2);
-    if (!n2)
-        return (char *)(str1);
+	n2 = strlen(str2);
+	if (!n2)
+		return (char *)(str1);
 
-    while (n >= n2) {
-        if (!strncmp(str1, str2, n2))
-            return (char *)(str1);
+	while (n >= n2) {
+		if (!strncmp(str1, str2, n2))
+			return (char *)(str1);
 
-        n--;
-        str1++;
-    }
+		n--;
+		str1++;
+	}
 
-    return NULL;
+	return NULL;
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRCHR
 char *strchr(const char *str, int c)
 {
-    while (*str != (char)(c)) {
-        if (*str == '\0')
-            return NULL;
-        str++;
-    }
+	while (*str != (char)(c)) {
+		if (*str == '\0')
+			return NULL;
+		str++;
+	}
 
-    return (char *)(str);
+	return (char *)(str);
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRCPY
 char *strcpy(char *dest, const char *src)
 {
-    char *p = dest;
-    const char *q = src;
-    char ch;
+	char *p = dest;
+	const char *q = src;
+	char ch;
 
-    do {
-        *p++ = ch = *q++;
-    } while (ch);
+	do {
+		*p++ = ch = *q++;
+	} while (ch);
 
-    return dest;
+	return dest;
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRCAT
 char *strcat(char *dest, const char *src)
 {
-    strcpy(strchr(dest, '\0'), src);
+	strcpy(strchr(dest, '\0'), src);
 
-    return dest;
+	return dest;
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRNCPY
 char *strncpy(char *dest, const char *src, size_t n)
 {
-    char *q = dest;
-    const char *p = src;
-    char ch;
+	char *q = dest;
+	const char *p = src;
+	char ch;
 
-    while (n--) {
-        *q++ = ch = *p++;
-        if (!ch)
-            break;
-    }
+	while (n--) {
+		*q++ = ch = *p++;
+		if (!ch)
+			break;
+	}
 
-    memset(q, 0, n);            /* spec!? */
-    return dest;
+	memset(q, 0, n);            /* spec!? */
+	return dest;
 }
 #endif
 
 #ifndef __HAVE_ARCH_MEMCPY
 void *memcpy(void *dest, const void *src, size_t n)
 {
-    char *q = dest;
-    const char *p = src;
+	char *q = dest;
+	const char *p = src;
 
-    while (n--)
-        *q++ = *p++;
+	while (n--)
+		*q++ = *p++;
 
-    return dest;
+	return dest;
 }
 #endif
 
 #ifndef __HAVE_ARCH_MEMSET
 void *memset(void *str, int c, size_t n)
 {
-    char *s = str;
+	char *s = str;
 
-    while (n--)
-        *s++ = c;
+	while (n--)
+		*s++ = c;
 
-    return str;
+	return str;
 }
 #endif
 
 #ifndef __HAVE_ARCH_MEMMOVE
 void *memmove(void *dest, const void *src, size_t n)
 {
-    unsigned char *d = dest;
-    const unsigned char *s = src;
+	unsigned char *d = dest;
+	const unsigned char *s = src;
 
-    if (d <= s || d - s >= n)
-        return memcpy(dest, src, n);
+	if (d <= s || d - s >= n)
+		return memcpy(dest, src, n);
 
-    while (n-- > 0)
-        d[n] = s[n];
+	while (n-- > 0)
+		d[n] = s[n];
 
-    return dest;
+	return dest;
 }
 #endif
 
 #ifndef __HAVE_ARCH_MEMCMP
 int memcmp(const void *str1, const void *str2, size_t n)
 {
-    const unsigned char *s1, *s2;
-    int res = 0;
+	const unsigned char *s1, *s2;
+	int res = 0;
 
-    for (s1 = str1, s2 = str2; n > 0; ++s1, ++s2, n--) {
-        res = *s1 - *s2;
-        if (!res)
-            break;
-    }
+	for (s1 = str1, s2 = str2; n > 0; ++s1, ++s2, n--) {
+		res = *s1 - *s2;
+		if (!res)
+			break;
+	}
 
-    return res;
+	return res;
 }
 #endif

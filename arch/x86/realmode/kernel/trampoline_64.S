@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <asm/desc_types.h>
+#include <asm/cr_eflags_defs.h>
+#include <asm/msr.h>
 #include <asm/page.h>
-#include <asm/cpu.h>
+#include <asm/segment.h>
 
     .text
     .code16

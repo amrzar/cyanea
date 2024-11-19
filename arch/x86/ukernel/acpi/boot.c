@@ -7,11 +7,12 @@
 #include <asm/apic.h>
 #include <asm/cpuinfo.h>
 
-void __init register_apic_id(u32, u32);
-void __init register_ioapic(int, u32, u32);
+void __init register_apic_id(u32, u32);             /* ukernel/apic/apic.c. */
+void __init register_lapic_address(phys_addr_t);    /* ukernel/apic/apic.c. */
+void __init register_ioapic(int, u32, u32);         /* ukernel/apic/io_apic.c. */
 
-int acpi_lapic;
-int acpi_ioapic;
+int acpi_lapic;     /* LAPIC found. */
+int acpi_ioapic;    /* IOAPIC found. */
 
 static phys_addr_t acpi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
 
@@ -24,78 +25,78 @@ static phys_addr_t acpi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
 
 static int __init acpi_parse_lapic(struct acpi_subtable_header *subtable_header)
 {
-    struct acpi_madt_local_apic *apic;
+	struct acpi_madt_local_apic *apic;
 
-    apic = (struct acpi_madt_local_apic *)subtable_header;
+	apic = (struct acpi_madt_local_apic *)subtable_header;
 
-    /* Invalid ID. */
-    if (apic->id == 0xFF)
-        return SUCCESS;
+	/* Invalid ID. */
+	if (apic->id == 0xFF)
+		return SUCCESS;
 
-    /* Register CPUs. Ignore disable CPUs with 'ACPI_MADT_ONLINE_CAPABLE'. */
-    if (apic->lapic_flags & ACPI_MADT_ENABLED)
-        register_apic_id(apic->id,  /* APIC ID */
-            apic->processor_id);    /* ACPI ID */
+	/* Register CPUs. Ignore disable CPUs with 'ACPI_MADT_ONLINE_CAPABLE'. */
+	if (apic->lapic_flags & ACPI_MADT_ENABLED)
+		register_apic_id(apic->id,  /* APIC ID */
+		        apic->processor_id);    /* ACPI ID */
 
-    return SUCCESS;
+	return SUCCESS;
 }
 
 static int __init acpi_parse_x2apic(struct acpi_subtable_header
-    *subtable_header)
+        *subtable_header)
 {
-    ulog_info("x2apic entry ignored.\n");
+	ulog_info("x2apic entry ignored.\n");
 
-    return SUCCESS;
+	return SUCCESS;
 }
 
 static int __init acpi_parse_lapic_nmi(struct acpi_subtable_header
-    *subtable_header)
+        *subtable_header)
 {
-    return SUCCESS;
+	return SUCCESS;
 }
 
 static int __init acpi_parse_x2apic_nmi(struct acpi_subtable_header
-    *subtable_header)
+        *subtable_header)
 {
-    return SUCCESS;
+	return SUCCESS;
 }
 
 static int __init acpi_parse_madt_lapic_entries(struct acpi_table_header
-    *table_header)
+        *table_header)
 {
-    int count, x2count;
+	int count, x2count;
 
-    /* Local APIC. */
+	/* Local APIC. */
 
-    count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
-            ACPI_MADT_TYPE_LOCAL_APIC, acpi_parse_lapic);
+	count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
+	                ACPI_MADT_TYPE_LOCAL_APIC, acpi_parse_lapic);
 
-    x2count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
-            ACPI_MADT_TYPE_LOCAL_X2APIC, acpi_parse_x2apic);
+	x2count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
+	                ACPI_MADT_TYPE_LOCAL_X2APIC, acpi_parse_x2apic);
 
-    if (!count && !x2count) {
-        ulog_err("No LAPIC entries present.");
+	if (!count && !x2count) {
+		ulog_err("No LAPIC entries present.");
 
-        return -ENODEV;
-    } else if (count < 0 || x2count < 0) {
-        ulog_err("Unable to parse LAPIC entry.");
+		return -ENODEV;
+	} else if (count < 0 || x2count < 0) {
+		ulog_err("Unable to parse LAPIC entry.");
 
-        return -ENODEV;
-    }
+		return -ENODEV;
+	}
 
-    count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
-            ACPI_MADT_TYPE_LOCAL_APIC_NMI, acpi_parse_lapic_nmi);
+	count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
+	                ACPI_MADT_TYPE_LOCAL_APIC_NMI, acpi_parse_lapic_nmi);
 
-    x2count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
-            ACPI_MADT_TYPE_LOCAL_X2APIC_NMI, acpi_parse_x2apic_nmi);
+	x2count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
+	                ACPI_MADT_TYPE_LOCAL_X2APIC_NMI, acpi_parse_x2apic_nmi);
 
-    if (count < 0 || x2count < 0) {
-        ulog_err("Unable to parse LAPIC NMI entry.");
+	if (count < 0 || x2count < 0) {
+		ulog_err("Unable to parse LAPIC NMI entry.");
 
-        return -ENODEV;
-    }
+		return -ENODEV;
+	}
 
-    return SUCCESS;
+	return SUCCESS;
 }
 
 /* IO-APIC Parsers. */
@@ -105,127 +106,129 @@ static int __init acpi_parse_madt_lapic_entries(struct acpi_table_header
  */
 
 static int __init acpi_parse_ioapic(struct acpi_subtable_header
-    *subtable_header)
+        *subtable_header)
 {
-    struct acpi_madt_io_apic *ioapic;
+	struct acpi_madt_io_apic *ioapic;
 
-    ioapic = (struct acpi_madt_io_apic *)subtable_header;
+	ioapic = (struct acpi_madt_io_apic *)subtable_header;
 
-    register_ioapic(ioapic->id, ioapic->address, ioapic->global_irq_base);
+	register_ioapic(ioapic->id, ioapic->address, ioapic->global_irq_base);
 
-    return SUCCESS;
+	return SUCCESS;
 }
 
 static int __init acpi_parse_interrupt_override(struct acpi_subtable_header
-    *subtable_header)
+        *subtable_header)
 {
-    /* TODO ISA interrupts. */
+	/* TODO ISA interrupts. */
 
-    return SUCCESS;
+	return SUCCESS;
 }
 
 static int __init acpi_parse_nmi_source(struct acpi_subtable_header
-    *subtable_header)
+        *subtable_header)
 {
-    return SUCCESS;
+	return SUCCESS;
 }
 
 static int __init acpi_parse_madt_ioapic_entries(struct acpi_table_header
-    *table_header)
+        *table_header)
 {
-    int count;
+	int count;
 
-    /* IO APIC. */
+	/* IO APIC. */
 
-    count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
-            ACPI_MADT_TYPE_IO_APIC, acpi_parse_ioapic);
+	count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
+	                ACPI_MADT_TYPE_IO_APIC, acpi_parse_ioapic);
 
-    if (!count) {
-        ulog_err("No IOAPIC entries present.");
+	if (!count) {
+		ulog_err("No IOAPIC entries present.");
 
-        return -ENODEV;
-    } else if (count < 0) {
-        ulog_err("Unable to parse IO APIC entry.");
+		return -ENODEV;
+	} else if (count < 0) {
+		ulog_err("Unable to parse IO APIC entry.");
 
-        return -ENODEV;
-    }
+		return -ENODEV;
+	}
 
-    count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
-            ACPI_MADT_TYPE_INTERRUPT_OVERRIDE, acpi_parse_interrupt_override);
+	count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
+	                ACPI_MADT_TYPE_INTERRUPT_OVERRIDE, acpi_parse_interrupt_override);
 
-    if (count < 0) {
-        ulog_err("Unable to parse interrupt source overrides entry.");
+	if (count < 0) {
+		ulog_err("Unable to parse interrupt source overrides entry.");
 
-        return -ENODEV;
-    }
+		return -ENODEV;
+	}
 
-    count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
-            ACPI_MADT_TYPE_NMI_SOURCE, acpi_parse_nmi_source);
+	count = acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
+	                ACPI_MADT_TYPE_NMI_SOURCE, acpi_parse_nmi_source);
 
-    if (count < 0) {
-        ulog_err("Unable to parse NMI source entry.");
+	if (count < 0) {
+		ulog_err("Unable to parse NMI source entry.");
 
-        return -ENODEV;
-    }
+		return -ENODEV;
+	}
 
-    return SUCCESS;
+	return SUCCESS;
 }
 
 /* Parse MADT. */
 
 static int __init acpi_parse_lapic_address_override(struct acpi_subtable_header
-    *subtable_header)
+        *subtable_header)
 {
-    struct acpi_madt_local_apic_override *acpi_lapic_addr_ovr;
+	struct acpi_madt_local_apic_override *acpi_lapic_addr_ovr;
 
-    acpi_lapic_addr_ovr = (struct acpi_madt_local_apic_override *)subtable_header;
-    acpi_lapic_addr = acpi_lapic_addr_ovr->address;
+	acpi_lapic_addr_ovr = (struct acpi_madt_local_apic_override *)subtable_header;
+	acpi_lapic_addr = acpi_lapic_addr_ovr->address;
 
-    ulog_info("ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE (address[0x%llx]).\n",
-        acpi_lapic_addr);
+	ulog_info("ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE (address[0x%llx]).\n",
+	        acpi_lapic_addr);
 
-    return SUCCESS;
+	return SUCCESS;
 }
 
 static int __init acpi_parse_madt(struct acpi_table_header *table_header)
 {
-    int err;
-    struct acpi_table_madt *madt = (struct acpi_table_madt *)table_header;
+	int err;
+	struct acpi_table_madt *madt = (struct acpi_table_madt *)table_header;
 
-    if (madt->address)
-        acpi_lapic_addr = madt->address;
+	if (madt->address)
+		acpi_lapic_addr = madt->address;
 
-    acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
-        ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE, acpi_parse_lapic_address_override);
+	acpi_subtable_parse(table_header, sizeof(struct acpi_table_madt),
+	        ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE, acpi_parse_lapic_address_override);
 
-    /* Parse MADT LAPIC entries. */
-    err = acpi_parse_madt_lapic_entries(table_header);
-    if (!err) {
-        acpi_lapic = 1;
+	register_lapic_address(acpi_lapic_addr);
 
-        /* Parse MADT IO-APIC entries. */
-        err = acpi_parse_madt_ioapic_entries(table_header);
-        if (!err) {
-            acpi_ioapic = 1;
-        }
-    }
+	/* Parse MADT LAPIC entries. */
+	err = acpi_parse_madt_lapic_entries(table_header);
+	if (!err) {
+		acpi_lapic = 1;
 
-    return SUCCESS;
+		/* Parse MADT IO-APIC entries. */
+		err = acpi_parse_madt_ioapic_entries(table_header);
+		if (!err) {
+			acpi_ioapic = 1;
+		}
+	}
+
+	return SUCCESS;
 }
 
 int __init acpi_boot_init(void)
 {
-    int err;
+	int err;
 
-    err = acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt);
-    if (err) {
-        /* ACPI found no MADT. */
-    }
+	err = acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt);
+	if (err) {
+		/* ACPI found no MADT. */
+	}
 
-    return SUCCESS;
+	return SUCCESS;
 }
 
 void __init acpi_boot_table_init(void)
 {
-    assert(!acpi_table_init(), "ACPI: failed.");
+	assert(!acpi_table_init(), "ACPI: failed.");
 }

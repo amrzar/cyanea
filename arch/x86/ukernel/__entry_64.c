@@ -7,10 +7,10 @@
 
 struct utask_regs *switch_utask_stack(struct utask_regs *percpu_regs)
 {
-    struct utask_regs *regs =
-        ((struct utask_regs *)(this_cpu_read(percpu_hot.top_of_stack))) - 1;
+	struct utask_regs *regs =
+	        ((struct utask_regs *)(this_cpu_read(percpu_hot.top_of_stack))) - 1;
 
-    *regs = *percpu_regs;
+	*regs = *percpu_regs;
 
-    return regs;
+	return regs;
 }

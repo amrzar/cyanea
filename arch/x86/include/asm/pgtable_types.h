@@ -56,14 +56,14 @@
 /* 12.3 METHODS OF CACHING AVAILABLE. */
 
 enum page_cache_mode {
-    _PAGE_CACHE_MODE_WB = 0,
-    _PAGE_CACHE_MODE_WT = 1,
-    _PAGE_CACHE_MODE_UC_MINUS = 2,
-    _PAGE_CACHE_MODE_UC = 3,
-    _PAGE_CACHE_MODE_WC = 4,
-    _PAGE_CACHE_MODE_WP = 5,
+	_PAGE_CACHE_MODE_WB = 0,
+	_PAGE_CACHE_MODE_WT = 1,
+	_PAGE_CACHE_MODE_UC_MINUS = 2,
+	_PAGE_CACHE_MODE_UC = 3,
+	_PAGE_CACHE_MODE_WC = 4,
+	_PAGE_CACHE_MODE_WP = 5,
 
-    _PAGE_CACHE_MODE_NUM = 8
+	_PAGE_CACHE_MODE_NUM = 8
 };
 
 #define _PAGE_CACHE_MASK (_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)
@@ -74,7 +74,7 @@ enum page_cache_mode {
 
 typedef unsigned long pgdval_t;
 typedef struct {
-    pgdval_t pgd;
+	pgdval_t pgd;
 } pgd_t;
 
 #define pgd_val(x) ((x).pgd)
@@ -83,7 +83,7 @@ typedef struct {
 
 typedef unsigned long pteval_t;
 typedef struct {
-    pteval_t pte;
+	pteval_t pte;
 } pte_t;
 
 #define pte_val(x) ((x).pte)
@@ -92,7 +92,7 @@ typedef struct {
 
 typedef unsigned long pgprotval_t;
 typedef struct pgprot {
-    pgprotval_t pgprot;
+	pgprotval_t pgprot;
 } pgprot_t;
 
 #define pgprot_val(x) ((x).pgprot)
@@ -104,22 +104,22 @@ unsigned long cachemode2protval(enum page_cache_mode pcm);
 
 static inline pudval_t pud_pfn_mask(pud_t pud)
 {
-    return (pud_val(pud) & _PAGE_PSE) ? PHYSICAL_PUD_PAGE_MASK : PG_PFN_MASK;
+	return (pud_val(pud) & _PAGE_PSE) ? PHYSICAL_PUD_PAGE_MASK : PG_PFN_MASK;
 }
 
 static inline pudval_t pud_flags(pud_t pud)
 {
-    return pud_val(pud) & ~pud_pfn_mask(pud);
+	return pud_val(pud) & ~pud_pfn_mask(pud);
 }
 
 static inline pmdval_t pmd_pfn_mask(pmd_t pmd)
 {
-    return (pmd_val(pmd) & _PAGE_PSE) ? PHYSICAL_PMD_PAGE_MASK : PG_PFN_MASK;
+	return (pmd_val(pmd) & _PAGE_PSE) ? PHYSICAL_PMD_PAGE_MASK : PG_PFN_MASK;
 }
 
 static inline pmdval_t pmd_flags(pmd_t pmd)
 {
-    return pmd_val(pmd) & ~pmd_pfn_mask(pmd);
+	return pmd_val(pmd) & ~pmd_pfn_mask(pmd);
 }
 
 #define pte_pgprot(x) __pgprot_t(pte_flags(x))
@@ -142,11 +142,11 @@ static inline pmdval_t pmd_flags(pmd_t pmd)
 #define PAGE_KERNEL_IO_NOCACHE  __pgprot_t(__PAGE_KERNEL_IO_NOCACHE)
 
 enum page_size {
-    PAGE_SIZE_NONE,
-    PAGE_SIZE_4K,
-    PAGE_SIZE_2M,
-    PAGE_SIZE_1G,
-    PAGE_SIZE_NUM,
+	PAGE_SIZE_NONE,
+	PAGE_SIZE_4K,
+	PAGE_SIZE_2M,
+	PAGE_SIZE_1G,
+	PAGE_SIZE_NUM,
 };
 
 #endif /* __ASSEMBLY__ */

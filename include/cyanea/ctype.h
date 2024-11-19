@@ -19,18 +19,18 @@ int isxdigit(int);
 
 static inline int tolower(int c)
 {
-    if (isupper(c))
-        c -= 'A' - 'a';
+	if (isupper(c))
+		c -= 'A' - 'a';
 
-    return c;
+	return c;
 }
 
 static inline int toupper(int c)
 {
-    if (islower(c))
-        c -= 'a' - 'A';
+	if (islower(c))
+		c -= 'a' - 'A';
 
-    return c;
+	return c;
 }
 
 #endif /* __CYANEA_CTYPE_H__ */

@@ -4,7 +4,7 @@
 #define __X86_ASM_PAGE_TYPES_64_H__
 
 #ifndef __X86_ASM_PAGE_TYPES_H__
-#  error use 'page_types.h' instead.
+#  error "Use 'page_types.h'"
 #endif
 
 #define __PAGE_OFFSET UL(0xFFFFFF8000000000)

@@ -16,7 +16,7 @@
 
 typedef unsigned long pudval_t;
 typedef struct {
-    pgd_t pgd;
+	pgd_t pgd;
 } pud_t;
 
 #define pud_val(x) pgd_val((x).pgd)
@@ -33,7 +33,7 @@ typedef struct {
 
 typedef unsigned long pmdval_t;
 typedef struct {
-    pud_t pud;
+	pud_t pud;
 } pmd_t;
 
 #define pmd_val(x) pud_val((x).pud)

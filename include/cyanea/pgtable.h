@@ -10,8 +10,4 @@
 #define pmd_index(a) (((unsigned long)(a) >> PMD_SHIFT) & (PTRS_PER_PMD - 1))
 #define pte_index(a) (((unsigned long)(a) >> PAGE_SHIFT) & (PTRS_PER_PT - 1))
 
-#ifndef __ASSEMBLY__
-
-#endif /* __ASSEMBLY__ */
-
 #endif /* __CYANEA_PGTABLE_H__ */

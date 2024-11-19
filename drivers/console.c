@@ -11,130 +11,130 @@
 #define MAX_CONSOLE 8           /* .. */
 
 static struct preferred_console {
-    char name[8];
-    int index;
-    int user_specified;         /* Requested on command-line. */
-    char options[64];
+	char name[8];
+	int index;
+	int user_specified;         /* Requested on command-line. */
+	char options[64];
 } pcs[MAX_CONSOLE] = { 0 };
 
 static struct console *active_console = NULL;
 
 static int __add_preferred_console(char *name, int index, char *options,
-    int user_specified)
+        int user_specified)
 {
-    int i;
-    struct preferred_console *pc = pcs;
+	int i;
+	struct preferred_console *pc = pcs;
 
-    for (i = 0; i < MAX_CONSOLE && pc->name[0]; i++, pc++) {
-        if (!strcmp(pc->name, name) && (pc->index == index)) {
-            if (user_specified)
-                pc->user_specified = 1;
+	for (i = 0; i < MAX_CONSOLE && pc->name[0]; i++, pc++) {
+		if (!strcmp(pc->name, name) && (pc->index == index)) {
+			if (user_specified)
+				pc->user_specified = 1;
 
-            return SUCCESS;
-        }
-    }
+			return SUCCESS;
+		}
+	}
 
-    if (i == MAX_CONSOLE)
-        return -ENOSPC;
+	if (i == MAX_CONSOLE)
+		return -ENOSPC;
 
-    strncpy(pc->name, name, sizeof(pc->name));
-    pc->index = index;
-    pc->user_specified = user_specified;
+	strncpy(pc->name, name, sizeof(pc->name));
+	pc->index = index;
+	pc->user_specified = user_specified;
 
-    if (options)
-        strncpy(pc->options, options, sizeof(pc->options));
+	if (options)
+		strncpy(pc->options, options, sizeof(pc->options));
 
-    return SUCCESS;
+	return SUCCESS;
 }
 
 static int __init console_setup(char *arg)
 {
-    unsigned long index;
-    char buf[16] = { '\0' };
+	unsigned long index;
+	char buf[16] = { '\0' };
 
-    /* ''console=<name><index>,<options>''. */
-    /* ''console=<name>,<options>''. */
+	/* ''console=<name><index>,<options>''. */
+	/* ''console=<name>,<options>''. */
 
-    char *s, *options = strchr(arg, ',');
-    if (options)
-        *(options++) = '\0';
+	char *s, *options = strchr(arg, ',');
+	if (options)
+		*(options++) = '\0';
 
-    strncpy(buf, arg, sizeof(buf) - 1);   /* Keep '\0' for ending. */
-    for (s = buf; *s; s++)
-        if (isdigit(*s))
-            break;
+	strncpy(buf, arg, sizeof(buf) - 1);   /* Keep '\0' for ending. */
+	for (s = buf; *s; s++)
+		if (isdigit(*s))
+			break;
 
-    strtoul(s, 0, &index);
-    *s = '\0';
+	strtoul(s, 0, &index);
+	*s = '\0';
 
-    /* Passing <name>, <index>, and <option>. */
+	/* Passing <name>, <index>, and <option>. */
 
-    return __add_preferred_console(buf, index, options, 1);
+	return __add_preferred_console(buf, index, options, 1);
 }
 
 early_param("console", console_setup);
 
 int add_preferred_console(char *name, int index, char *options)
 {
-    return __add_preferred_console(name, index, options, 0);
+	return __add_preferred_console(name, index, options, 0);
 }
 
 static int try_enable_preferred_console(struct console *con, int user_specified)
 {
-    int i, err;
-    struct preferred_console *pc = pcs;
+	int i, err;
+	struct preferred_console *pc = pcs;
 
-    for (i = 0; i < MAX_CONSOLE && pc->name[0]; i++, pc++) {
-        if (pc->user_specified != user_specified)
-            continue;
+	for (i = 0; i < MAX_CONSOLE && pc->name[0]; i++, pc++) {
+		if (pc->user_specified != user_specified)
+			continue;
 
-        if (!con->match || con->match(con, pc->name, pc->options)) {
-            if (strcmp(pc->name, con->name))
-                continue;
+		if (!con->match || con->match(con, pc->name, pc->options)) {
+			if (strcmp(pc->name, con->name))
+				continue;
 
-            if (con->index >= 0) {
-                /* Check if exact port was requested!? */
-                if (con->index != pc->index)
-                    continue;
-            } else {
-                con->index = pc->index;
-            }
+			if (con->index >= 0) {
+				/* Check if exact port was requested!? */
+				if (con->index != pc->index)
+					continue;
+			} else {
+				con->index = pc->index;
+			}
 
-            if (con->setup) {
-                err = con->setup(con, pc->options);
-                if (err)
-                    return err;
-            }
-        }
+			if (con->setup) {
+				err = con->setup(con, pc->options);
+				if (err)
+					return err;
+			}
+		}
 
-        return SUCCESS;
-    }
+		return SUCCESS;
+	}
 
-    return -ENOENT;
+	return -ENOENT;
 }
 
 int register_console(struct console *con)
 {
-    if (try_enable_preferred_console(con, 1) &&
-        try_enable_preferred_console(con, 0))
-        return -ENOENT;
+	if (try_enable_preferred_console(con, 1) &&
+	        try_enable_preferred_console(con, 0))
+		return -ENOENT;
 
-    if (active_console) {
-        if (active_console->exit)
-            active_console->exit(active_console);
-    }
+	if (active_console) {
+		if (active_console->exit)
+			active_console->exit(active_console);
+	}
 
-    active_console = con;
+	active_console = con;
 
-    return SUCCESS;
+	return SUCCESS;
 }
 
 int console_write(const char *s, size_t count)
 {
-    if (!active_console)
-        return -EINVAL;
+	if (!active_console)
+		return -EINVAL;
 
-    active_console->write(active_console, s, count);
+	active_console->write(active_console, s, count);
 
-    return SUCCESS;
+	return SUCCESS;
 }

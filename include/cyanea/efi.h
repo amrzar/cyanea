@@ -12,12 +12,12 @@
 
 #define UUID_SIZE 16
 typedef struct {
-    u8 b[UUID_SIZE];
+	u8 b[UUID_SIZE];
 } efi_guid_t __aligned(__alignof__(u32));
 #define EFI_GUID(a, b, c, d...) ((efi_guid_t){ {    \
-            (a) & 0xff, ((a) >> 8) & 0xff, ((a) >> 16) & 0xff, ((a) >> 24) & 0xff,  \
-            (b) & 0xff, ((b) >> 8) & 0xff,          \
-            (c) & 0xff, ((c) >> 8) & 0xff, d } })
+			(a) & 0xff, ((a) >> 8) & 0xff, ((a) >> 16) & 0xff, ((a) >> 24) & 0xff,  \
+			(b) & 0xff, ((b) >> 8) & 0xff,          \
+			(c) & 0xff, ((c) >> 8) & 0xff, d } })
 
 typedef u64 efi_physical_addr_t;
 
@@ -37,16 +37,16 @@ struct efi_memory_desc {
 # define EFI_ACPI_RECLAIM_MEMORY 9
 # define EFI_ACPI_MEMORY_NVS 10
 # define EFI_PERSISTENT_MEMORY 14
-    u32 type;
-    u32 pad;
-    efi_physical_addr_t phys_addr;
-    u64 virt_addr;
-    u64 num_pages;
+	u32 type;
+	u32 pad;
+	efi_physical_addr_t phys_addr;
+	u64 virt_addr;
+	u64 num_pages;
 # define EFI_MEMORY_UC  ((u64)0x0000000000000001ULL)    /* Uncached. */
 # define EFI_MEMORY_WC  ((u64)0x0000000000000002ULL)    /* Write-Coalescing. */
 # define EFI_MEMORY_WT  ((u64)0x0000000000000004ULL)    /* Write-Through. */
 # define EFI_MEMORY_WB  ((u64)0x0000000000000008ULL)    /* Write-Back. */
-    u64 attribute;
+	u64 attribute;
 };
 
 #endif /* __CYANEA_EFI_H__ */

@@ -1,8 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <cyanea/pgtable.h>
 #include <cyanea/cache.h>
-
+#include <cyanea/pgtable.h>
 #include <asm/ukernel.lds.h>
 
 OUTPUT_FORMAT("elf64-x86-64")

@@ -11,5 +11,4 @@
 extern struct boot_params boot_params;
 
 #endif /* __ASSEMBLY__ */
-
 #endif /* __X86_ASM_SETUP_H__ */

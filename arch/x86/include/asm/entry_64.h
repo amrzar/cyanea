@@ -14,41 +14,40 @@
 
 #ifndef __ASSEMBLY__
 
-#include <cyanea/irq.h>
 #include <asm/utask.h>
 
 /* DECLARE_IDTENTRY - Declare IDT entrypoint without error code. */
 # define DECLARE_IDTENTRY(func) \
-    void asm_##func(void)
+	void asm_##func(void)
 
 /* DEFINE_IDTENTRY - C simple IDT entry points. */
 # define DEFINE_IDTENTRY(func) \
-    void func(struct utask_regs *regs)
+	void func(struct utask_regs *regs)
 
 /* DECLARE_IDTENTRY_WITH_ERROR_CODE and DEFINE_IDTENTRY_WITH_ERROR_CODE.
  * Same as DECLARE_IDTENTRY and DEFINE_IDTENTRY but with error code.
  */
 
 # define DECLARE_IDTENTRY_WITH_ERROR_CODE(func) \
-    void asm_##func(void)
+	void asm_##func(void)
 
 # define DEFINE_IDTENTRY_WITH_ERROR_CODE(func) \
-    void func(struct utask_regs *regs, unsigned long error_code)
+	void func(struct utask_regs *regs, unsigned long error_code)
 
 /* DECLARE_IDTENTRY_IRQ - Declare functions for device interrupt IDT entrypoint. */
 # define DECLARE_IDTENTRY_IRQ(func) \
-    DECLARE_IDTENTRY_WITH_ERROR_CODE(func)
+	DECLARE_IDTENTRY_WITH_ERROR_CODE(func)
 
 /* DEFINE_IDTENTRY_IRQ - C device interrupt IDT entry points. */
 # define DEFINE_IDTENTRY_IRQ(func) \
-    static void __##func(struct utask_regs *regs, u8 vector); \
-    \
-    void func(struct utask_regs *regs, unsigned long error_code) \
-    { \
-        __##func(regs, (u8) error_code); \
-    } \
-    \
-    static void __##func(struct utask_regs *regs, u8 vector)
+	static void __##func(struct utask_regs *regs, u8 vector); \
+	\
+	void func(struct utask_regs *regs, unsigned long error_code) \
+	{ \
+		__##func(regs, (u8)(error_code)); \
+	} \
+	\
+	static void __##func(struct utask_regs *regs, u8 vector)
 
 #else /* !__ASSEMBLY__ */
 
@@ -134,13 +133,13 @@
  */
 
 # define DECLARE_IDTENTRY(func) \
-    IDTENTRY asm_##func func has_error_code=0
+	IDTENTRY asm_##func func has_error_code=0
 
 # define DECLARE_IDTENTRY_WITH_ERROR_CODE(func) \
-    IDTENTRY asm_##func func has_error_code=1
+	IDTENTRY asm_##func func has_error_code=1
 
 # define DECLARE_IDTENTRY_IRQ(func) \
-    IDTENTRY_IRQ func
+	IDTENTRY_IRQ func
 
 /* *INDENT-ON* */
 

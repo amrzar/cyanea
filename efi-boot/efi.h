@@ -17,121 +17,121 @@ typedef u64 efi_handle_t;
 typedef u16 efi_char16_t;
 
 struct efi_table_hdr {
-    u64 signature;
-    u32 revision;
-    u32 header_size;
-    u32 crc32;
-    u32 reserved;
+	u64 signature;
+	u32 revision;
+	u32 header_size;
+	u32 crc32;
+	u32 reserved;
 };
 
 struct efi_simple_text_output_protocol {
-    u64 reset;
-    efi_status_t (__efiapi *output_string)(struct efi_simple_text_output_protocol *, efi_char16_t *);
+	u64 reset;
+	efi_status_t (__efiapi *output_string)(struct efi_simple_text_output_protocol *, efi_char16_t *);
 };
 
 struct efi_config_table {
-    efi_guid_t guid;
-    u64 table;
+	efi_guid_t guid;
+	u64 table;
 };
 
 /* 7. Services - Boot Services. */
 /* https://uefi.org/specs/UEFI/2.10/07_Services_Boot_Services.html#services-boot-services. */
 
 struct efi_boot_services {
-    struct efi_table_hdr hdr;
-    u64 __pad1[2];
+	struct efi_table_hdr hdr;
+	u64 __pad1[2];
 # define EFI_ALLOCATE_ANY_PAGES 0
 # define EFI_ALLOCATE_MAX_ADDRESS 1
 # define EFI_ALLOCATE_ADDRESS 2
-    efi_status_t (__efiapi *allocate_pages)(int, int, u64, efi_physical_addr_t *);
-    efi_status_t (__efiapi *free_pages)(efi_physical_addr_t, u64);
-    efi_status_t (__efiapi *get_memory_map)(u64 *, struct efi_memory_desc *, u64 *, u64 *, u32 *);
-    efi_status_t (__efiapi *allocate_pool)(int, u64, void **);
-    efi_status_t (__efiapi *free_pool)(void *);
-    u64 __pad2[9];
-    efi_status_t (__efiapi *handle_protocol)(efi_handle_t, efi_guid_t *, void **);
-    u64 __pad3[2];
+	efi_status_t (__efiapi *allocate_pages)(int, int, u64, efi_physical_addr_t *);
+	efi_status_t (__efiapi *free_pages)(efi_physical_addr_t, u64);
+	efi_status_t (__efiapi *get_memory_map)(u64 *, struct efi_memory_desc *, u64 *, u64 *, u32 *);
+	efi_status_t (__efiapi *allocate_pool)(int, u64, void **);
+	efi_status_t (__efiapi *free_pool)(void *);
+	u64 __pad2[9];
+	efi_status_t (__efiapi *handle_protocol)(efi_handle_t, efi_guid_t *, void **);
+	u64 __pad3[2];
 # define EFI_LOCATE_ALL_HANDLES 0
 # define EFI_LOCATE_BY_REGISTER_NOTIFY 1
 # define EFI_LOCATE_BY_PROTOCOL 2
-    efi_status_t (__efiapi *locate_handle)(int, efi_guid_t *, void *, u64 *, efi_handle_t *);
-    u64 __pad4[4];
-    efi_status_t __noreturn (__efiapi *exit)(efi_handle_t, efi_status_t, u64, efi_char16_t *);
-    efi_status_t (__efiapi *unload_image)(efi_handle_t);
-    efi_status_t (__efiapi *exit_boot_services)(efi_handle_t, u64);
-    u64 __pad5[9];
-    efi_status_t (__efiapi *locate_handle_buffer)(int, efi_guid_t *, void *, u64 *, efi_handle_t **);
-    u64 __pad6[7];
+	efi_status_t (__efiapi *locate_handle)(int, efi_guid_t *, void *, u64 *, efi_handle_t *);
+	u64 __pad4[4];
+	efi_status_t __noreturn (__efiapi *exit)(efi_handle_t, efi_status_t, u64, efi_char16_t *);
+	efi_status_t (__efiapi *unload_image)(efi_handle_t);
+	efi_status_t (__efiapi *exit_boot_services)(efi_handle_t, u64);
+	u64 __pad5[9];
+	efi_status_t (__efiapi *locate_handle_buffer)(int, efi_guid_t *, void *, u64 *, efi_handle_t **);
+	u64 __pad6[7];
 };
 
 /* 8. Services - Runtime Services. */
 /* https://uefi.org/specs/UEFI/2.10/08_Services_Runtime_Services.html#services-runtime-services. */
 
 struct efi_runtime_services {
-    struct efi_table_hdr hdr;
-    u64 __pad[14];
+	struct efi_table_hdr hdr;
+	u64 __pad[14];
 };
 
 /* 4. EFI System Table. */
 /* https://uefi.org/specs/UEFI/2.10/04_EFI_System_Table.html#efi-system-table. */
 
 struct efi_system_table {
-    struct efi_table_hdr hdr;
-    u64 fw_vendor;
-    u32 fw_revision;
-    u32 __pad1;
-    u64 con_in_handle;      /* efi_handle_t. */
-    u64 con_in;             /* struct efi_simple_text_input_protocol. */
-    efi_handle_t con_out_handle;
-    struct efi_simple_text_output_protocol *con_out;
-    u64 stderr_handle;      /* efi_handle_t. */
-    u64 stderr;             /* struct efi_simple_text_output_protocol. */
-    struct efi_runtime_services *runtime;
-    struct efi_boot_services *boottime;
-    u32 nr_config_tables;
-    u32 __pad2;
-    struct efi_config_table *config_tables;
+	struct efi_table_hdr hdr;
+	u64 fw_vendor;
+	u32 fw_revision;
+	u32 __pad1;
+	u64 con_in_handle;      /* efi_handle_t. */
+	u64 con_in;             /* struct efi_simple_text_input_protocol. */
+	efi_handle_t con_out_handle;
+	struct efi_simple_text_output_protocol *con_out;
+	u64 stderr_handle;      /* efi_handle_t. */
+	u64 stderr;             /* struct efi_simple_text_output_protocol. */
+	struct efi_runtime_services *runtime;
+	struct efi_boot_services *boottime;
+	u32 nr_config_tables;
+	u32 __pad2;
+	struct efi_config_table *config_tables;
 };
 
 /* 12. Protocols - Console Support. */
 /* https://uefi.org/specs/UEFI/2.10/12_Protocols_Console_Support.html#protocols-console-support. */
 
 struct efi_pixel_bitmask {
-    u32 red_mask;
-    u32 green_mask;
-    u32 blue_mask;
-    u32 reserved_mask;
+	u32 red_mask;
+	u32 green_mask;
+	u32 blue_mask;
+	u32 reserved_mask;
 };
 
 struct efi_graphics_output_mode_info {
-    u32 version;
-    u32 horizontal_resolution;
-    u32 vertical_resolution;
+	u32 version;
+	u32 horizontal_resolution;
+	u32 vertical_resolution;
 # define PIXEL_RGB_RESERVED_8BIT_PER_COLOR 0
 # define PIXEL_BGR_RESERVED_8BIT_PER_COLOR 1
 # define PIXEL_BIT_MASK 2
 # define PIXEL_BLT_ONLY 3
 # define PIXEL_FORMAT_MAX 4
-    int pixel_format;
-    struct efi_pixel_bitmask pixel_information;
-    u32 pixels_per_scan_line;
+	int pixel_format;
+	struct efi_pixel_bitmask pixel_information;
+	u32 pixels_per_scan_line;
 };
 
 struct efi_graphics_output_protocol_mode {
-    u32 max_mode;
-    u32 mode;
-    struct efi_graphics_output_mode_info *info;
-    u64 size_of_info;
-    efi_physical_addr_t frame_buffer_base;
-    u64 frame_buffer_size;
+	u32 max_mode;
+	u32 mode;
+	struct efi_graphics_output_mode_info *info;
+	u64 size_of_info;
+	efi_physical_addr_t frame_buffer_base;
+	u64 frame_buffer_size;
 };
 
 struct efi_graphics_output_protocol {
-    efi_status_t (__efiapi *query_mode)(struct efi_graphics_output_protocol *, u32, u64 *,
-        struct efi_graphics_output_mode_info **);
-    efi_status_t (__efiapi *set_mode)(struct efi_graphics_output_protocol *, u32);
-    u64 pad;    /* ''efi_status_t (__efiapi *blt)(...)''. */
-    struct efi_graphics_output_protocol_mode *mode;
+	efi_status_t (__efiapi *query_mode)(struct efi_graphics_output_protocol *, u32, u64 *,
+	        struct efi_graphics_output_mode_info **);
+	efi_status_t (__efiapi *set_mode)(struct efi_graphics_output_protocol *, u32);
+	u64 pad;    /* ''efi_status_t (__efiapi *blt)(...)''. */
+	struct efi_graphics_output_protocol_mode *mode;
 };
 
 #define EFI_SUCCESS 0

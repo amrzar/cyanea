@@ -15,7 +15,7 @@ extern unsigned long __per_cpu_offset[NR_CPUS] __ro_after_init;
 #define per_cpu_offset(x) (__per_cpu_offset[x])
 
 #define SHIFT_PERCPU_PTR(ptr, offset) \
-    ((typeof(ptr))((unsigned long)(ptr) + (offset)))
+	((typeof(ptr))((unsigned long)(ptr) + (offset)))
 
 #define per_cpu_ptr(ptr, cpu) SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)))
 

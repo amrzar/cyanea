@@ -9,7 +9,7 @@
 #include <uapi/cyanea/types.h>
 
 #define DECLARE_BITMAP(name, bits) \
-    unsigned long name[BITS_TO_ULONGS(bits)]
+	unsigned long name[BITS_TO_ULONGS(bits)]
 
 typedef _Bool bool;
 

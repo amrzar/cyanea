@@ -8,10 +8,10 @@
 void ulog(const char *, ...);
 
 #define ulog_err(...) do { \
-        ulog("[%s][%d]: ", __FUNCTION__, __LINE__); \
-        ulog(__VA_ARGS__); \
-        ulog("\n"); \
-    } while (0)
+		ulog("[%s][%d]: ", __FUNCTION__, __LINE__); \
+		ulog(__VA_ARGS__); \
+		ulog("\n"); \
+	} while (0)
 
 #if (CONFIG_LOG_LEVEL > 0)
 # define ulog_info(...) ulog(__VA_ARGS__)
@@ -26,18 +26,18 @@ void ulog(const char *, ...);
 #endif
 
 #define assert(cond, ...) do { \
-        if (!(cond)) { \
-            ulog_err(__VA_ARGS__); \
-            while(1); \
-        } \
-    } while(0)
+		if (!(cond)) { \
+			ulog_err(__VA_ARGS__); \
+			while(1); \
+		} \
+	} while(0)
 
 #define warning_on(cond) ({ \
-        int ___cond = (cond); \
-        if (__cond) \
-            ulog("[%s][%d]: warning on %s\n", __FUNCTION__, __LINE__, #cond); \
-        __cond; \
-    })
+		int ___cond = (cond); \
+		if (__cond) \
+			ulog("[%s][%d]: warning on %s\n", __FUNCTION__, __LINE__, #cond); \
+		__cond; \
+	})
 
 #endif /*  __ASSEMBLY__ */
 

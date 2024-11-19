@@ -21,84 +21,84 @@
  * Otherwise, size of option value returned in @ref_buf.
  */
 static int __param_get_option(const char *cmdline, int cmdline_len, const char *option, char *buf,
-    int buf_len)
+        int buf_len)
 {
-    char ch;
-    int i = 0, n = -1;
-    const char *op = NULL;
-    char *buffer = buf;
+	char ch;
+	int i = 0, n = -1;
+	const char *op = NULL;
+	char *buffer = buf;
 
-    if (cmdline == NULL)
-        return -1;
+	if (cmdline == NULL)
+		return -1;
 
-    enum {
-        ST_WORDSTART,   /* Start of word after a whitespace. */
-        ST_WORDCMP,     /* Search for the option -- compare word. */
-        ST_WORDSKIP,    /* Skip the word. */
-        ST_BUFCOPY,     /* Copying option's value to buffer */
-    } state = ST_WORDSTART;
+	enum {
+		ST_WORDSTART,   /* Start of word after a whitespace. */
+		ST_WORDCMP,     /* Search for the option -- compare word. */
+		ST_WORDSKIP,    /* Skip the word. */
+		ST_BUFCOPY,     /* Copying option's value to buffer */
+	} state = ST_WORDSTART;
 
-    do {
-        ch = cmdline[i];
+	do {
+		ch = cmdline[i];
 
-        switch (state) {
-        case ST_WORDSTART:
-            if (ch == ' ')
-                break;
+		switch (state) {
+		case ST_WORDSTART:
+			if (ch == ' ')
+				break;
 
-            state = ST_WORDCMP;
-            op = option;
+			state = ST_WORDCMP;
+			op = option;
 
-            fallthrough;
-        case ST_WORDCMP:
-            if (*op == '\0') {
-                if (ch == '=') {
-                    n = 0;
-                    buffer = buf;
-                    state = ST_BUFCOPY;
+			fallthrough;
+		case ST_WORDCMP:
+			if (*op == '\0') {
+				if (ch == '=') {
+					n = 0;
+					buffer = buf;
+					state = ST_BUFCOPY;
 
-                    break;
-                } else if ((ch == ' ') || (ch == '\0')) {
-                    return -2;
-                }
-            } else if (ch == *op++)
-                break;
+					break;
+				} else if ((ch == ' ') || (ch == '\0')) {
+					return -2;
+				}
+			} else if (ch == *op++)
+				break;
 
-            state = ST_WORDSKIP;
+			state = ST_WORDSKIP;
 
-            fallthrough;
-        case ST_WORDSKIP:
-            if (ch == ' ')
-                state = ST_WORDSTART;
+			fallthrough;
+		case ST_WORDSKIP:
+			if (ch == ' ')
+				state = ST_WORDSTART;
 
-            break;
-        case ST_BUFCOPY:
-            if (ch == ' ')
-                state = ST_WORDSTART;
-            else if (++n < buf_len)
-                *buffer++ = ch;
+			break;
+		case ST_BUFCOPY:
+			if (ch == ' ')
+				state = ST_WORDSTART;
+			else if (++n < buf_len)
+				*buffer++ = ch;
 
-            break;
-        }
-    } while (ch && (++i < cmdline_len));
+			break;
+		}
+	} while (ch && (++i < cmdline_len));
 
-    if (buf_len != 0)
-        *buffer = '\0';
+	if (buf_len != 0)
+		*buffer = '\0';
 
-    return n;
+	return n;
 }
 
 int param_get_option(const char *cmdline, const char *option, char *buf, int buf_len)
 {
-    int err;
+	int err;
 
-    err = __param_get_option(cmdline, COMMAND_LINE_SIZE, option, buf, buf_len);
-    switch (err) {
-    case -2:    /* ''BOOLEAN'' parameter. */
-        return 0;
-    case -1:    /* invalid parameter. */
-        return -EINVAL;
-    default:
-        return err;
-    }
+	err = __param_get_option(cmdline, COMMAND_LINE_SIZE, option, buf, buf_len);
+	switch (err) {
+	case -2:    /* ''BOOLEAN'' parameter. */
+		return 0;
+	case -1:    /* invalid parameter. */
+		return -EINVAL;
+	default:
+		return err;
+	}
 }

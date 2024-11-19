@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <cyanea/cache.h>
-
 #include <asm-offsets.h>
+#include <cyanea/cache.h>
 #include <asm/entry_64.h>
-#include <asm/irq.h>
+#include <asm/irq_vector.h>
+#include <asm/segment.h>
 
     .section ".text.entry", "ax"
 

@@ -4,7 +4,7 @@
 #define __X86_ASM_PGTABLE_TYPES_64_H__
 
 #ifndef __X86_ASM_PGTABLE_TYPES_H__
-#  error use 'pgtable_types.h' instead.
+#  error "Use 'pgtable_types.h'"
 #endif
 
 #define PGD_SHIFT 39
@@ -32,7 +32,7 @@
 
 typedef unsigned long pudval_t;
 typedef struct {
-    pudval_t pud;
+	pudval_t pud;
 } pud_t;
 
 #define pud_val(x) ((x).pud)
@@ -40,7 +40,7 @@ typedef struct {
 
 typedef unsigned long pmdval_t;
 typedef struct {
-    pmdval_t pmd;
+	pmdval_t pmd;
 } pmd_t;
 
 #define pmd_val(x) ((x).pmd)
