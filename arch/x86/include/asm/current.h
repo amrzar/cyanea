@@ -5,7 +5,8 @@
 
 #include <cyanea/cache.h>
 #include <cyanea/percpu.h>
-#include <asm/utask.h>
+
+struct utask;
 
 struct percpu_hot {
 	union {
@@ -20,12 +21,10 @@ struct percpu_hot {
 	};
 };
 
-static_assert(sizeof(struct percpu_hot) == SMP_CACHE_BYTES,
-        "percpu_hot is larger than a cache line!");
+static_assert(sizeof(struct percpu_hot) == SMP_CACHE_BYTES);
 
 extern struct percpu_hot percpu_hot __percpu_cache_aligned;
 
-# define current get_current
 static __always_inline struct utask *get_current(void)
 {
 	return this_cpu_read(percpu_hot.current_task);

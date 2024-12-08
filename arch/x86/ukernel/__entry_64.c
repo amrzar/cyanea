@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <asm/current.h>
+#include <asm/utask.h>
 
 /* We keep two stacks: (1) Per-cpu stack, and (2) utask's stack. */
 /* Per-cpu stack is used for kernel entry and exit. */
