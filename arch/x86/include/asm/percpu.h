@@ -32,7 +32,7 @@ extern unsigned long this_cpu_off __percpu;
  * disjoint generic address space pointer''.
  */
 
-#define __seg_gs_as_ptr(ptr) ((__seg_gs_as_type(*(ptr))*)(unsigned long)(ptr))
+#define __seg_gs_as_ptr(ptr) ((__seg_gs_as_type(*(ptr)) *)(unsigned long)(ptr))
 
 #define __raw_cpu_read(qual, pcp) ({ \
 		*(qual __seg_gs_as_type(pcp) *)__seg_gs_as_ptr(&(pcp)); \
@@ -50,7 +50,6 @@ extern unsigned long this_cpu_off __percpu;
 #define this_cpu_read(pcp) __raw_cpu_read(volatile, pcp)
 #define this_cpu_write(pcp, val) __raw_cpu_write(volatile, pcp, val)
 
-/* Generic address space pointer from a per-cpu pointer, i.e. GS address space. */
 #define arch_raw_cpu_ptr(ptr) ({ \
 		unsigned long __ptr = raw_cpu_read(this_cpu_off); \
 		__ptr += (unsigned long)(ptr); \
