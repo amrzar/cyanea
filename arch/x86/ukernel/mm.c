@@ -65,7 +65,8 @@ static void __init *alloc_pages(unsigned int num)
  * Halt if we fail on any of these functions.
  */
 
-static void __init physical_pt_init(pte_t pt[], phys_addr_t start, phys_addr_t end,
+static void __init physical_pt_init(pte_t pt[], phys_addr_t start,
+        phys_addr_t end,
         enum page_size ps)
 {
 	unsigned long vaddr = (unsigned long)__va(start);
@@ -83,7 +84,8 @@ static void __init physical_pt_init(pte_t pt[], phys_addr_t start, phys_addr_t e
 	}
 }
 
-static void __init physical_pmd_init(pmd_t pmd[], phys_addr_t start, phys_addr_t end,
+static void __init physical_pmd_init(pmd_t pmd[], phys_addr_t start,
+        phys_addr_t end,
         enum page_size ps)
 {
 	unsigned long vaddr = (unsigned long)__va(start);
@@ -121,7 +123,8 @@ static void __init physical_pmd_init(pmd_t pmd[], phys_addr_t start, phys_addr_t
 	}
 }
 
-static void __init physical_pud_init(pud_t pud[], phys_addr_t start, phys_addr_t end,
+static void __init physical_pud_init(pud_t pud[], phys_addr_t start,
+        phys_addr_t end,
         enum page_size ps)
 {
 	unsigned long vaddr = (unsigned long)__va(start);
@@ -159,7 +162,8 @@ static void __init physical_pud_init(pud_t pud[], phys_addr_t start, phys_addr_t
 	}
 }
 
-static void __init physical_mapping_init(phys_addr_t start, phys_addr_t end, enum page_size ps)
+static void __init physical_mapping_init(phys_addr_t start, phys_addr_t end,
+        enum page_size ps)
 {
 	unsigned long vaddr = (unsigned long)__va(start);
 	unsigned long vaddr_end = (unsigned long)__va(end);
@@ -202,7 +206,8 @@ static void add_range_mapped(unsigned long start_pfn, unsigned long end_pfn)
 }
 
 /* Setup the direct mapping of the physical memory at PAGE_OFFSET. */
-static void __init init_range_memory_mapping(phys_addr_t range_start, phys_addr_t range_end)
+static void __init init_range_memory_mapping(phys_addr_t range_start,
+        phys_addr_t range_end)
 {
 	int i;
 	unsigned long start_pfn, end_pfn, limit_pfn, pfn;

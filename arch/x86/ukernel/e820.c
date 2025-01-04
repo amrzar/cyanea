@@ -56,7 +56,8 @@ void __init e820__print_table(void)
 	}
 }
 
-static void __init __e820__range_add(struct e820_table *table, phys_addr_t start, size_t size,
+static void __init __e820__range_add(struct e820_table *table,
+        phys_addr_t start, size_t size,
         enum e820_type type)
 {
 	if (table->nr_entries == E820_MAX_ENTRIES) {
@@ -84,7 +85,8 @@ static void __init __e820__update_table(struct e820_table *table)
 	for (cur_idx = 1; cur_idx < table->nr_entries; cur_idx++) {
 		/* MERGE entries. */
 		if (table->entries[idx].type == table->entries[cur_idx].type &&
-		        table->entries[idx].start + table->entries[idx].size == table->entries[cur_idx].start)
+		        table->entries[idx].start + table->entries[idx].size ==
+		        table->entries[cur_idx].start)
 			table->entries[idx].size += table->entries[cur_idx].size;
 		else
 			table->entries[++idx] = table->entries[cur_idx];

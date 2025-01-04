@@ -3,7 +3,8 @@
 #ifndef __X86_ASM_CPUID_H__
 #define __X86_ASM_CPUID_H__
 
-static inline void cpuid(unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx)
+static inline void cpuid(unsigned int *eax, unsigned int *ebx,
+        unsigned int *ecx, unsigned int *edx)
 {
 	/* See 3.3 INSTRUCTIONS (A-L). */
 	asm volatile("cpuid"
@@ -12,7 +13,8 @@ static inline void cpuid(unsigned int *eax, unsigned int *ebx, unsigned int *ecx
 	        : "memory");
 }
 
-static inline void get_cpuid_with_ecx(unsigned int op, unsigned int ecx, unsigned int *__eax,
+static inline void get_cpuid_with_ecx(unsigned int op, unsigned int ecx,
+        unsigned int *__eax,
         unsigned int *__ebx, unsigned int *__ecx, unsigned int *__edx)
 {
 	*__eax = op;

@@ -39,12 +39,15 @@ struct acpi_subtable_header {
 	u8 length;
 };
 
-int __init acpi_get_table(char *signature, int instance, struct acpi_table_header **table);
+int __init acpi_get_table(char *signature, int instance,
+        struct acpi_table_header **table);
 void acpi_put_table(struct acpi_table_header *table);
 
 int __init acpi_table_init(void);
-int __init acpi_table_parse(char *signature, int (*handler)(struct acpi_table_header *));
-int __init acpi_subtable_parse(struct acpi_table_header *table, size_t table_size, int type,
+int __init acpi_table_parse(char *signature,
+        int (*handler)(struct acpi_table_header *));
+int __init acpi_subtable_parse(struct acpi_table_header *table,
+        size_t table_size, int type,
         int (*handler)(struct acpi_subtable_header *));
 
 /* ACPI TABLES: */

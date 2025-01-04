@@ -15,15 +15,14 @@ u32 boot_cpu_apic_id __ro_after_init;
 static phys_addr_t lapic_addr __ro_after_init;
 unsigned long lapic_mmio_base __ro_after_init;
 
-/* CPU ID. */
-
+/* CPU ID mappings. */
 u32 __initdata early_cpuid_to_apic_id[NR_CPUS];
 u32 __initdata early_cpuid_to_acpi_id[NR_CPUS];
 
-/* BSP gets CPU# 0. */
-static int __initdata assigned_cpus = 1;
 void __init register_apic_id(u32 apic_id, u32 acpi_id)
 {
+	/* BSP gets CPU# 0. */
+	static int __initdata assigned_cpus = 1;
 	int cpu;
 
 	cpu = (apic_id == boot_cpu_apic_id) ? 0 : assigned_cpus++;
@@ -37,6 +36,7 @@ void __init register_apic_id(u32 apic_id, u32 acpi_id)
 	}
 }
 
+/* Does 'init_apic_mappings'. */
 void __init register_lapic_address(phys_addr_t address)
 {
 	lapic_addr = address;

@@ -7,12 +7,15 @@
 #include <asm/apic.h>
 #include <asm/cpuinfo.h>
 
-void __init register_apic_id(u32, u32);             /* ukernel/apic/apic.c. */
-void __init register_lapic_address(phys_addr_t);    /* ukernel/apic/apic.c. */
-void __init register_ioapic(int, u32, u32);         /* ukernel/apic/io_apic.c. */
+void __init register_apic_id(u32,
+        u32);                 /* ukernel/apic/apic.c. */
+void __init register_lapic_address(
+        phys_addr_t);        /* ukernel/apic/apic.c. */
+int __init mp_register_ioapic(u8, u32,
+        u32);            /* ukernel/apic/io_apic.c. */
 
-int acpi_lapic;     /* LAPIC found. */
-int acpi_ioapic;    /* IOAPIC found. */
+int acpi_lapic;         /* LAPIC found. */
+int acpi_ioapic;        /* IOAPIC found. */
 
 static phys_addr_t acpi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
 
@@ -112,7 +115,7 @@ static int __init acpi_parse_ioapic(struct acpi_subtable_header
 
 	ioapic = (struct acpi_madt_io_apic *)subtable_header;
 
-	register_ioapic(ioapic->id, ioapic->address, ioapic->global_irq_base);
+	mp_register_ioapic(ioapic->id, ioapic->address, ioapic->global_irq_base);
 
 	return SUCCESS;
 }

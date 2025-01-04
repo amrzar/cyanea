@@ -20,7 +20,8 @@
  * Return: -2 if @option is an existing boolean, -1 if @option does not exist.
  * Otherwise, size of option value returned in @ref_buf.
  */
-static int __param_get_option(const char *cmdline, int cmdline_len, const char *option, char *buf,
+static int __param_get_option(const char *cmdline, int cmdline_len,
+        const char *option, char *buf,
         int buf_len)
 {
 	char ch;
@@ -88,7 +89,8 @@ static int __param_get_option(const char *cmdline, int cmdline_len, const char *
 	return n;
 }
 
-int param_get_option(const char *cmdline, const char *option, char *buf, int buf_len)
+int param_get_option(const char *cmdline, const char *option, char *buf,
+        int buf_len)
 {
 	int err;
 

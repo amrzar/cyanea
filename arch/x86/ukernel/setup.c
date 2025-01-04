@@ -17,7 +17,6 @@ void __init init_mem_mapping(void);         /* ukernel/mm.c. */
 void __init acpi_boot_table_init(void);     /* ukernel/acpi/boot.c. */
 void __init cache_bp_init(void);            /* ukernel/cache.c. */
 int __init reserve_real_mode(void);         /* realmod/init.c. */
-void __init io_apic_init_mappings(void);    /* ukernel/apic/io_apic.c. */
 
 #ifndef CONFIG_NUMA
 static void __init initmem_init(void)
@@ -65,8 +64,7 @@ static void early_reserve_memory(void)
 	early_reserve_initrd();
 }
 
-__ARCH_CONSTRUCTOR__
-static void setup_arch(void)
+void __init setup_arch(void)
 {
 	ulog_info("[%s]\n", boot_command_line);
 
@@ -88,8 +86,4 @@ static void setup_arch(void)
 	initmem_init();
 
 	acpi_boot_init();
-
-	io_apic_init_mappings();
-
-
 }

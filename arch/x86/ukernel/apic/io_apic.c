@@ -1,86 +1,123 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
+#include <cyanea/errno.h>
 #include <cyanea/init.h>
 #include <cyanea/types.h>
 #include <asm/fixmap.h>
 #include <asm/io.h>
+#include <asm/io_apic.h>
 
 /* 82093AA I/O ADVANCED PROGRAMMABLE INTERRUPT CONTROLLER (IOAPIC). */
 
 #define NR_IOAPIC CONFIG_NR_IOAPIC
 
+static int nr_ioapics;
 static struct {
+	int nr_registers;               /* Number of IRQ routing registers. */
+	u8 id;
 	phys_addr_t phys_addr;
 	u32 gsi_base;
 	u32 gsi_end;
 } ioapics[NR_IOAPIC];
 
 /* 3.0 REGISTER DESCRIPTION. */
-/* The IOREGSEL and IOWIN Registers ... are aligned on 128 bit boundaries.
- * All APIC registers are accessed using 32-bit loads and stores.
- */
 struct io_apic {
-	u32 index;      /* I/O Register Select (IOREGSEL). */
-	u32 __pad[3];
+	u8 index;       /* I/O Register Select (IOREGSEL). */
+	u8 __pad[15];
 	u32 data;       /* I/O Window (IOWIN). */
-};
+} __packed;
 
-static struct io_apic *io_apic_base(int apic)
+static struct io_apic *io_apic_base(int ioapic)
 {
-	return (struct io_apic *)(fix_to_virt(FIX_IO_APIC_BASE_0 + apic) +
-	                (ioapics[apic].phys_addr & ~PAGE_MASK));
+	/* Base should be 0xFEC0xy00. */
+	unsigned long y = ioapics[ioapic].phys_addr & ~PAGE_MASK;
+
+	return (struct io_apic *)(fix_to_virt(FIX_IO_APIC_BASE_0 + ioapic) + y);
 }
 
-static u32 io_apic_read(int apic, unsigned int reg)
-{
-	struct io_apic *io_apic = io_apic_base(apic);
+/* IOAPIC Registers. */
+/* 00h       'IOAPIC ID' (R/W). */
+/* 01h       'IOAPIC Version' (RO). */
+/* 02h       'IOAPIC Arbitration ID' (RO). */
+/* 10h - 3Fh 'Redirection Table (Entries 0-23) (64 bits each)' (R/W). */
 
-	writel(reg, &io_apic->index);
-	return readl(&io_apic->data);
+static u32 io_apic_read(int ioapic, u8 reg)
+{
+	struct io_apic *base = io_apic_base(ioapic);
+
+	writeb(reg, &base->index);
+
+	return readl(&base->data);
 }
 
-static void io_apic_write(int apic, unsigned int reg, u32 value)
-{
-	struct io_apic *io_apic = io_apic_base(apic);
+// static void io_apic_write(int ioapic, u8 reg, u32 value)
+// {
+//      struct io_apic *base = io_apic_base(ioapic);
 
-	writel(reg, &io_apic->index);
-	writel(value, &io_apic->data);
+//      writeb(reg, &base->index);
+
+//      writel(value, &base->data);
+// }
+
+// static union io_apic_route_entry ioapic_read_entry(int ioapic, int pin)
+// {
+//      union io_apic_route_entry entry;
+
+//      entry.w1 = io_apic_read(ioapic, 0x10 + 2 * pin);
+//      entry.w2 = io_apic_read(ioapic, 0x11 + 2 * pin);
+
+//      return entry;
+// }
+
+// static void ioapic_write_entry(int ioapic, int pin, union io_apic_route_entry entry)
+// {
+//      /*
+//       * Write the high word first!
+//       * If the mask bit in the low word is clear, we will enable the interrupt,
+//       * and we need to make sure the entry is fully populated
+//       * before that happens.
+//       */
+
+//      io_apic_write(ioapic, 0x11 + 2 * pin, entry.w2);
+//      io_apic_write(ioapic, 0x10 + 2 * pin, entry.w1);
+// }
+
+static int io_apic_get_redir_entries(int ioapic)
+{
+	union io_apic_ver reg;
+
+	reg.raw = io_apic_read(ioapic, IOAPICVER_INDEX);
+
+	return reg.bits.entries + 1;
 }
 
-
-
-
-
-
-
-
-
-u32 __initdata io_apic_address[NR_IOAPIC];
-u32 __initdata io_apic_gsi_base[NR_IOAPIC];
-
-static int __initdata assigned_io_apics;
-void __init register_ioapic(int id, u32 address, u32 gsi_base)
+/* Does 'io_apic_init_mappings'. */
+int __init mp_register_ioapic(u8 id, u32 address, u32 gsi_base)
 {
-	int io_apic;
+	int entries;
 
-	io_apic = assigned_io_apics++;
-	if (io_apic < NR_IOAPIC) {
-		io_apic_address[io_apic] = address;
-		io_apic_gsi_base[io_apic] = gsi_base;
-
-		ulog_info("IO-APIC (%u) address (0x%x) gsi_base (0x%x).\n",
-		        id, address, gsi_base);
-
-	} else /* 'CONFIG_NR_IOAPIC'. */
+	if (nr_ioapics == NR_IOAPIC) {
 		ulog_err("IO-APIC (%u) dropped.", id);
-}
 
-void __init io_apic_init_mappings(void)
-{
-	// int i, idx = FIX_IO_APIC_BASE_0;
-	// phys_addr_t ioapic_phys;
+		return -ENOSPC;
+	}
 
-	// for (i = 0; i < nr_ioapics; i++) {
+	set_fixmap_nocache(FIX_IO_APIC_BASE_0 + nr_ioapics, address);
 
-	// }
+	entries = io_apic_get_redir_entries(nr_ioapics);
+
+	/* TODO. Is IOAPIC ID is same ad id?! */
+	ioapics[nr_ioapics].id = id;
+
+	ioapics[nr_ioapics].phys_addr = address;
+	ioapics[nr_ioapics].gsi_base = gsi_base;
+	ioapics[nr_ioapics].gsi_end = gsi_base + entries - 1;
+	ioapics[nr_ioapics].nr_registers = entries;
+
+	ulog_info("IO-APIC (%u) address (0x%x) GSI (%d - %d).\n", id, address,
+	        ioapics[nr_ioapics].gsi_base, ioapics[nr_ioapics].gsi_end);
+
+	nr_ioapics++;
+
+	return SUCCESS;
 }

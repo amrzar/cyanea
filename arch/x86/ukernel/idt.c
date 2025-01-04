@@ -59,7 +59,8 @@ static __init void init_gate_desc(gate_desc_t *gate, const struct idt_data *d)
 	gate->reserved = 0;
 }
 
-static __init void idt_setup_from_table(gate_desc_t idt[], const struct idt_data t[], int n)
+static __init void idt_setup_from_table(gate_desc_t idt[],
+        const struct idt_data t[], int n)
 {
 	int i;
 

@@ -28,17 +28,21 @@ struct memblock {
 	const char *name;
 };
 
-int memblock_add(phys_addr_t base, size_t size, int nid, enum memblock_flags flags);
+int memblock_add(phys_addr_t base, size_t size, int nid,
+        enum memblock_flags flags);
 int memblock_remove(phys_addr_t base, size_t size);
 int memblock_set_node(phys_addr_t base, size_t size, int nid);
-int memblock_setclr_flag(phys_addr_t base, size_t size, int set, enum memblock_flags flag);
+int memblock_setclr_flag(phys_addr_t base, size_t size, int set,
+        enum memblock_flags flag);
 
 /* ''ALLOCATION API''. */
 
-void __next_mem_pfn_range(int *i, int nid, unsigned long *start_pfn, unsigned long *end_pfn,
+void __next_mem_pfn_range(int *i, int nid, unsigned long *start_pfn,
+        unsigned long *end_pfn,
         int *out_nid);
 void memblock_free(phys_addr_t base, size_t size);
-phys_addr_t memblock_alloc(size_t size, unsigned long align, phys_addr_t start, phys_addr_t end,
+phys_addr_t memblock_alloc(size_t size, unsigned long align, phys_addr_t start,
+        phys_addr_t end,
         int nid, bool exact_nid);
 int memblock_reserve(phys_addr_t base, size_t size);
 size_t memblock_phys_mem_size(void);

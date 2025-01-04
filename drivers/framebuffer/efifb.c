@@ -24,7 +24,8 @@ typedef struct {
 /* Plotting Pixel. */
 static void efifb_ppixel(int x, int y, PIXEL pixel)
 {
-	volatile PIXEL *p = (volatile PIXEL *)(framebuffer + y * pitch + x * sizeof(PIXEL));
+	volatile PIXEL *p = (volatile PIXEL *)(framebuffer + y * pitch + x * sizeof(
+	                        PIXEL));
 
 	*p = pixel;
 }

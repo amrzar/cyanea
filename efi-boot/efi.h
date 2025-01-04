@@ -26,7 +26,8 @@ struct efi_table_hdr {
 
 struct efi_simple_text_output_protocol {
 	u64 reset;
-	efi_status_t (__efiapi *output_string)(struct efi_simple_text_output_protocol *, efi_char16_t *);
+	efi_status_t (__efiapi *output_string)(struct efi_simple_text_output_protocol *,
+	        efi_char16_t *);
 };
 
 struct efi_config_table {
@@ -45,7 +46,8 @@ struct efi_boot_services {
 # define EFI_ALLOCATE_ADDRESS 2
 	efi_status_t (__efiapi *allocate_pages)(int, int, u64, efi_physical_addr_t *);
 	efi_status_t (__efiapi *free_pages)(efi_physical_addr_t, u64);
-	efi_status_t (__efiapi *get_memory_map)(u64 *, struct efi_memory_desc *, u64 *, u64 *, u32 *);
+	efi_status_t (__efiapi *get_memory_map)(u64 *, struct efi_memory_desc *, u64 *,
+	        u64 *, u32 *);
 	efi_status_t (__efiapi *allocate_pool)(int, u64, void **);
 	efi_status_t (__efiapi *free_pool)(void *);
 	u64 __pad2[9];
@@ -54,13 +56,16 @@ struct efi_boot_services {
 # define EFI_LOCATE_ALL_HANDLES 0
 # define EFI_LOCATE_BY_REGISTER_NOTIFY 1
 # define EFI_LOCATE_BY_PROTOCOL 2
-	efi_status_t (__efiapi *locate_handle)(int, efi_guid_t *, void *, u64 *, efi_handle_t *);
+	efi_status_t (__efiapi *locate_handle)(int, efi_guid_t *, void *, u64 *,
+	        efi_handle_t *);
 	u64 __pad4[4];
-	efi_status_t __noreturn (__efiapi *exit)(efi_handle_t, efi_status_t, u64, efi_char16_t *);
+	efi_status_t __noreturn (__efiapi *exit)(efi_handle_t, efi_status_t, u64,
+	        efi_char16_t *);
 	efi_status_t (__efiapi *unload_image)(efi_handle_t);
 	efi_status_t (__efiapi *exit_boot_services)(efi_handle_t, u64);
 	u64 __pad5[9];
-	efi_status_t (__efiapi *locate_handle_buffer)(int, efi_guid_t *, void *, u64 *, efi_handle_t **);
+	efi_status_t (__efiapi *locate_handle_buffer)(int, efi_guid_t *, void *, u64 *,
+	        efi_handle_t **);
 	u64 __pad6[7];
 };
 
@@ -127,7 +132,8 @@ struct efi_graphics_output_protocol_mode {
 };
 
 struct efi_graphics_output_protocol {
-	efi_status_t (__efiapi *query_mode)(struct efi_graphics_output_protocol *, u32, u64 *,
+	efi_status_t (__efiapi *query_mode)(struct efi_graphics_output_protocol *, u32,
+	        u64 *,
 	        struct efi_graphics_output_mode_info **);
 	efi_status_t (__efiapi *set_mode)(struct efi_graphics_output_protocol *, u32);
 	u64 pad;    /* ''efi_status_t (__efiapi *blt)(...)''. */

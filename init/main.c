@@ -5,6 +5,9 @@
 
 #include <asm/ukernel.lds.h>
 
+void __init setup_arch(void);
+void __init setup_per_cpu_areas(void);
+
 char __initdata boot_command_line[COMMAND_LINE_SIZE];
 
 static void __init do_ctors(void)
@@ -41,10 +44,10 @@ extern const char ukernel_banner[];
 void __init start_kernel(void)
 {
 	do_param(1);
-
 	do_ctors();
-
 	ulog("\n%s", ukernel_banner);
+	setup_arch();
+	setup_per_cpu_areas();
 
 	while (1) ;
 }

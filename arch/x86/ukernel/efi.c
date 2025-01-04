@@ -8,7 +8,7 @@
 #include <asm/io.h>
 #include <uapi/asm/bootparam.h>
 
-# define efi_memmap_unmap(a, b) memunmap((a), (b))
+#define efi_memmap_unmap(a, b) memunmap((a), (b))
 static void __init *efi_memmap_init(phys_addr_t phys_addr, size_t size)
 {
 	void *virt_addr;
@@ -23,13 +23,12 @@ static void __init *efi_memmap_init(phys_addr_t phys_addr, size_t size)
 }
 
 /* https://uefi.org/specs/UEFI/2.10/07_Services_Boot_Services.html#efi-boot-services-getmemorymap. */
-
 /* The descriptor size (i.e. efi_memdesc_size) represents the size in bytes of an
  * EFI_MEMORY_DESCRIPTOR elements. The size is returned to allow for future expansion
  * of the EFI_MEMORY_DESCRIPTOR. Use the descriptor size to iterate over the map.
  */
 
-# define for_each_efi_memory_desc_in_map(md, descs, e) \
+#define for_each_efi_memory_desc_in_map(md, descs, e) \
 	for ((md) = (descs); \
 	        ((void *)(md) + (e)->efi_memdesc_size) <= ((void *)(descs) + (e)->efi_memmap_size); \
 	        (md) = ((void *)(md) + (e)->efi_memdesc_size))

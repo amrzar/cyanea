@@ -385,7 +385,8 @@ out:
 	return SUCCESS;
 }
 
-static int deflate_buffer(unsigned char *dest, size_t *dest_len, const unsigned char *source,
+static int deflate_buffer(unsigned char *dest, size_t *dest_len,
+        const unsigned char *source,
         size_t source_len)
 {
 	struct deflate d;
@@ -462,7 +463,8 @@ static u32 update_crc32(const unsigned char *buffer, size_t size)
 	return (crc ^ 0xFFFFFFFF);
 }
 
-static int decompress_gzip(unsigned char *dest, size_t *dest_len, unsigned char *source,
+static int decompress_gzip(unsigned char *dest, size_t *dest_len,
+        unsigned char *source,
         size_t source_len)
 {
 	/* See https://www.rfc-editor.org/rfc/rfc1952.txt */
@@ -529,7 +531,8 @@ static int decompress_gzip(unsigned char *dest, size_t *dest_len, unsigned char 
 		return -EINVAL;
 	}
 
-	if (update_crc32(dest, *dest_len) != get_unaligned_le32(&source[source_len - 8])) {
+	if (update_crc32(dest, *dest_len) != get_unaligned_le32(
+	                &source[source_len - 8])) {
 		efi_puts("Invalid CRC for compressed file.\n");
 
 		return -EINVAL;

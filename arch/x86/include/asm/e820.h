@@ -33,7 +33,8 @@ enum e820_type {
 	E820_TYPE_PMEM = 7
 };
 
-void __init e820__range_add(phys_addr_t start, size_t size, enum e820_type type);
+void __init e820__range_add(phys_addr_t start, size_t size,
+        enum e820_type type);
 void __init e820__update_table(void);
 void __init e820__memblock_setup(void);
 void __init e820__print_table(void);

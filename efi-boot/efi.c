@@ -18,18 +18,18 @@ static __always_inline __pure void *rip_rel_ptr(void *p)
 #endif /* CONFIG_X86 */
 
 static struct efi_system_table *____efi_systab;
-# define __efi_systab REL_REF(____efi_systab)
+#define __efi_systab REL_REF(____efi_systab)
 
 extern char _binary_UKERNEL_gz_start[], _binary_UKERNEL_gz_end[];
-# define __UKERNEL_gz_start REL_REF(_binary_UKERNEL_gz_start)
-# define __UKERNEL_gz_end   REL_REF(_binary_UKERNEL_gz_end)
-# define __UKERNEL_gz_size  (_binary_UKERNEL_gz_end - _binary_UKERNEL_gz_start)
+#define __UKERNEL_gz_start REL_REF(_binary_UKERNEL_gz_start)
+#define __UKERNEL_gz_end   REL_REF(_binary_UKERNEL_gz_end)
+#define __UKERNEL_gz_size  (_binary_UKERNEL_gz_end - _binary_UKERNEL_gz_start)
 
-# define ASCII_TO_USC2(x) ((efi_char16_t)(x))
-# define USC2_TO_ASCII(x) ((char)(x))
+#define ASCII_TO_USC2(x) ((efi_char16_t)(x))
+#define USC2_TO_ASCII(x) ((char)(x))
 
-# define EFI_PUTS_LEN 128
-# define efi_puts(s) __efi_puts(REL_REF(s))
+#define EFI_PUTS_LEN 128
+#define efi_puts(s) __efi_puts(REL_REF(s))
 static efi_char16_t __usc2[EFI_PUTS_LEN];
 static void __efi_puts(const char *s)
 {
@@ -79,7 +79,7 @@ static efi_physical_addr_t efi_get_rsdp_addr(void)
 
 #include "deflate.c"
 
-# define efi_bs_call(func, ...) __efi_systab->boottime->func(__VA_ARGS__)
+#define efi_bs_call(func, ...) __efi_systab->boottime->func(__VA_ARGS__)
 
 static void __noreturn efi_exit(efi_handle_t handle, efi_status_t status)
 {
@@ -102,7 +102,8 @@ struct efi_boot_memmap {
 	struct efi_memory_desc descs[];
 };
 
-static efi_status_t efi_allocate_pages(size_t size, efi_physical_addr_t *alloc_addr,
+static efi_status_t efi_allocate_pages(size_t size,
+        efi_physical_addr_t *alloc_addr,
         unsigned long align, int memory_type)
 {
 	efi_status_t status;
@@ -137,7 +138,8 @@ static efi_status_t efi_allocate_pages(size_t size, efi_physical_addr_t *alloc_a
 	return EFI_SUCCESS;
 }
 
-static efi_status_t efi_allocate(int memory_type, size_t size, void **alloc_addr)
+static efi_status_t efi_allocate(int memory_type, size_t size,
+        void **alloc_addr)
 {
 	/* 7.2.4. EFI_BOOT_SERVICES.AllocatePool. */
 	return efi_bs_call(allocate_pool, memory_type, size, alloc_addr);
@@ -153,14 +155,16 @@ static efi_status_t efi_get_memory_map(struct efi_boot_memmap *memmap,
         struct efi_memory_desc *memmap_desc)
 {
 	/* 7.2.3. EFI_BOOT_SERVICES.GetMemoryMap. */
-	return efi_bs_call(get_memory_map, &memmap->map_size, memmap_desc, &memmap->map_key,
+	return efi_bs_call(get_memory_map, &memmap->map_size, memmap_desc,
+	                &memmap->map_key,
 	                &memmap->desc_size, &memmap->desc_ver);
 }
 
 /* 7.4 Image Services. */
 /* https://uefi.org/specs/UEFI/2.10/07_Services_Boot_Services.html#image-services. */
 
-static efi_status_t efi_exit_boot_services(efi_handle_t handle, struct efi_boot_memmap **memmap)
+static efi_status_t efi_exit_boot_services(efi_handle_t handle,
+        struct efi_boot_memmap **memmap)
 {
 	efi_status_t status;
 
@@ -308,7 +312,7 @@ static efi_status_t efi_setup_gop(struct screen_info *si, efi_guid_t *proto,
 #include <cyanea/pgtable.h>
 #include <uapi/asm/bootparam.h>
 
-# define MIN_KERNEL_ALIGN PMD_SIZE
+#define MIN_KERNEL_ALIGN PMD_SIZE
 _Static_assert(!((CONFIG_PHYSICAL_START & (CONFIG_PHYSICAL_ALIGN - 1))),
         "'CONFIG_PHYSICAL_START' is not aligned to 'CONFIG_PHYSICAL_ALIGN'.");
 
@@ -323,7 +327,8 @@ static efi_status_t setup_graphics(struct boot_params *boot_params)
 
 	si->framebuffer = 0;
 	/* 7.3.15. EFI_BOOT_SERVICES.LocateHandleBuffer. */
-	status = efi_bs_call(locate_handle_buffer, EFI_LOCATE_BY_PROTOCOL, &graphics_proto, NULL,
+	status = efi_bs_call(locate_handle_buffer, EFI_LOCATE_BY_PROTOCOL,
+	                &graphics_proto, NULL,
 	                &gop_handles_len, &gop_handles);
 	if (status == EFI_SUCCESS) {
 		status = efi_setup_gop(si, &graphics_proto, gop_handles, gop_handles_len);
@@ -336,7 +341,8 @@ static efi_status_t setup_graphics(struct boot_params *boot_params)
 	return status;
 }
 
-static void __noreturn enter_kernel(unsigned long kernel_addr, struct boot_params *boot_params)
+static void __noreturn enter_kernel(unsigned long kernel_addr,
+        struct boot_params *boot_params)
 {
 	/* Enter decompressed kernel with ''boot_params'' pointer in RSI. */
 	asm("jmp *%0"::"r"(kernel_addr), "S"(boot_params));
@@ -345,8 +351,9 @@ static void __noreturn enter_kernel(unsigned long kernel_addr, struct boot_param
 }
 
 /* '''ARCHITECTURE EFI ENTRY'''. */
-# define arch_efi_entry __x86_efi_entry
-static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_system_table *systab)
+#define arch_efi_entry __x86_efi_entry
+static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle,
+        struct efi_system_table *systab)
 {
 	efi_status_t status;
 
@@ -359,7 +366,8 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_s
 
 	__efi_systab = systab;
 
-	status = efi_allocate_pages(BOOT_PARAMS_SIZE, (efi_physical_addr_t *)&boot_params, 0,
+	status = efi_allocate_pages(BOOT_PARAMS_SIZE,
+	                (efi_physical_addr_t *)&boot_params, 0,
 	                EFI_LOADER_DATA);
 	if (status != EFI_SUCCESS)
 		efi_exit(handle, status);
@@ -371,7 +379,8 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_s
 
 	/* ''Decompressing ukernel''. */
 
-	ukernel_size = ROUND_UP(get_unaligned_le32(__UKERNEL_gz_end - 4), MIN_KERNEL_ALIGN);
+	ukernel_size = ROUND_UP(get_unaligned_le32(__UKERNEL_gz_end - 4),
+	                MIN_KERNEL_ALIGN);
 	status = efi_allocate_pages(ukernel_size, (efi_physical_addr_t *)&ukernel_addr,
 	                CONFIG_PHYSICAL_ALIGN, EFI_LOADER_CODE);
 	if (status != EFI_SUCCESS)
@@ -405,7 +414,8 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle, struct efi_s
 }
 #endif /* CONFIG_X86 */
 
-efi_status_t __efiapi __efi_entry(efi_handle_t handle, struct efi_system_table *systab)
+efi_status_t __efiapi __efi_entry(efi_handle_t handle,
+        struct efi_system_table *systab)
 {
 	arch_efi_entry(handle, systab);
 }

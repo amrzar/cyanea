@@ -29,7 +29,8 @@ static struct memblock memory = {
 #define for_each_memblock_region(i, reg) \
 	for (i = 0, reg = memory.regions; i < memory.n; i++, reg = &memory.regions[i])
 
-static void insert_region(int i, phys_addr_t base, size_t size, int nid, enum memblock_flags flags)
+static void insert_region(int i, phys_addr_t base, size_t size, int nid,
+        enum memblock_flags flags)
 {
 	struct memblock_region *region = &memory.regions[i];
 
@@ -96,7 +97,8 @@ static void merge_regions(int start_region, int end_region)
 	}
 }
 
-static int add_range(phys_addr_t base, size_t size, int nid, enum memblock_flags flags)
+static int add_range(phys_addr_t base, size_t size, int nid,
+        enum memblock_flags flags)
 {
 	int i, start_region = -1, end_region;
 	struct memblock_region *region;
@@ -166,7 +168,8 @@ static int add_range(phys_addr_t base, size_t size, int nid, enum memblock_flags
 	return SUCCESS;
 }
 
-static int isolate_range(phys_addr_t base, size_t size, int *start_range, int *end_range)
+static int isolate_range(phys_addr_t base, size_t size, int *start_range,
+        int *end_range)
 {
 	int i;
 	struct memblock_region *region;
@@ -295,7 +298,8 @@ void __next_mem_pfn_range(int *i, int nid, unsigned long *start_pfn,
 	}
 }
 
-int memblock_add(phys_addr_t base, size_t size, int nid, enum memblock_flags flags)
+int memblock_add(phys_addr_t base, size_t size, int nid,
+        enum memblock_flags flags)
 {
 	memblock_dbg("[mem %#018llx .. %#018llx]", base, base + size - 1);
 

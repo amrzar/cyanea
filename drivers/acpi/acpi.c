@@ -122,7 +122,9 @@ static int __init acpi_parse_root_table(phys_addr_t rsdp_paddr)
 	xsdt = (struct acpi_table_xsdt *)table_header;
 
 	/* Parse XSDT. */
-	for (i = 0; i < ((xsdt->header.length - sizeof(xsdt->header)) / sizeof(xsdt->entry[0])); i++) {
+	for (i = 0;
+	        i < ((xsdt->header.length - sizeof(xsdt->header)) / sizeof(xsdt->entry[0]));
+	        i++) {
 		paddr = xsdt->entry[i];
 		if (!paddr)
 			continue;
@@ -247,7 +249,8 @@ int __init acpi_table_parse(char *signature,
  *
  * Return sum of all matching entries. Otherwise -EINVAL if @handler failed.
  */
-int __init acpi_subtable_parse(struct acpi_table_header *table, size_t table_size,
+int __init acpi_subtable_parse(struct acpi_table_header *table,
+        size_t table_size,
         int type, int (*handler)(struct acpi_subtable_header *))
 {
 	int err, count = 0;

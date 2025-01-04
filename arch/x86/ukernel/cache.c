@@ -93,7 +93,8 @@ static void update_cache_mode_entry(unsigned idx, enum page_cache_mode cache)
 	        (X86_MEMTYPE_ ## p6 << 48) | (X86_MEMTYPE_ ## p7 << 56))
 
 /* 'X86_MEMTYPE_' to '_PAGE_CACHE_MODE_'. */
-static enum page_cache_mode __init pat_get_cache_mode(unsigned int pat_val, char *msg)
+static enum page_cache_mode __init pat_get_cache_mode(unsigned int pat_val,
+        char *msg)
 {
 	enum page_cache_mode cache;
 	char *cache_mode;

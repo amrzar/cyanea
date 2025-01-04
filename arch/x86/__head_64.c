@@ -21,7 +21,8 @@ void __init idt_setup_early_handler(void);
 /* Use ".data" as ".bss" may not be mapped and ready during boot. */
 
 /* Initialisation variable used by ''head_64.S''. Used for SMP boot. */
-unsigned long initial_code __section(".data") = (unsigned long)x86_64_start_kernel;
+unsigned long initial_code __section(".data") = (unsigned long)
+        x86_64_start_kernel;
 unsigned long smpboot_cpu __section(".data") = 0;
 
 /* ''uKERNEL PAGE TABLES''. */
@@ -37,7 +38,7 @@ phys_addr_t phys_base __section(".data");
 /* Used during boot until 'init_top_pgt' get initialised and enabled, mm.c. */
 pgd_t __initdata early_top_pgt[PTRS_PER_PGD] __aligned(PAGE_SIZE) = { 0 };
 
-# define EARLY_FREE_PAGES 64
+#define EARLY_FREE_PAGES 64
 
 static unsigned int __initdata next_page;
 static char __initdata early_pages[EARLY_FREE_PAGES][PAGE_SIZE]
@@ -105,8 +106,6 @@ void __init x86_64_start_kernel(phys_addr_t bp)
 	start_kernel();
 }
 
-/* Boot PAGE FAULT handler! */
-
 static void __init *get_free_zero_page(void)
 {
 	char *page = NULL;
@@ -120,8 +119,11 @@ static void __init *get_free_zero_page(void)
 	return page;
 }
 
-/* All page-tables are present in kernel mapping; use it to get virtual address. */
-# define __va_symbol(x) ((x) + __START_KERNEL_map - phys_base)
+/* Page tables -- static ones or allocated using 'get_free_zero_page' -- are
+ * present in kernel mapping; use kernel mapping to get virtual address as '__va'
+ * is not ready before 'init_mem_mapping'.
+ */
+#define __va_symbol(x) ((x) + __START_KERNEL_map - phys_base)
 
 static bool __init do_early_map(unsigned long address)
 {
@@ -141,9 +143,10 @@ static bool __init do_early_map(unsigned long address)
 	pud = (pud_t *)__va_symbol((pgd_val(pgd[i]) & PG_PFN_MASK));
 
 	i = pud_index(address);
-	if (pud_val(pud[i]))
+
+	if (pud_val(pud[i])) {
 		pmd = (pmd_t *)__va_symbol((pud_val(pud[i]) & PG_PFN_MASK));
-	else {
+	} else {
 
 		/* 'PMD' is not present for 'address', allocate and map. */
 
@@ -187,10 +190,10 @@ hlt_loop:
 
 static __always_inline __pure void *rip_rel_ptr(void *p)
 {
-	/* This compiles only with '-O2'. */
-	/* Probably, it relies on constant-propagation through the function argument 'p' to
-	 * the asm statement for constraint 'i'. Otherwise, it fails with
-	 *   'error: ‘asm’ operand 1 probably does not match constraints'.
+	/* This compiles only with '-O2'. It relies on constant-propagation
+	 * through the function argument 'p' to the asm statement for constraint 'i'.
+	 * Otherwise, it fails with
+	 *     'error: ‘asm’ operand 1 probably does not match constraints'.
 	 */
 
 	asm("leaq %c1(%%rip), %0" : "=r"(p) : "i"(p));
@@ -198,7 +201,7 @@ static __always_inline __pure void *rip_rel_ptr(void *p)
 	return p;
 }
 
-# define RIP_REL_REF(x) (*(typeof(&(x)))(rip_rel_ptr(&(x))))
+#define RIP_REL_REF(x) (*(typeof(&(x)))(rip_rel_ptr(&(x))))
 
 static void __head *__get_free_page(phys_addr_t load_phys_addr)
 {
@@ -213,9 +216,9 @@ static void __head ident_map(pgd_t *pgd, phys_addr_t address,
 	pud_t *pud;
 	pmd_t *pmd;
 
-	if (pgd_val(pgd[pgd_index(address)]))
+	if (pgd_val(pgd[pgd_index(address)])) {
 		pud = (pud_t *)(pgd_val(pgd[pgd_index(address)]) & PG_PFN_MASK);
-	else {
+	} else {
 
 		/* 'PUD' is not present for 'address', allocate and map. */
 
@@ -223,9 +226,9 @@ static void __head ident_map(pgd_t *pgd, phys_addr_t address,
 		pgd[pgd_index(address)] = __pgd_t((pgdval_t)(pud) | _KERNPG_TABLE);
 	}
 
-	if (pud_val(pud[pud_index(address)]))
+	if (pud_val(pud[pud_index(address)])) {
 		pmd = (pmd_t *)(pud_val(pud[pud_index(address)]) & PG_PFN_MASK);
-	else {
+	} else {
 
 		/* 'PMD' is not present for 'address', allocate and map. */
 
@@ -233,7 +236,7 @@ static void __head ident_map(pgd_t *pgd, phys_addr_t address,
 		pud[pud_index(address)] = __pud_t((pudval_t)(pmd) | _KERNPG_TABLE);
 	}
 
-#define __PAGE_KERNEL_LARGE_EXEC_NO_GLOBAL (__PAGE_KERNEL_LARGE_EXEC & ~_PAGE_GLOBAL)
+# define __PAGE_KERNEL_LARGE_EXEC_NO_GLOBAL (__PAGE_KERNEL_LARGE_EXEC & ~_PAGE_GLOBAL)
 
 	/* Page may be not present for 'address', map it anyway. */
 
