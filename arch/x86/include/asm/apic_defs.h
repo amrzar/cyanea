@@ -40,7 +40,7 @@
 #  define APIC_DFR_CLUSTER                      0x0FFFFFFFU
 #  define APIC_DFR_FLAT                         0xFFFFFFFFU
 
-/* 11.9 SPURIOUS INTERRUPT. */
+/* 11.9 Spurious Interrupt. */
 #define APIC_SVR 0x0F0  /* Spurious Interrupt Vector Register (R/W). */
 #  define APIC_SVR_ACPI_ENABLED                 0x00000100U
 #  define APIC_SVR_FOCUS_PROCESSOR              0x00000200U

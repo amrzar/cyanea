@@ -14,8 +14,8 @@ static inline void cpuid(unsigned int *eax, unsigned int *ebx,
 }
 
 static inline void get_cpuid_with_ecx(unsigned int op, unsigned int ecx,
-        unsigned int *__eax,
-        unsigned int *__ebx, unsigned int *__ecx, unsigned int *__edx)
+        unsigned int *__eax, unsigned int *__ebx, unsigned int *__ecx,
+        unsigned int *__edx)
 {
 	*__eax = op;
 	*__ecx = ecx;
@@ -23,8 +23,6 @@ static inline void get_cpuid_with_ecx(unsigned int op, unsigned int ecx,
 }
 
 #define get_cpuid(op, a, b, c, d) get_cpuid_with_ecx(op, 0, a, b, c, d)
-
-/* CPUID functions returning a single datum. **/
 
 static inline unsigned int get_cpuid_eax(unsigned int op)
 {

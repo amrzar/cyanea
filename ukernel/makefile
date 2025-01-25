@@ -3,6 +3,5 @@
 obj-y += params.o
 obj-y += memblock.o
 obj-y += ulog.o
-obj-y += percpu.o
 
 include $(srctree)/Makefile.build

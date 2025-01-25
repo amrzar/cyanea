@@ -7,12 +7,12 @@
 #include <asm/apic.h>
 #include <asm/cpuinfo.h>
 
-void __init register_apic_id(u32,
-        u32);                 /* ukernel/apic/apic.c. */
-void __init register_lapic_address(
-        phys_addr_t);        /* ukernel/apic/apic.c. */
-int __init mp_register_ioapic(u8, u32,
-        u32);            /* ukernel/apic/io_apic.c. */
+/* ukernel/apic/apic.c. */
+void __init register_apic_id(u32 apic_id, u32 acpi_id);
+/* ukernel/apic/apic.c. */
+void __init register_lapic_address(phys_addr_t address);
+/* ukernel/apic/io_apic.c. */
+int __init mp_register_ioapic(u8 id, u32 address, u32 gsi_base);
 
 int acpi_lapic;         /* LAPIC found. */
 int acpi_ioapic;        /* IOAPIC found. */
@@ -32,14 +32,11 @@ static int __init acpi_parse_lapic(struct acpi_subtable_header *subtable_header)
 
 	apic = (struct acpi_madt_local_apic *)subtable_header;
 
-	/* Invalid ID. */
 	if (apic->id == 0xFF)
 		return SUCCESS;
 
-	/* Register CPUs. Ignore disable CPUs with 'ACPI_MADT_ONLINE_CAPABLE'. */
 	if (apic->lapic_flags & ACPI_MADT_ENABLED)
-		register_apic_id(apic->id,  /* APIC ID */
-		        apic->processor_id);    /* ACPI ID */
+		register_apic_id(apic->id, apic->uid);
 
 	return SUCCESS;
 }
@@ -47,7 +44,15 @@ static int __init acpi_parse_lapic(struct acpi_subtable_header *subtable_header)
 static int __init acpi_parse_x2apic(struct acpi_subtable_header
         *subtable_header)
 {
-	ulog_info("x2apic entry ignored.\n");
+	struct acpi_madt_local_x2apic *x2apic;
+
+	x2apic = (struct acpi_madt_local_x2apic *)subtable_header;
+
+	if (x2apic->id == 0xFFFFFFFF)
+		return SUCCESS;
+
+	if (x2apic->lapic_flags & ACPI_MADT_ENABLED)
+		register_apic_id(x2apic->id, x2apic->uid);
 
 	return SUCCESS;
 }

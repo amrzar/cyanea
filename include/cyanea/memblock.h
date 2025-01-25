@@ -38,12 +38,10 @@ int memblock_setclr_flag(phys_addr_t base, size_t size, int set,
 /* ''ALLOCATION API''. */
 
 void __next_mem_pfn_range(int *i, int nid, unsigned long *start_pfn,
-        unsigned long *end_pfn,
-        int *out_nid);
+        unsigned long *end_pfn, int *out_nid);
 void memblock_free(phys_addr_t base, size_t size);
 phys_addr_t memblock_alloc(size_t size, unsigned long align, phys_addr_t start,
-        phys_addr_t end,
-        int nid, bool exact_nid);
+        phys_addr_t end, int nid, bool exact_nid);
 int memblock_reserve(phys_addr_t base, size_t size);
 size_t memblock_phys_mem_size(void);
 void memblock_dump(void);

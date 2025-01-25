@@ -12,8 +12,8 @@
 /* For x86_64, '__per_cpu_offset' is the address of percpu area. */
 
 /* We initialise '__per_cpu_offset' with '__per_cpu_load' so that the BSP can
- * use standard API during boot to directly access per-cpu section '.data..percpu'
- * in linker script.
+ * use standard API during boot to directly access per-cpu section
+ * '.data..percpu'.
  */
 
 unsigned long __per_cpu_offset[NR_CPUS] __ro_after_init = {
@@ -21,5 +21,9 @@ unsigned long __per_cpu_offset[NR_CPUS] __ro_after_init = {
 };
 
 /* Store offset in percpu area, so it can be accessed for current cpu easily. */
-
 unsigned long this_cpu_off __percpu = BOOT_PERCPU_OFFSET;
+
+void __init setup_per_cpu_areas(void)
+{
+
+}

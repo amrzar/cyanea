@@ -58,9 +58,9 @@ int __init acpi_subtable_parse(struct acpi_table_header *table,
 struct acpi_table_madt {
 	struct acpi_table_header header;
 	u32 address;
-# define ACPI_MADT_PCAT_COMPAT       1
-#  define ACPI_MADT_DUAL_PIC         1
-#  define ACPI_MADT_MULTIPLE_APIC    0
+# define ACPI_MADT_PCAT_COMPAT 1
+#  define ACPI_MADT_DUAL_PIC 1
+#  define ACPI_MADT_MULTIPLE_APIC 0
 	u32 flags;
 };
 
@@ -82,17 +82,17 @@ enum acpi_madt_type {
 /* 'ACPI_MADT_TYPE_LOCAL_APIC'. */
 struct acpi_madt_local_apic {
 	struct acpi_subtable_header header;
-	u8 processor_id;        /* ACPI Processor UID. */
-	u8 id;                  /* Processor's local APIC id. */
-# define ACPI_MADT_ENABLED            1         /* Processor is enabled. */
-# define ACPI_MADT_ONLINE_CAPABLE     2         /* System HW supports enabling processor at runtime. */
+	u8 uid;         /* ACPI Processor UID. */
+	u8 id;          /* Processor's local APIC id. */
+# define ACPI_MADT_ENABLED 1            /* Processor is enabled. */
+# define ACPI_MADT_ONLINE_CAPABLE 2     /* System HW supports enabling processor at runtime. */
 	u32 lapic_flags;
 };
 
 /* 'ACPI_MADT_TYPE_IO_APIC'. */
 struct acpi_madt_io_apic {
 	struct acpi_subtable_header header;
-	u8 id;                 /* I/O APIC ID. */
+	u8 id;          /* I/O APIC ID. */
 	u8 reserved;
 	u32 address;
 	u32 global_irq_base;
@@ -117,9 +117,9 @@ struct acpi_madt_nmi_source {
 /* 'ACPI_MADT_TYPE_LOCAL_APIC_NMI'. */
 struct acpi_madt_local_apic_nmi {
 	struct acpi_subtable_header header;
-	u8 processor_id;       /* ACPI Processor UID. */
+	u8 uid;         /* ACPI Processor UID. */
 	u16 inti_flags;
-	u8 lint;               /* LINTn to which NMI is connected. */
+	u8 lint;        /* LINTn to which NMI is connected. */
 };
 
 /* 'ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE'. */
@@ -127,6 +127,24 @@ struct acpi_madt_local_apic_override {
 	struct acpi_subtable_header header;
 	u16 reserved;
 	u64 address;
+};
+
+/* 'ACPI_MADT_TYPE_LOCAL_X2APIC'. */
+struct acpi_madt_local_x2apic {
+	struct acpi_subtable_header header;
+	u16 reserved;
+	u32 id;         /* Processor x2APIC ID. */
+	u32 lapic_flags;
+	u32 uid;        /* ACPI processor UID. */
+};
+
+/* 'ACPI_MADT_TYPE_LOCAL_X2APIC_NMI'. */
+struct acpi_madt_local_x2apic_nmi {
+	struct acpi_subtable_header header;
+	u16 inti_flags;
+	u32 uid;        /* ACPI processor UID. */
+	u8 lint;        /* LINTn to which NMI is connected. */
+	u8 reserved[3];
 };
 
 #endif /* __CYANEA_ACPI_H__ */

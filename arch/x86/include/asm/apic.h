@@ -77,8 +77,8 @@ static __always_inline u32 read_apic_id(void)
 extern struct apic *__apic_drivers_start[], *__apic_drivers_end[];
 
 #define apic_driver(sym) \
-	static const struct apic *__apic_driver_ ## sym __used  \
-	__aligned(__alignof__(struct apic *))               \
+	static const struct apic *__apic_driver_ ## sym __used \
+	__aligned(__alignof__(struct apic *)) \
 	__section(".apic.drivers") = &sym
 
 #endif /* __X86_ASM_APIC_H__ */

@@ -28,10 +28,10 @@
  * disjoint generic address space pointer''.
  */
 #define __seg_gs_as_ptr(ptr) ((__seg_gs_as_type(*(ptr)) *)(unsigned long)(ptr))
-#define __raw_cpu_read(qual, pcp) ({ \
+#define __raw_cpu_read(qual, pcp) ({                                    \
 		*(qual __seg_gs_as_type(pcp) *)__seg_gs_as_ptr(&(pcp)); \
 	})
-#define __raw_cpu_write(qual, pcp, val) do { \
+#define __raw_cpu_write(qual, pcp, val) do {                            \
 		*(qual __seg_gs_as_type(pcp) *)__seg_gs_as_ptr(&(pcp)) = (val); \
 	} while(0)
 

@@ -4,5 +4,6 @@ obj-y += apic.o
 obj-y += io_apic.o
 obj-y += apic_flat_64.o
 obj-y += x2apic_phys.o
+obj-y += probe_64.o
 
 include $(srctree)/Makefile.build

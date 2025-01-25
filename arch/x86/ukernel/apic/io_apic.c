@@ -106,7 +106,7 @@ int __init mp_register_ioapic(u8 id, u32 address, u32 gsi_base)
 
 	entries = io_apic_get_redir_entries(nr_ioapics);
 
-	/* TODO. Is IOAPIC ID is same ad id?! */
+	/* TODO. Is IOAPIC ID is same as id?! */
 	ioapics[nr_ioapics].id = id;
 
 	ioapics[nr_ioapics].phys_addr = address;
