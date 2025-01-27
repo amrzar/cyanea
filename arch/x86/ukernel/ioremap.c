@@ -10,6 +10,18 @@
 
 static int __initdata mapping[TOTAL_FIX_BITMAPS] = { [0 ... TOTAL_FIX_BITMAPS - 1] = -1 };
 
+/**
+ * @brief Set a fixed mapping in the page table.
+ *
+ * This function sets a fixed mapping in the page table by updating the page
+ * table entry pointed to by `ptep` with the physical address `phys_addr` and
+ * the protection flags `prot`. It also checks if the protection flags `prot`
+ * are valid.
+ *
+ * @param ptep Pointer to the page table entry to be updated.
+ * @param phys_addr Physical address to be mapped.
+ * @param prot Protection flags for the mapping.
+ */
 static void ____set_fixmap(pte_t *ptep, phys_addr_t phys_addr, pgprot_t prot)
 {
 	pgprotval_t pgprot;
@@ -106,17 +118,6 @@ static void __init *__ioremap(phys_addr_t phys_addr, size_t size, pgprot_t prot)
 	return (void *)(fix_to_virt(slot) + offset);
 }
 
-/**
- * ioremap() - map address into CPU space as uncacheable.
- * @phys_addr: physical address to map.
- * @size: size to map.
- *
- * It's useful if some control registers are in such an area and write combining
- * or read caching is not desirable (fully uncacheable, strongly ordered).
- * It must be unmapped with iounmap().
- *
- * Return mapped address or NULL on failure.
- */
 void __init *ioremap(phys_addr_t phys_addr, size_t size)
 {
 	return __ioremap(phys_addr, size, PAGE_KERNEL_NOCACHE);
@@ -155,16 +156,6 @@ void __init iounmap(void *virt_addr, size_t size)
 	mapping[FIX_BITMAP_BEGIN - slot] = -1;
 }
 
-/**
- * memremap() - map address into CPU space as cacheable.
- * @phys_addr: physical address of memory.
- * @size: size of memory to map.
- *
- * It matches the default mapping for System RAM.
- * It must be unmapped with iounmap().
- *
- * Return mapped address or NULL on failure.
- */
 void __init *memremap(phys_addr_t phys_addr, size_t size)
 {
 	return __ioremap(phys_addr, size, PAGE_KERNEL);

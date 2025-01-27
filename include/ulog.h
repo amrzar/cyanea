@@ -7,7 +7,8 @@
 
 void ulog(const char *, ...);
 
-#define ulog_err(...) do { \
+#define ulog_err(...) \
+	do { \
 		ulog("[%s][%d]: ", __FUNCTION__, __LINE__); \
 		ulog(__VA_ARGS__); \
 		ulog("\n"); \
@@ -25,14 +26,16 @@ void ulog(const char *, ...);
 # define ulog_debug(...)
 #endif
 
-#define assert(cond, ...) do { \
+#define assert(cond, ...) \
+	do { \
 		if (!(cond)) { \
 			ulog_err(__VA_ARGS__); \
 			while(1); \
 		} \
 	} while(0)
 
-#define warning_on(cond) ({ \
+#define warning_on(cond) \
+	({ \
 		int ___cond = (cond); \
 		if (__cond) \
 			ulog("[%s][%d]: warning on %s\n", __FUNCTION__, __LINE__, #cond); \

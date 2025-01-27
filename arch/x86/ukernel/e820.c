@@ -57,14 +57,11 @@ void __init e820__print_table(void)
 }
 
 static void __init __e820__range_add(struct e820_table *table,
-        phys_addr_t start, size_t size,
-        enum e820_type type)
+        phys_addr_t start, size_t size, enum e820_type type)
 {
 	if (table->nr_entries == E820_MAX_ENTRIES) {
 		ulog_err("ignoring [mem %#010llx .. %#010llx]", start, start + size - 1);
-
 	} else {
-
 		/* INSERT entry. */
 		table->entries[table->nr_entries].start = start;
 		table->entries[table->nr_entries].size = size;
@@ -107,8 +104,8 @@ void __init e820__update_table(void)
 
 void __init e820__memblock_setup(void)
 {
-	int i;
 	struct e820_entry *entry;
+	int i;
 
 	for (i = 0; i < e820_table.nr_entries; i++) {
 		entry = &e820_table.entries[i];

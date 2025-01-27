@@ -15,7 +15,7 @@ struct percpu_hot {
 			struct utask *current_task;
 			int cpu_number;
 
-			/* Current stack used on kernel entry: set on context switch. */
+			/* Stack used on kernel entry: set on context switch. */
 			unsigned long top_of_stack;
 		};
 	};

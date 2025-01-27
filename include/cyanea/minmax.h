@@ -9,7 +9,8 @@
 #define __no_side_effects(a, b) (__builtin_constant_p(a) && __builtin_constant_p(b))
 
 #define __cmp_const(a, b, op) ((a) op (b) ? (a) : (b))
-#define __cmp_once(a, b, op) ({ \
+#define __cmp_once(a, b, op) \
+	({ \
 		typeof(a) a_value = (a); \
 		typeof(b) b_value = (b); \
 		__cmp_const(a_value, b_value, op); \

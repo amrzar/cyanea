@@ -18,6 +18,7 @@ void __init acpi_boot_table_init(void); /* ukernel/acpi/boot.c. */
 void __init cache_bp_init(void);        /* ukernel/cache.c. */
 int __init reserve_real_mode(void);     /* realmod/init.c. */
 void __init check_x2apic(void);         /* ukernel/apic/apic.c. */
+void __init cpu_nrs_init(void);         /* ukernel/apic/apic.c. */
 
 #ifndef CONFIG_NUMA
 static void __init initmem_init(void)
@@ -82,4 +83,5 @@ void __init setup_arch(void)
 	acpi_boot_table_init();
 	initmem_init();
 	acpi_boot_init();
+	cpu_nrs_init();
 }

@@ -10,7 +10,8 @@
 
 static int memblock_debug = 0;
 
-#define memblock_dbg(...) do { \
+#define memblock_dbg(...) \
+	do { \
 		if (memblock_debug) {  \
 			ulog_info(__VA_ARGS__); \
 			ulog_info(" (%s)\n", __func__); \

@@ -41,12 +41,14 @@ typedef struct ldttss_desc tss_desc_t;
 
 /* 6.14.4 Stack Switching in IA-32e Mode. */
 
-/* The 64-bit extensions of Intel 64 architecture implement (1) a modified version
- * of the legacy stack-switching mechanism and (2) an alternative stack-switching
- * mechanism called the interrupt stack table (IST).
+/*
+ * The 64-bit extensions of Intel 64 architecture implement (1) a modified
+ * version of the legacy stack-switching mechanism and (2) an alternative
+ * stack-switching mechanism called the interrupt stack table (IST).
  */
 
-/* The modified version of the legacy stack-switching mechanism happens as part
+/*
+ * The modified version of the legacy stack-switching mechanism happens as part
  * of a 64-bit mode privilege-level change. IA-32e mode loads only an inner-level
  * RSP from the TSS. The new SS selector is forced to NULL and the SS selector
  * RPL field is set to the new CPL.
@@ -56,13 +58,14 @@ typedef struct ldttss_desc tss_desc_t;
 
 /* This mechanism unconditionally switches stacks when it is enabled. */
 
-/* The IST mechanism provides up to seven IST pointers in the TSS. The pointers
- * are referenced by an interrupt-gate descriptor in the IDT. The gate descriptor
- * contains a 3-bit IST index field that provides an offset into the IST section
- * of the TSS.
+/*
+ * The IST mechanism provides up to seven IST pointers in the TSS. The pointers
+ * are referenced by an interrupt-gate descriptor in the IDT. The gate
+ * descriptor contains a 3-bit IST index field that provides an offset into
+ * the IST section of the TSS.
  */
 
-/* If the IST index is zero, the modified legacy stack-switching mechanism is used. */
+/* If the IST index is zero, the modified legacy stack-switching is used. */
 
 /* 6.11 IDT DESCRIPTORS. */
 

@@ -3,21 +3,23 @@
 #ifndef __ASM_GENERIC_UNALIGNED_H__
 #define __ASM_GENERIC_UNALIGNED_H__
 
-#include <cyanea/types.h>
 #include <cyanea/byteorder.h>
+#include <cyanea/types.h>
 
-/* **/
-/* '__get_unaligned_t' and '__put_unaligned_t' by using '__packed' convince the
- * compiler that alignment of pointer 'ptr' is one. So that, the compiler issues
- * the correct load and store instructions.
+/*
+ * '__get_unaligned_t' and '__put_unaligned_t' use '__packed' to convince the
+ * compiler that the alignment of the pointer 'ptr' is one. This ensures that
+ * the compiler generates the correct load and store instructions.
  */
 
-#define __get_unaligned_t(type, ptr) ({ \
+#define __get_unaligned_t(type, ptr) \
+	({ \
 		const struct { type x; } __packed *__pptr = (typeof(__pptr))(ptr); \
 		__pptr->x; \
 	})
 
-#define __put_unaligned_t(type, value, ptr) do { \
+#define __put_unaligned_t(type, value, ptr) \
+	do { \
 		struct { type x; } __packed *__pptr = (typeof(__pptr))(ptr); \
 		__pptr->x = (value); \
 	} while (0)

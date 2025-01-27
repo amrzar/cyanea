@@ -22,12 +22,20 @@ static void __init *efi_memmap_init(phys_addr_t phys_addr, size_t size)
 	return virt_addr;
 }
 
-/* https://uefi.org/specs/UEFI/2.10/07_Services_Boot_Services.html#efi-boot-services-getmemorymap. */
-/* The descriptor size (i.e. efi_memdesc_size) represents the size in bytes of an
- * EFI_MEMORY_DESCRIPTOR elements. The size is returned to allow for future expansion
- * of the EFI_MEMORY_DESCRIPTOR. Use the descriptor size to iterate over the map.
+/**
+ * @brief Iterate over each EFI memory descriptor in the memory map.
+ *
+ * The descriptor size (`e->efi_memdesc_size`) represents the size in bytes of
+ * an EFI_MEMORY_DESCRIPTOR element. The size is returned to allow for future
+ * expansion of the EFI_MEMORY_DESCRIPTOR. Use the descriptor size to iterate
+ * over the map.
+ *
+ * @param md Pointer to the current EFI memory descriptor.
+ * @param descs Pointer to the start of the EFI memory descriptor array.
+ * @param e Pointer to the EFI system table containing memory map information.
+ *
+ * @see https://uefi.org/specs/UEFI/2.10/07_Services_Boot_Services.html#efi-boot-services-getmemorymap
  */
-
 #define for_each_efi_memory_desc_in_map(md, descs, e) \
 	for ((md) = (descs); \
 	        ((void *)(md) + (e)->efi_memdesc_size) <= ((void *)(descs) + (e)->efi_memmap_size); \
@@ -71,7 +79,7 @@ int __init efi_add_memmap(void)
 	if (!descs)
 		return -ENOMEM;
 
-	for_each_efi_memory_desc_in_map (md, descs, e) {
+	for_each_efi_memory_desc_in_map(md, descs, e) {
 		int e820_type;
 
 		switch (md->type) {
@@ -105,7 +113,8 @@ int __init efi_add_memmap(void)
 			e820_type = E820_TYPE_RESERVED;
 		}
 
-		e820__range_add(md->phys_addr, md->num_pages * EFI_PAGE_SIZE, e820_type);
+		e820__range_add(md->phys_addr, md->num_pages * EFI_PAGE_SIZE,
+		        e820_type);
 	}
 
 	efi_memmap_unmap(descs, e->efi_memmap_size);

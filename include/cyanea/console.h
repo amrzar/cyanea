@@ -7,9 +7,7 @@
 
 struct console {
 	char name[8];               /* Console port name, e.g. 'ttyS' */
-
 	short flags;                /* UNUSED. */
-
 	int index;                  /* Port index, '-1' matches any ports with same name. */
 	unsigned int speed;         /* Port baud rate for the console. */
 

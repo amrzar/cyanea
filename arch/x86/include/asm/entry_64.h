@@ -3,15 +3,6 @@
 #ifndef __X86_ASM_ENTRY_64_H__
 #define __X86_ASM_ENTRY_64_H__
 
-/*
- * To add a new interrupt handler:
- *   (1) Use 'DECLARE_IDTENTRY_X(func)' in entry_64.S for assembly handler 'asm_func'.
- *   (2) Add 'DECLARE_IDTENTRY_X(func)' in asm/irq.c and add the IDT entry for 'asm_func'.
- *   (3) Add 'DEFINE_IDTENTRY_X(func) { ... }' in respective code for C handler.
- */
-
-/* Handler is called with interrupts disabled. */
-
 #ifndef __ASSEMBLY__
 #include <asm/utask.h>
 
@@ -29,7 +20,7 @@
 #define DEFINE_IDTENTRY_WITH_ERROR_CODE(func) \
 	void func(struct utask_regs *regs, unsigned long error_code)
 
-/* DECLARE_IDTENTRY_IRQ - Declare functions for device interrupt IDT entry point. */
+/* DECLARE_IDTENTRY_IRQ - Declare IDT entry point for device interrupt. */
 #define DECLARE_IDTENTRY_IRQ(func) \
 	DECLARE_IDTENTRY_WITH_ERROR_CODE(func)
 

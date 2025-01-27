@@ -29,9 +29,10 @@ pgprotval_t __supported_pte_mask = -1;
 
 /* Setup BRK. */
 
-/* The pages for initialising the page-tables are allocated form '__brk_alloc'
- * (i.e. at the end of the image), instead of 'memblock_alloc' as at this point NUMA
- * is not enabled and we do that to keep them close to ukernel.
+/*
+ * The pages for initializing the page tables are allocated from '__brk_alloc'
+ * (i.e., at the end of the image), instead of 'memblock_alloc' as at this point
+ * NUMA is not enabled. We do this to keep them close to the ukernel.
  */
 
 typedef char page_array_t[CONFIG_BRK_ALLOC_PAGES][PAGE_SIZE];
@@ -55,7 +56,8 @@ static void __init *alloc_pages(unsigned int num)
 	return page;
 }
 
-/* INITIALISE the direct mapping.
+/*
+ * INITIALISE the direct mapping.
  *
  * 'physical_pt_init'
  * 'physical_pmd_init'
@@ -65,9 +67,19 @@ static void __init *alloc_pages(unsigned int num)
  * Halt if we fail on any of these functions.
  */
 
+/**
+ * @brief Initializes the physical page table entries.
+ *
+ * This function sets up the page table entries for a given range of physical
+ * addresses with a specified page size.
+ *
+ * @param pt The page table to initialize.
+ * @param start The starting physical address.
+ * @param end The ending physical address.
+ * @param ps The page size to use for the entries.
+ */
 static void __init physical_pt_init(pte_t pt[], phys_addr_t start,
-        phys_addr_t end,
-        enum page_size ps)
+        phys_addr_t end, enum page_size ps)
 {
 	unsigned long vaddr = (unsigned long)__va(start);
 	unsigned long vaddr_end = (unsigned long)__va(end);
@@ -75,7 +87,6 @@ static void __init physical_pt_init(pte_t pt[], phys_addr_t start,
 	unsigned int i = pte_index(vaddr);
 
 	for (; ((i < PTRS_PER_PT) && (vaddr < vaddr_end)); i++) {
-
 		assert(!(pte_flags(pt[i]) & _PAGE_PRESENT), "memory already mapped.\n");
 
 		pte_set(&pt[i], __pte_t(__pa(vaddr) | check_pgprot(PAGE_KERNEL)));
@@ -85,8 +96,7 @@ static void __init physical_pt_init(pte_t pt[], phys_addr_t start,
 }
 
 static void __init physical_pmd_init(pmd_t pmd[], phys_addr_t start,
-        phys_addr_t end,
-        enum page_size ps)
+        phys_addr_t end, enum page_size ps)
 {
 	unsigned long vaddr = (unsigned long)__va(start);
 	unsigned long vaddr_end = (unsigned long)__va(end);
@@ -97,9 +107,7 @@ static void __init physical_pmd_init(pmd_t pmd[], phys_addr_t start,
 		pte_t *pt;
 
 		if (pmd_flags(pmd[i]) & _PAGE_PRESENT) {
-
 			assert((ps != PAGE_SIZE_2M), "unable to map page.\n");
-
 			assert(!(pmd_flags(pmd[i]) & _PAGE_PSE),
 			        "memory already mapped.\n");
 
@@ -124,8 +132,7 @@ static void __init physical_pmd_init(pmd_t pmd[], phys_addr_t start,
 }
 
 static void __init physical_pud_init(pud_t pud[], phys_addr_t start,
-        phys_addr_t end,
-        enum page_size ps)
+        phys_addr_t end, enum page_size ps)
 {
 	unsigned long vaddr = (unsigned long)__va(start);
 	unsigned long vaddr_end = (unsigned long)__va(end);
@@ -136,9 +143,7 @@ static void __init physical_pud_init(pud_t pud[], phys_addr_t start,
 		pmd_t *pmd;
 
 		if (pud_flags(pud[i]) & _PAGE_PRESENT) {
-
 			assert((ps != PAGE_SIZE_1G), "unable to map page.\n");
-
 			assert(!(pud_flags(pud[i]) & _PAGE_PSE),
 			        "memory already mapped.\n");
 
@@ -205,12 +210,24 @@ static void add_range_mapped(unsigned long start_pfn, unsigned long end_pfn)
 		                        1UL << (32 - PAGE_SHIFT)));
 }
 
-/* Setup the direct mapping of the physical memory at PAGE_OFFSET. */
+/**
+ * @brief Initialize direct memory mapping for a given physical address range.
+ *
+ * This function sets up the memory mapping for a specified range of physical
+ * addresses. It is called during the initialization phase.
+ *
+ * The function prefers to use 1GiB mappings where possible for efficiency.
+ * However, it will use 4KiB or 2MiB pages to achieve the required alignments
+ * at the head or tail of the range.
+ *
+ * @param range_start The starting physical address of the range to be mapped.
+ * @param range_end The ending physical address of the range to be mapped.
+ */
 static void __init init_range_memory_mapping(phys_addr_t range_start,
         phys_addr_t range_end)
 {
-	int i;
 	unsigned long start_pfn, end_pfn, limit_pfn, pfn;
+	int i;
 
 # define PFN_PHYS(x) ((phys_addr_t)(x) << PAGE_SHIFT)
 # define PFN_DOWN(x) (ROUND_DOWN(x, PAGE_SIZE) >> PAGE_SHIFT)
@@ -228,11 +245,7 @@ static void __init init_range_memory_mapping(phys_addr_t range_start,
 		ulog_debug("[%s]: [mem %#018llx .. %#018llx]\n",
 		        __FUNCTION__, start, end - 1);
 
-		/* We prefer 1GiB mapping. However, on the head (or tail) use 4Kib or 2Mib
-		 * pages to get to the required alignments.
-		 */
-
-		/*  - 4KiB mapping from 'start' to the next multiple of 2MiB. */
+		/* 4KiB mapping from 'start' to the next multiple of 2MiB. */
 
 		pfn = start_pfn = PFN_DOWN(start);
 		end_pfn = ROUND_UP(pfn, PFN_DOWN(PMD_SIZE));
@@ -247,7 +260,7 @@ static void __init init_range_memory_mapping(phys_addr_t range_start,
 			pfn = end_pfn;
 		}
 
-		/* - 2MiB mapping from 'pfn' to the next multiple of 1GiB. */
+		/* 2MiB mapping from 'pfn' to the next multiple of 1GiB. */
 
 		start_pfn = ROUND_UP(pfn, PFN_DOWN(PMD_SIZE));
 		end_pfn = ROUND_UP(pfn, PFN_DOWN(PUD_SIZE));
@@ -262,7 +275,7 @@ static void __init init_range_memory_mapping(phys_addr_t range_start,
 			pfn = end_pfn;
 		}
 
-		/* - 1GiB mapping from 'pfn' as much as possible. */
+		/* 1GiB mapping from 'pfn' as much as possible. */
 
 		start_pfn = ROUND_UP(pfn, PFN_DOWN(PUD_SIZE));
 		end_pfn = ROUND_DOWN(limit_pfn, PFN_DOWN(PUD_SIZE));
@@ -273,7 +286,7 @@ static void __init init_range_memory_mapping(phys_addr_t range_start,
 			pfn = end_pfn;
 		}
 
-		/* - 2MiB mapping from 'pfn' as much as possible. */
+		/* 2MiB mapping from 'pfn' as much as possible. */
 
 		start_pfn = ROUND_UP(pfn, PFN_DOWN(PMD_SIZE));
 		end_pfn = ROUND_DOWN(limit_pfn, PFN_DOWN(PMD_SIZE));
@@ -284,7 +297,7 @@ static void __init init_range_memory_mapping(phys_addr_t range_start,
 			pfn = end_pfn;
 		}
 
-		/* - 4KiB mapping from 'pfn' until end of region. */
+		/* 4KiB mapping from 'pfn' until end of region. */
 
 		start_pfn = pfn;
 		end_pfn = limit_pfn;

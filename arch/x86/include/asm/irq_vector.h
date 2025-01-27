@@ -7,6 +7,7 @@
 
 #define IDT_ENTRIES 256
 #define IDT_EXCEPTION_ENTRIES 32
+
 #define IDT_EXCEPTION_WITH_ERRCODE_MASK 0x227D00
 
 /* Architecture-defined exceptions and NMI interrupt. */
@@ -31,15 +32,6 @@
 #define EXCEPTION_XF 19    /* #XM SIMD Floating-Point Exception (Fault, No error code). */
 #define EXCEPTION_VE 20    /* #VE Virtualization Exception (Fault, No error code). */
 #define EXCEPTION_CP 21    /* #CP Control Protection Exception (Fault, Error code). */
-
-/* VECTORS LAYOUT. */
-/* The allowable range for vector numbers is 0 to 255. */
-
-/*  - Vectors 0 .. IDT_EXCEPTION_ENTRIES - 1
- *    Reserved for architecture-defined exceptions and interrupts.
- *  - Vectors IDT_EXCEPTION_ENTRIES .. IDT_ENTRIES - 1
- *    User-defined and special interrupts.
- */
 
 #define FIRST_EXTERNAL_VECTOR IDT_EXCEPTION_ENTRIES
 

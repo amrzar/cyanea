@@ -54,7 +54,8 @@ static void __init purge_ident_mapping(void)
 
 	/* 4.10.4.1 Operations that Invalidate TLBs and Paging-Structure Caches. */
 
-	/* If CR4.PCIDE = 0, the instruction invalidates all TLB entries associated
+	/*
+	 * If CR4.PCIDE = 0, the instruction invalidates all TLB entries associated
 	 * with PCID 000H except those for global pages. It also invalidates all entries
 	 * in all paging-structure caches associated with PCID 000H.
 	 *
@@ -94,15 +95,10 @@ static void __init copy_boot_data(struct boot_params *bp)
 void __init x86_64_start_kernel(phys_addr_t bp)
 {
 	cr4_init_shadow();
-
 	purge_ident_mapping();
-
 	clear_bss();
-
 	idt_setup_early_handler();
-
 	copy_boot_data(__va(bp));
-
 	start_kernel();
 }
 
@@ -119,9 +115,10 @@ static void __init *get_free_zero_page(void)
 	return page;
 }
 
-/* Page tables -- static ones or allocated using 'get_free_zero_page' -- are
- * present in kernel mapping; use kernel mapping to get virtual address as '__va'
- * is not ready before 'init_mem_mapping'.
+/*
+ * Page tables -- static ones or allocated using 'get_free_zero_page' -- are
+ * present in the kernel mapping; use kernel mapping to get the virtual address
+ * as '__va' is not ready before 'init_mem_mapping'.
  */
 #define __va_symbol(x) ((x) + __START_KERNEL_map - phys_base)
 
@@ -265,34 +262,31 @@ void __head __startup_64(phys_addr_t load_phys_addr)
 		halt();
 
 	/* PGD [511]. */
-	pgd[pgd_index(__START_KERNEL_map)] =
-	        __pgd_t((pgdval_t)(pud) | _KERNPG_TABLE);
+	pgd[pgd_index(__START_KERNEL_map)] = __pgd_t((pgdval_t)(pud) | _KERNPG_TABLE);
 
 	/* PUD [510]. */
-	pud[pud_index(__START_KERNEL_map)] =
-	        __pud_t((pudval_t)(pmd) | _KERNPG_TABLE);
+	pud[pud_index(__START_KERNEL_map)] = __pud_t((pudval_t)(pmd) | _KERNPG_TABLE);
 
 	/* PUD [511]. */
-	pud[pud_index(__START_KERNEL_map) + 1] =
-	        __pud_t((pudval_t)(pmd_fixmap) | _KERNPG_TABLE);
+	pud[pud_index(__START_KERNEL_map) + 1] = __pud_t((pudval_t)(
+	                        pmd_fixmap) | _KERNPG_TABLE);
 
-	/* 'pmd' maps '_text' to the actual physical address 'load_phys_addr' where the
-	 * kernel is loaded, i.e. in theory instead of mapping '__START_KERNEL_map' to 0,
-	 * we map '__START_KERNEL_map' to the 'load_delta'.
-	 */
-
-	/* Note that the range between '__START_KERNEL_map' and '_text' is not mapped.
+	/*
+	 * 'pmd' maps '_text' to the actual physical address 'load_phys_addr' where the
+	 * kernel is loaded. In theory, instead of mapping '__START_KERNEL_map' to 0,
+	 * we map '__START_KERNEL_map' to 'load_delta'.
+	 *
+	 * Note that the range between '__START_KERNEL_map' and '_text' is not mapped.
 	 * This could be an issue for how '__phys_addr()' works. In 'physical_mapping_init',
-	 * we make sure there is no symbol with virtual address in this range; or we
+	 * we ensure there is no symbol with a virtual address in this range, or we
 	 * refuse to boot.
+	 *
+	 * Use '__PAGE_KERNEL_LARGE_EXEC'. '_PAGE_XD' is not set. '_PAGE_GLOBAL' is set.
+	 * '_PAGE_GLOBAL' will be ignored if not supported by the CPU.
 	 */
-
-	/* Use '__PAGE_KERNEL_LARGE_EXEC'. '_PAGE_XD' is not set. '_PAGE_GLOBAL' is set. */
-	/* '_PAGE_GLOBAL' will be ignored if not supported by CPU. */
 
 	for (i = 0; i < __KERNEL_DIV_ROUND_UP(_end - _text, PMD_SIZE); i++) {
-		pmd[i + pmd_index(_text)] =
-		        __pmd_t((pmdval_t)((load_phys_addr +
+		pmd[i + pmd_index(_text)] = __pmd_t((pmdval_t)((load_phys_addr +
 		                                (i * PMD_SIZE)) | __PAGE_KERNEL_LARGE_EXEC));
 	}
 

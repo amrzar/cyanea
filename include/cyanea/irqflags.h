@@ -7,7 +7,8 @@
 
 #ifndef __ASSEMBLY__
 
-#define local_save_flags(flags) do { \
+#define local_save_flags(flags) \
+	do { \
 		flags = arch_local_save_flags(); \
 	} while (0)
 
@@ -17,7 +18,8 @@
 #define irqs_disabled_flags(flags) arch_irqs_disabled_flags(flags)
 #define irqs_disabled() arch_irqs_disabled()
 
-#define local_irq_save(flags) do { \
+#define local_irq_save(flags) \
+	do { \
 		flags = arch_local_irq_save(); \
 	} while (0)
 

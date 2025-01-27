@@ -4,10 +4,9 @@
 #include <cyanea/init_utask.h>
 #include <cyanea/irqflags.h>
 #include <cyanea/percpu.h>
-
-#include <asm/desc_types.h>
 #include <asm/cpu.h>
 #include <asm/current.h>
+#include <asm/desc_types.h>
 #include <asm/segment.h>
 #include <asm/ukernel.lds.h>
 
@@ -22,7 +21,7 @@ desc_struct_t gdt_page[GDT_ENTRIES] __percpu_page_aligned = {
 	[GDT_ENTRY_DEFAULT_USER_CS] = GDT_ENTRY_INIT(0xA0FB, 0, 0xFFFFF),
 };
 
-/* Shadow Registers. */
+/* Shadow Registers: */
 /* ''CR4'' */
 
 static unsigned long cr4 __percpu;
@@ -67,13 +66,11 @@ void cr4_init_shadow(void)
 }
 
 /* Per-cpu TSS segments. */
-
 struct tss cpu_tss __percpu_page_aligned = {
 	/* Initialize at runtime. */
 };
 
-/* Per-cpu Hot Stuff! */
-
+/* Per-cpu Hot stuff. */
 struct percpu_hot percpu_hot __percpu_cache_aligned = {
 	.current_task = &init_utask,
 	.top_of_stack = TOP_OF_INIT_STACK
