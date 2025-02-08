@@ -102,7 +102,6 @@ SECTIONS
 
     __per_cpu_load = .;
 
-    /* Use address 0; We want to calculate offset for variable in this esction. */
     .data..percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {
         __per_cpu_start = .;
         *(.data..percpu..head)

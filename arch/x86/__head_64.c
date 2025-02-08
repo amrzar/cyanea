@@ -7,7 +7,7 @@
 #include <cyanea/stddef.h>
 #include <cyanea/string.h>
 #include <asm/cpu.h>
-#include <asm/desc_types.h>
+#include <asm/desc.h>
 #include <asm/irq_vector.h>
 #include <asm/page.h>
 #include <asm/setup.h>

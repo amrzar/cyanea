@@ -128,8 +128,8 @@ static int add_range(phys_addr_t base, size_t size, int nid,
 
 		/* Possible cases:
 		 *  (1) 'region' is already after the new region.
-		 *  (2) 'region' does not have overlap with the new region.
-		 *  (3) 'region' has overlap with the new region.
+		 *  (2) 'region' does not overlap with the new region.
+		 *  (3) 'region' overlaps with the new region.
 		 *
 		 * */
 
@@ -196,10 +196,10 @@ static int isolate_range(phys_addr_t base, size_t size, int *start_range,
 
 		/* Possible cases:
 		 *  (1) 'region' is already after the new region.
-		 *  (2) 'region' does not have overlap with the new region.
-		 *  (3) 'region' has overlap with the beginning of the new region.
-		 *  (4) 'region' has overlap with the end of the new region.
-		 *  (5) 'region' is fully contained in the new region.
+		 *  (2) 'region' does not overlap with the new region.
+		 *  (3) 'region' overlaps with the beginning of the new region.
+		 *  (4) 'region' overlaps with the end of the new region.
+		 *  (5) 'region' is fully contained within the new region.
 		 *
 		 * */
 
@@ -214,15 +214,17 @@ static int isolate_range(phys_addr_t base, size_t size, int *start_range,
 			region->base = base;
 			region->size -= base - r_base;
 			memory.size -= base - r_base;
-			insert_region(i, r_base, base - r_base, region->nid, region->flags);
+			insert_region(i, r_base, base - r_base,
+			        region->nid, region->flags);
 
 		} else if (r_end > end) {
 			/* (4) */
 			region->base = end;
 			region->size -= end - r_base;
 			memory.size -= end - r_base;
-			/* --i so next iteration, the new region will be fully contained. */
-			insert_region(i--, r_base, end - r_base, region->nid, region->flags);
+			/* i-- next iteration, the new region will be contained. */
+			insert_region(i--, r_base, end - r_base,
+			        region->nid, region->flags);
 		} else {
 			/* (5) */
 			if (!*end_range)
@@ -246,13 +248,12 @@ static phys_addr_t find_in_range_node(size_t size, unsigned long align,
 	end = max(start, end);
 
 	for_each_memblock_region(i, region) {
-		if ((region->flags & flags) == flags) {
+		if (region->flags == flags) {
 			if (nid != -1 && nid != region->nid)
 				continue;
 
 			r_base = clamp(region->base, start, end);
 			r_end = clamp(region->base + region->size, start, end);
-
 			base = ALIGN_KERNEL(r_base, align);
 			if (base < r_end && r_end - base >= size)
 				return base;
@@ -324,7 +325,7 @@ int memblock_remove(phys_addr_t base, size_t size)
 }
 
 int memblock_setclr_flag(phys_addr_t base, size_t size, int set,
-        enum memblock_flags flag)
+        enum memblock_flags flags)
 {
 	int i, err, start, end;
 
@@ -334,9 +335,9 @@ int memblock_setclr_flag(phys_addr_t base, size_t size, int set,
 
 	for (i = start; i < end; i++) {
 		if (set)
-			memory.regions[i].flags |= flag;
+			memory.regions[i].flags |= flags;
 		else
-			memory.regions[i].flags &= ~flag;
+			memory.regions[i].flags &= ~flags;
 	}
 
 	merge_regions(start, end);
@@ -363,18 +364,20 @@ int memblock_set_node(phys_addr_t base, size_t size, int nid)
 phys_addr_t memblock_alloc(size_t size, unsigned long align,
         phys_addr_t start, phys_addr_t end, int nid, bool exact_nid)
 {
-	phys_addr_t found;
+	phys_addr_t paddr;
 
 again:
 
-	found = find_in_range_node(size, align, start, end, nid, MEMBLOCK_NONE);
-	if (found && !memblock_setclr_flag(found, size, 1, MEMBLOCK_RESERVED)) {
-		memblock_dbg("[mem %#018llx .. %#018llx]", found, found + size - 1);
+	paddr = find_in_range_node(size, align, start, end, nid, MEMBLOCK_NONE);
+	if (paddr) {
+		if (!memblock_setclr_flag(paddr, size, 1, MEMBLOCK_RESERVED)) {
+			memblock_dbg("[mem %#018llx .. %#018llx]", paddr,
+			        paddr + size - 1);
 
-		return found;
+			return paddr;
+		}
 	}
 
-	/* Retry without 'nid'. */
 	if (nid != -1 && !exact_nid) {
 		nid = -1;
 

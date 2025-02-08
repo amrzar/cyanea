@@ -102,7 +102,7 @@ startup_64_smp:
 	# Update 'GDT'. Use per-cpu 'gdt_page'.
 
 	subq	$16, %rsp
-	movw	$(GDT_ENTRIES * 8 - 1), (%rsp)
+	movw	$(GDT_SIZE - 1), (%rsp)
 	leaq	gdt_page(%rdx), %rax
 	movq	%rax, 2(%rsp)
 	lgdt	(%rsp)				# See 'desc_defs.h'.

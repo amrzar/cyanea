@@ -6,20 +6,35 @@
 #include <cyanea/percpu.h>
 #include <asm/cpu.h>
 #include <asm/current.h>
-#include <asm/desc_types.h>
+#include <asm/desc.h>
 #include <asm/segment.h>
 #include <asm/ukernel.lds.h>
 
 /* CPU. */
 
-desc_struct_t gdt_page[GDT_ENTRIES] __percpu_page_aligned = {
-	[GDT_ENTRY_KERNEL32_CS] = GDT_ENTRY_INIT(0xC09B, 0, 0xFFFFF),
-	[GDT_ENTRY_KERNEL_CS] = GDT_ENTRY_INIT(0xA09B, 0, 0xFFFFF),
-	[GDT_ENTRY_KERNEL_DS] = GDT_ENTRY_INIT(0xC093, 0, 0xFFFFF),
-	[GDT_ENTRY_DEFAULT_USER32_CS] = GDT_ENTRY_INIT(0xC0FB, 0, 0xFFFFF),
-	[GDT_ENTRY_DEFAULT_USER_DS] = GDT_ENTRY_INIT(0xC0F3, 0, 0xFFFFF),
-	[GDT_ENTRY_DEFAULT_USER_CS] = GDT_ENTRY_INIT(0xA0FB, 0, 0xFFFFF),
+struct gdt_page gdt_page __percpu_page_aligned = { .gdt = {
+		[GDT_ENTRY_KERNEL32_CS] = GDT_ENTRY_INIT(0xC09B, 0, 0xFFFFF),
+		[GDT_ENTRY_KERNEL_CS] = GDT_ENTRY_INIT(0xA09B, 0, 0xFFFFF),
+		[GDT_ENTRY_KERNEL_DS] = GDT_ENTRY_INIT(0xC093, 0, 0xFFFFF),
+		[GDT_ENTRY_DEFAULT_USER32_CS] = GDT_ENTRY_INIT(0xC0FB, 0, 0xFFFFF),
+		[GDT_ENTRY_DEFAULT_USER_DS] = GDT_ENTRY_INIT(0xC0F3, 0, 0xFFFFF),
+		[GDT_ENTRY_DEFAULT_USER_CS] = GDT_ENTRY_INIT(0xA0FB, 0, 0xFFFFF),
+	}
 };
+
+// void load_direct_gdt(int cpu)
+// {
+//      struct dt_ptr dtr;
+
+//      dtr.base_address = (u64)per_cpu(gdt_page, cpu).gdt;
+//      dtr.size = GDT_SIZE - 1,
+//      load_gdt(&dtr);
+// }
+
+void __init switch_gdt_and_percpu_base(int cpu)
+{
+
+}
 
 /* Shadow Registers: */
 /* ''CR4'' */

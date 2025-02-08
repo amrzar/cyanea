@@ -3,29 +3,11 @@
 #ifndef __X86_ASM_UTASK_H__
 #define __X86_ASM_UTASK_H__
 
-#include <uapi/asm/bitsperlong.h>
 #include <asm/cpu.h>
-
-#define IO_BITMAP_BITS  65536
-#define IO_BITMAP_LONGS (IO_BITMAP_BITS / BITS_PER_LONG)
-
-#define IO_BITMAP_OFFSET (offsetof(struct tss, io_bitmap) - offsetof(struct tss, tss))
-
-struct io_bitmap {
-	unsigned long bitmap[IO_BITMAP_LONGS + 1];
-};
-
-struct tss {
-	struct task_state_segment tss;
-	struct io_bitmap io_bitmap;
-};
-
-/* See 'entry_64.h' for the calling convention details. */
 
 enum {
 	/* These regs are callee-preserved. */
 	R15, R14, R13, R12, RBP, RBX,
-
 	/* These regs are callee-clobbered. */
 	R11, R10, R9, R8, RAX, RCX, RDX, RSI, RDI,
 	NR_REGISTERS

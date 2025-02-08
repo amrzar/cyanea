@@ -30,19 +30,18 @@
  * the processor’s operating mode and execution privilege-level.
  */
 
-#define GDT_ENTRY(attribute, base, limit) \
-	((((base) & ULL(0xFF000000)) << (56 - 24)) | \
-	        (((attribute) & ULL(0x0000F0FF)) << 40) | \
+#define GDT_ENTRY(attribute, base, limit)             \
+	((((base) & ULL(0xFF000000)) << (56 - 24)) |  \
+	        (((attribute) & ULL(0x0000F0FF)) << 40) |    \
 	        (((limit) & ULL(0x000F0000)) << (48 - 16)) | \
-	        (((base) & ULL(0x00FFFFFF)) << 16) | \
-	        (((limit) & ULL(0x0000FFFF))))
+	        (((base) & ULL(0x00FFFFFF)) << 16) | (((limit) & ULL(0x0000FFFF))))
 
 #define GDT_ENTRY_BOOT32_CS 1
-#define GDT_ENTRY_BOOT_CS   2
-#define GDT_ENTRY_BOOT_DS   3
-#define __BOOT32_CS      (GDT_ENTRY_BOOT32_CS * 8)
-#define __BOOT_CS        (GDT_ENTRY_BOOT_CS * 8)
-#define __BOOT_DS        (GDT_ENTRY_BOOT_DS * 8)
+#define GDT_ENTRY_BOOT_CS 2
+#define GDT_ENTRY_BOOT_DS 3
+#define __BOOT32_CS     (GDT_ENTRY_BOOT32_CS * 8)
+#define __BOOT_CS       (GDT_ENTRY_BOOT_CS * 8)
+#define __BOOT_DS       (GDT_ENTRY_BOOT_DS * 8)
 
 /* 5.8.8 Fast System Calls in 64-Bit Mode. */
 
@@ -56,9 +55,9 @@
  *              of the value in the IA32_FMASK MSR.
  */
 
-# define GDT_ENTRY_KERNEL32_CS  1
-# define GDT_ENTRY_KERNEL_CS    2
-# define GDT_ENTRY_KERNEL_DS    3
+#define GDT_ENTRY_KERNEL32_CS 1
+#define GDT_ENTRY_KERNEL_CS 2
+#define GDT_ENTRY_KERNEL_DS 3
 
 /* When SYSRET transfers control to 64-bit mode user code using REX.W, the
  * processor gets the privilege level 3 target CS, RIP, SS, and RFLAGS:
@@ -75,22 +74,24 @@
  *   - EFLAGS — Loaded from R11.
  */
 
-# define GDT_ENTRY_DEFAULT_USER32_CS 4
-# define GDT_ENTRY_DEFAULT_USER_DS   5
-# define GDT_ENTRY_DEFAULT_USER_CS   6
+#define GDT_ENTRY_DEFAULT_USER32_CS 4
+#define GDT_ENTRY_DEFAULT_USER_DS 5
+#define GDT_ENTRY_DEFAULT_USER_CS 6
 
 /* System descriptors are occupying the space of two entries. */
 
-# define GDT_ENTRY_TSS 8
-# define GDT_ENTRY_LDT 10
+#define GDT_ENTRY_TSS 8
+#define GDT_ENTRY_LDT 10
 
-# define GDT_ENTRIES   16
+#define GDT_ENTRIES 12
 
-# define __KERNEL32_CS   (GDT_ENTRY_KERNEL32_CS * 8)
-# define __KERNEL_CS     (GDT_ENTRY_KERNEL_CS * 8)
-# define __KERNEL_DS     (GDT_ENTRY_KERNEL_DS * 8)
-# define __USER32_CS     (GDT_ENTRY_DEFAULT_USER32_CS * 8 + 3)
-# define __USER_DS       (GDT_ENTRY_DEFAULT_USER_DS * 8 + 3)
-# define __USER_CS       (GDT_ENTRY_DEFAULT_USER_CS * 8 + 3)
+#define __KERNEL32_CS   (GDT_ENTRY_KERNEL32_CS * 8)
+#define __KERNEL_CS     (GDT_ENTRY_KERNEL_CS * 8)
+#define __KERNEL_DS     (GDT_ENTRY_KERNEL_DS * 8)
+#define __USER32_CS     (GDT_ENTRY_DEFAULT_USER32_CS * 8 + 3)
+#define __USER_DS       (GDT_ENTRY_DEFAULT_USER_DS * 8 + 3)
+#define __USER_CS       (GDT_ENTRY_DEFAULT_USER_CS * 8 + 3)
+
+#define GDT_SIZE (GDT_ENTRIES * 8)
 
 #endif /* __X86_ASM_SEGMENT_H__ */

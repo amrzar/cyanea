@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 #include <cyanea/init.h>
-#include <asm/desc_types.h>
+#include <asm/desc.h>
 #include <asm/entry_64.h>
 #include <asm/irq_vector.h>
 #include <asm/segment.h>
