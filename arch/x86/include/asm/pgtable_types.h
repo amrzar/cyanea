@@ -75,28 +75,27 @@ enum page_cache_mode {
 typedef unsigned long pgdval_t;
 typedef struct {
 	pgdval_t pgd;
+# define pgd_val(x) ((x).pgd)
+# define __pgd_t(x) ((pgd_t) { (x) })
 } pgd_t;
 
-#define pgd_val(x) ((x).pgd)
-#define __pgd_t(x) ((pgd_t) { (x) })
 #define pgd_flags(x) (pgd_val(x) & PG_FLAGS_MASK)
 
 typedef unsigned long pteval_t;
 typedef struct {
 	pteval_t pte;
+# define pte_val(x) ((x).pte)
+# define __pte_t(x) ((pte_t) { (x) })
 } pte_t;
 
-#define pte_val(x) ((x).pte)
-#define __pte_t(x) ((pte_t) { (x) })
 #define pte_flags(x) (pte_val(x) & PG_FLAGS_MASK)
 
 typedef unsigned long pgprotval_t;
 typedef struct pgprot {
 	pgprotval_t pgprot;
+# define pgprot_val(x) ((x).pgprot)
+# define __pgprot_t(x) ((pgprot_t) { (x) })
 } pgprot_t;
-
-#define pgprot_val(x) ((x).pgprot)
-#define __pgprot_t(x) ((pgprot_t) { (x) })
 
 unsigned long cachemode2protval(enum page_cache_mode pcm);
 

@@ -10,10 +10,8 @@
 #include <cyanea/cache.h>
 
 #define __percpu __section(".data..percpu")
-
 #define __percpu_cache_aligned __section(".data..percpu..cache_aligned") \
 	____cacheline_aligned
-
 #define __percpu_page_aligned __section(".data..percpu..page_aligned") \
 	__aligned(PAGE_SIZE)
 

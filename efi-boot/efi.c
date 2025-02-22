@@ -156,8 +156,7 @@ static efi_status_t efi_get_memory_map(struct efi_boot_memmap *memmap,
 {
 	/* 7.2.3. EFI_BOOT_SERVICES.GetMemoryMap. */
 	return efi_bs_call(get_memory_map, &memmap->map_size, memmap_desc,
-	                &memmap->map_key,
-	                &memmap->desc_size, &memmap->desc_ver);
+	                &memmap->map_key, &memmap->desc_size, &memmap->desc_ver);
 }
 
 /* 7.4 Image Services. */
@@ -328,8 +327,7 @@ static efi_status_t setup_graphics(struct boot_params *boot_params)
 	si->framebuffer = 0;
 	/* 7.3.15. EFI_BOOT_SERVICES.LocateHandleBuffer. */
 	status = efi_bs_call(locate_handle_buffer, EFI_LOCATE_BY_PROTOCOL,
-	                &graphics_proto, NULL,
-	                &gop_handles_len, &gop_handles);
+	                &graphics_proto, NULL, &gop_handles_len, &gop_handles);
 	if (status == EFI_SUCCESS) {
 		status = efi_setup_gop(si, &graphics_proto, gop_handles, gop_handles_len);
 
@@ -367,8 +365,7 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle,
 	__efi_systab = systab;
 
 	status = efi_allocate_pages(BOOT_PARAMS_SIZE,
-	                (efi_physical_addr_t *)&boot_params, 0,
-	                EFI_LOADER_DATA);
+	                (efi_physical_addr_t *)&boot_params, 0, EFI_LOADER_DATA);
 	if (status != EFI_SUCCESS)
 		efi_exit(handle, status);
 
@@ -381,6 +378,7 @@ static efi_status_t __noreturn __x86_efi_entry(efi_handle_t handle,
 
 	ukernel_size = ROUND_UP(get_unaligned_le32(__UKERNEL_gz_end - 4),
 	                MIN_KERNEL_ALIGN);
+
 	status = efi_allocate_pages(ukernel_size, (efi_physical_addr_t *)&ukernel_addr,
 	                CONFIG_PHYSICAL_ALIGN, EFI_LOADER_CODE);
 	if (status != EFI_SUCCESS)

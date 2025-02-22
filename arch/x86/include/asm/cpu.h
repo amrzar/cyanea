@@ -3,6 +3,7 @@
 #ifndef __X86_ASM_CPU_H__
 #define __X86_ASM_CPU_H__
 
+#include <cyanea/pgtable.h>
 #include <cyanea/types.h>
 #include <asm/cr_eflags_defs.h>
 #include <uapi/asm/bitsperlong.h>
@@ -81,27 +82,21 @@ static __always_inline void native_wbinvd(void)
 
 #define wbinvd() native_wbinvd()
 
-/* 8.7 TASK MANAGEMENT IN 64-BIT MODE. */
-
+/**
+ * @brief Hardware Task State Segment (TSS) for x86 architecture.
+ * @see 8.7 TASK MANAGEMENT IN 64-BIT MODE.
+ */
 struct x86_hw_tss {
 	u32 reserved1;
-
-	/* Stack pointers (RSP) for ring 0 .. 2. */
-	u64 rsp0;
-	u64 rsp1;
-	u64 rsp2;
-
+	u64 rsp0; /**< Stack pointer (RSP) for ring 0. */
+	u64 rsp1; /**< Stack pointer (RSP) for ring 1. */
+	u64 rsp2; /**< Stack pointer (RSP) for ring 2. */
 	u64 reserved2;
-
-	/* Interrupt stack table (IST) pointers. */
-	u64 ist[7];
-
+	u64 ist[7]; /**< Interrupt stack table (IST) pointers. */
 	u32 reserved3;
 	u32 reserved4;
 	u16 reserved5;
-
-	/* Offset to the I/O permission bit map from the 64-bit TSS base. */
-	u16 io_bitmap_base;
+	u16 io_bitmap_base; /**< Offset to the I/O permission bit map from the 64-bit TSS base. */
 } __packed;
 
 #define IO_BITMAP_BITS  65536
@@ -114,6 +109,6 @@ struct x86_io_bitmap {
 struct tss {
 	struct x86_hw_tss tss;
 	struct x86_io_bitmap io_bitmap;
-};
+} __aligned(PAGE_SIZE);
 
 #endif /* __X86_ASM_CPU_H__ */

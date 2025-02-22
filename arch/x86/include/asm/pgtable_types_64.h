@@ -14,13 +14,11 @@
 #define PUD_SHIFT 30
 #define PUD_SIZE BIT_UL(PUD_SHIFT)
 #define PUD_MASK (~((PUD_SIZE) - 1))
-
 #define __HAS_PUD_LEVEL__
 
 #define PMD_SHIFT 21
 #define PMD_SIZE BIT_UL(PMD_SHIFT)
 #define PMD_MASK (~((PMD_SIZE) - 1))
-
 #define __HAS_PMD_LEVEL__
 
 #define PTRS_PER_PGD 512
@@ -33,19 +31,16 @@
 typedef unsigned long pudval_t;
 typedef struct {
 	pudval_t pud;
+# define pud_val(x) ((x).pud)
+# define __pud_t(x) ((pud_t) { (x) })
 } pud_t;
-
-#define pud_val(x) ((x).pud)
-#define __pud_t(x) ((pud_t) { (x) })
 
 typedef unsigned long pmdval_t;
 typedef struct {
 	pmdval_t pmd;
+# define pmd_val(x) ((x).pmd)
+# define __pmd_t(x) ((pmd_t) { (x) })
 } pmd_t;
 
-#define pmd_val(x) ((x).pmd)
-#define __pmd_t(x) ((pmd_t) { (x) })
-
 #endif /* __ASSEMBLY__ */
-
 #endif /* __X86_ASM_PGTABLE_TYPES_64_H__ */

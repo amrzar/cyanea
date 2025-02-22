@@ -17,6 +17,6 @@
 # define L1_CACHE_SHIFT 7
 #endif
 
-# define L1_CACHE_BYTES (1 << L1_CACHE_SHIFT)
+#define L1_CACHE_BYTES (1 << L1_CACHE_SHIFT)
 
 #endif /* __X86_ASM_CACHE_H__ */

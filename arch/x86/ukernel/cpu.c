@@ -7,11 +7,11 @@
 #include <asm/cpu.h>
 #include <asm/current.h>
 #include <asm/desc.h>
+#include <asm/msr.h>
 #include <asm/segment.h>
 #include <asm/ukernel.lds.h>
 
-/* CPU. */
-
+/* GDT: */
 struct gdt_page gdt_page __percpu_page_aligned = { .gdt = {
 		[GDT_ENTRY_KERNEL32_CS] = GDT_ENTRY_INIT(0xC09B, 0, 0xFFFFF),
 		[GDT_ENTRY_KERNEL_CS] = GDT_ENTRY_INIT(0xA09B, 0, 0xFFFFF),
@@ -22,18 +22,20 @@ struct gdt_page gdt_page __percpu_page_aligned = { .gdt = {
 	}
 };
 
-// void load_direct_gdt(int cpu)
-// {
-//      struct dt_ptr dtr;
+static void load_direct_gdt(int cpu)
+{
+	struct dt_ptr dtr;
 
-//      dtr.base_address = (u64)per_cpu(gdt_page, cpu).gdt;
-//      dtr.size = GDT_SIZE - 1,
-//      load_gdt(&dtr);
-// }
+	dtr.base_address = (u64)per_cpu(gdt_page, cpu).gdt;
+	dtr.size = GDT_SIZE - 1,
+	load_gdt(&dtr);
+}
 
 void __init switch_gdt_and_percpu_base(int cpu)
 {
+	load_direct_gdt(cpu);
 
+	wrmsrl(MSR_GS_BASE, per_cpu_offset(cpu));
 }
 
 /* Shadow Registers: */

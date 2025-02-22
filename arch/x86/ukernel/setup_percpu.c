@@ -55,7 +55,9 @@ void __init setup_per_cpu_areas(void)
 		per_cpu(cpuid_to_apic_id, cpu) = early_cpuid_to_apic_id[cpu];
 		per_cpu(cpuid_to_acpi_id, cpu) = early_cpuid_to_acpi_id[cpu];
 
-		if (!cpu)
+		if (!cpu) {
+			/* Update BSP to use real per-CPU area. */
 			switch_gdt_and_percpu_base(cpu);
+		}
 	}
 }

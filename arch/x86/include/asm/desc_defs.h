@@ -20,19 +20,19 @@ union desc_struct {
 		u16 base0;     /**< The segment base address bits 0 - 15. */
 		u16 base1: 8,  /**< The Segment base address bits 16 - 23. */
 		    type: 4,   /**< The type field.
-                                  * For system descriptors in IA-32e mode:
-                                  *   0x2 = LDT.
-                                  *   0x9 = 64-bit TSS (Available).
-                                  *   0xB = 64-bit TSS (Busy).
-                                  *   0xC = 64-bit Call Gate.
-                                  *   0xE = 64-bit Interrupt Gate.
-                                  *   0xF = 64-bit Trap Gate.
-                                  * For code/data descriptors in IA-32e mode:
-                                  *   0xA = Execute/Read Code Segment (Accessed).
-                                  *   0xB = Execute/Read Code Segment.
-                                  *   0x2 = Read/Write Data Segment.
-                                  *   0x3 = Read/Write Data Segment (Accessed).
-                                  */
+                                  For system descriptors in IA-32e mode:
+                                    0x2 = LDT.
+                                    0x9 = 64-bit TSS (Available).
+                                    0xB = 64-bit TSS (Busy).
+                                    0xC = 64-bit Call Gate.
+                                    0xE = 64-bit Interrupt Gate.
+                                    0xF = 64-bit Trap Gate.
+                                  For code/data descriptors in IA-32e mode:
+                                    0xA = Execute/Read Code Segment (Accessed).
+                                    0xB = Execute/Read Code Segment.
+                                    0x2 = Read/Write Data Segment.
+                                    0x3 = Read/Write Data Segment (Accessed).
+                                */
 		    s: 1,      /**< The descriptor type (0 = system, 1 = code or data). */
 		    dpl: 2,    /**< The descriptor privilege level. */
 		    p: 1;      /**< The present bit. */
@@ -49,13 +49,13 @@ typedef union desc_struct desc_struct_t;
 #define GDT_ENTRY_INIT(a, b, limit) \
 	{ .raw_desc = GDT_ENTRY(a, b, limit) }
 
-/* 8.2.3 TSS Descriptor in 64-bit mode. */
-
 /**
- * @brief LDT/TSS descriptor structure.
+ * @brief LDT/TSS descriptor structure in 64-bit mode.
  *
  * This structure defines the layout of a Local Descriptor Table (LDT) or
  * Task State Segment (TSS) descriptor in the x86 architecture.
+ *
+ * @see 8.2.3 TSS Descriptor in 64-bit mode.
  */
 struct ldttss_desc {
 	u16 limit0;    /**< The lower 16 bits of the segment limit. */
@@ -73,34 +73,6 @@ struct ldttss_desc {
 } __packed;
 typedef struct ldttss_desc ldt_desc_t;
 typedef struct ldttss_desc tss_desc_t;
-
-/* 6.14.4 Stack Switching in IA-32e Mode. */
-
-/*
- * The 64-bit extensions of Intel 64 architecture implement (1) a modified
- * version of the legacy stack-switching mechanism and (2) an alternative
- * stack-switching mechanism called the interrupt stack table (IST).
- */
-
-/*
- * The modified version of the legacy stack-switching mechanism happens as part
- * of a 64-bit mode privilege-level change. IA-32e mode loads only an inner-level
- * RSP from the TSS. The new SS selector is forced to NULL and the SS selector
- * RPL field is set to the new CPL.
- */
-
-/* 6.14.5 Interrupt Stack Table (IST). */
-
-/* This mechanism unconditionally switches stacks when it is enabled. */
-
-/*
- * The IST mechanism provides up to seven IST pointers in the TSS. The pointers
- * are referenced by an interrupt-gate descriptor in the IDT. The gate
- * descriptor contains a 3-bit IST index field that provides an offset into
- * the IST section of the TSS.
- */
-
-/* If the IST index is zero, the modified legacy stack-switching is used. */
 
 /* 6.11 IDT DESCRIPTORS. */
 
@@ -125,6 +97,29 @@ enum gate_type {
 	GATE_INTERRUPT = 0xE,
 	GATE_TRAP = 0xF,
 };
+
+/*
+ * 6.14.4 Stack Switching in IA-32e Mode.
+ *
+ * The 64-bit extensions of Intel 64 architecture implement a modified version
+ * of the legacy stack-switching mechanism and an alternative stack-switching
+ * mechanism called the interrupt stack table (IST).
+ *
+ * In IA-32e mode, the legacy stack-switch mechanism is modified. ... IA-32e
+ * mode loads only an inner-level RSP from the TSS. The new SS selector is forced
+ * to NULL and the SS selector RPL field is set to the new CPL.
+ *
+ * 6.14.5 Interrupt Stack Table.
+ *
+ * This mechanism unconditionally switches stacks when it is enabled.
+ *
+ * The IST mechanism provides up to seven IST pointers in the TSS. The pointers
+ * are referenced by an interrupt-gate descriptor in the IDT. The gate
+ * descriptor contains a 3-bit IST index field that provides an offset into
+ * the IST section of the TSS.
+ *
+ * If the IST index is zero, the modified legacy stack-switching is used.
+ */
 
 struct idt_bits {
 	u16 ist: 3, zero: 5, type: 5, dpl: 2, p: 1;

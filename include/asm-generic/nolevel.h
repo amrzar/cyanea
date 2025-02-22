@@ -17,10 +17,9 @@
 typedef unsigned long pudval_t;
 typedef struct {
 	pgd_t pgd;
+# define pud_val(x) pgd_val((x).pgd)
+# define __pud_t(x) ((pud_t) { __pgd_t((pgdval_t)(x)) })
 } pud_t;
-
-#define pud_val(x) pgd_val((x).pgd)
-#define __pud_t(x) ((pud_t) { __pgd_t((pgdval_t)(x)) })
 
 #endif /* __HAS_PUD_LEVEL__ */
 
@@ -34,10 +33,9 @@ typedef struct {
 typedef unsigned long pmdval_t;
 typedef struct {
 	pud_t pud;
+# define pmd_val(x) pud_val((x).pud)
+# define __pmd_t(x) ((pmd_t) { __pud_t((pudval_t)(x)) })
 } pmd_t;
-
-#define pmd_val(x) pud_val((x).pud)
-#define __pmd_t(x) ((pmd_t) { __pud_t((pudval_t)(x)) })
 
 #endif /* __HAS_PMD_LEVEL__ */
 
