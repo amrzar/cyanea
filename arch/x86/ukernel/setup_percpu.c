@@ -28,7 +28,6 @@ unsigned long __per_cpu_offset[NR_CPUS] __ro_after_init = {
 
 unsigned long this_cpu_off __percpu = BOOT_PERCPU_OFFSET;
 
-/* ukernel/apic/apic.c. */
 extern u32 __initdata early_cpuid_to_apic_id[NR_CPUS];
 extern u32 __initdata early_cpuid_to_acpi_id[NR_CPUS];
 

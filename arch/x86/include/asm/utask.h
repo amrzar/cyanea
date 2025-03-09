@@ -13,22 +13,32 @@ enum {
 	NR_REGISTERS
 };
 
+/**
+ * @brief Stores the CPU register state for a user task.
+ *
+ * This structure is used to save and restore the state of registers
+ * during task switching, system calls, exceptions, and interrupts.
+ */
 struct utask_regs {
+	/**
+	 * @brief General-purpose registers.
+	 *
+	 * Stores the values of all general-purpose registers.
+	 */
 	unsigned long registers[NR_REGISTERS];
 
-	/* On syscall entry, this is syscall number,
-	 * On CPU exception, this is error code (default to -1 if no err.), and
-	 * On interrupt, this is IRQ number.
+	/**
+	 * @brief Differentiates between syscall, exception, and interrupt.
+	 *
+	 * - On syscall entry, this stores the syscall number.
+	 * - On a CPU exception, this stores the error code (or -1 if none).
+	 * - On an interrupt, this stores the IRQ number.
+	 *
+	 * Before calling the C function, this is set to -1 for CPU exceptions
+	 * and interrupts, as the original value is passed as a second argument.
+	 * It is used to distinguish syscall entries (when != -1) from others.
 	 */
-
-	/* It is set to -1 for CPU exception and interrupt before calling the
-	 * C function as the original value is passed as second argument.
-	 * It is used to differentiate between syscall entry (!= -1) from others.
-	 */
-
 	unsigned long orig_rax;
-
-	/* Return frame for IRETQ. */
 
 	unsigned long rip;
 	unsigned long cs;

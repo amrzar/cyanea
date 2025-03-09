@@ -26,13 +26,10 @@ static void __init do_param(int early)
 	const struct setup_param *p;
 
 	for (p = __setup_start; p < __setup_end; p++) {
-		int err;
-
 		if (p->early != early)
 			continue;
 
-		err = param_get_option(boot_command_line, p->param, param, sizeof(param));
-		if (err < 0)
+		if (param_get_option(boot_command_line, p->param, param, sizeof(param)) < 0)
 			continue;
 
 		p->setup_func(param);

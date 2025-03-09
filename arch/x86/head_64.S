@@ -176,3 +176,64 @@ boot_gdt_end:
 
 	.type	boot_gdt, @object
 	.size	boot_gdt, . - boot_gdt
+
+#
+
+	.section ".init.text", "ax"
+
+	.global	boot_idt_handler_array
+	.balign	16, 0x90
+boot_idt_handler_array:
+
+	i = 0
+.rept IDT_EXCEPTION_ENTRIES
+1:
+.if ((IDT_EXCEPTION_WITH_ERRCODE_MASK >> i) & 1) == 0
+	pushq	$-1				# 6A FF (2 bytes) if no error code.
+.endif
+	pushq	$i				# 6A 00 (2 bytes) 'i' range is [0 .. 31].
+	jmp	boot_idt_handler_common		# EB 00 (2 bytes for short jump) or
+						# E9 00 00 00 00 (5 bytes for Neat jump).
+	# Size of each entry in the array should be at least 9 (2 + 2 + 5) bytes to
+	# fit all instructions (pushq + pushq + jmp).
+
+.fill 1b + 9 - ., 1, 0x90
+	i = i + 1
+.endr
+
+	.type	boot_idt_handler_array, @notype		# not a function! 
+	.size	boot_idt_handler_array, . - boot_idt_handler_array
+
+	.balign	16, 0x90
+boot_idt_handler_common:
+
+	# So far we have (1) hardware frame, (2) errorcode or -1, and (3) vector number.
+
+	cld
+
+#       pushq	%rdi			  Preserve the vector number in RDI position.
+	pushq	%rsi			# Start from RSI.
+	movq	8(%rsp), %rsi		# Store the vector number in RSI.
+	movq	%rdi, 8(%rsp)		# Store RDI in its position.
+
+	pushq	%rdx
+	pushq	%rcx
+	pushq	%rax
+	pushq	%r8
+	pushq	%r9
+	pushq	%r10
+	pushq	%r11
+	pushq	%rbx
+	pushq	%rbp
+	pushq	%r12
+	pushq	%r13
+	pushq	%r14
+	pushq	%r15
+
+	movq	%rsp, %rdi		# Put pt_regs pointer in 'RDI'.
+	call	do_boot_exception	# 'do_boot_exception(struct utask_regs *, int)'.
+
+	jmp	return_to_ukernel
+
+	.type	boot_idt_handler_common, @function
+	.size	boot_idt_handler_common, . - boot_idt_handler_common

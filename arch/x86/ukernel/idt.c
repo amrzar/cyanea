@@ -2,7 +2,7 @@
 
 #include <cyanea/init.h>
 #include <asm/desc.h>
-#include <asm/entry_64.h>
+#include <asm/idtentry.h>
 #include <asm/irq_vector.h>
 #include <asm/segment.h>
 

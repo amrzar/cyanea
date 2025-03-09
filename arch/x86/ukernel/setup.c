@@ -12,13 +12,14 @@
 
 struct boot_params boot_params;
 
-void __init early_cpuinfo_init(void);   /* ukernel/cpuinfo.c. */
-void __init init_mem_mapping(void);     /* ukernel/mm.c. */
-void __init acpi_boot_table_init(void); /* ukernel/acpi/boot.c. */
-void __init cache_bp_init(void);        /* ukernel/cache.c. */
-int __init reserve_real_mode(void);     /* realmod/init.c. */
-void __init check_x2apic(void);         /* ukernel/apic/apic.c. */
-void __init cpu_nrs_init(void);         /* ukernel/apic/apic.c. */
+void __init early_cpuinfo_init(void);
+void __init init_mem_mapping(void);
+void __init cache_bp_init(void);
+int __init efi_memblock_x86_reserve_range(void);
+void __init acpi_boot_table_init(void);
+void __init check_x2apic(void);
+void __init setup_nr_cpu_ids(void);
+int __init reserve_real_mode(void);
 
 #ifndef CONFIG_NUMA
 static void __init initmem_init(void)
@@ -77,11 +78,12 @@ void __init setup_arch(void)
 	e820__memory_setup();
 	e820__memblock_setup();
 	early_reserve_memory();
+	efi_memblock_x86_reserve_range();
 	cache_bp_init();
 	reserve_real_mode();
 	init_mem_mapping();
 	acpi_boot_table_init();
 	initmem_init();
 	acpi_boot_init();
-	cpu_nrs_init();
+	setup_nr_cpu_ids();
 }

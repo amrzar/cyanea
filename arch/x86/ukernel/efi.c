@@ -23,16 +23,13 @@ static void __init *efi_memmap_init(phys_addr_t phys_addr, size_t size)
 }
 
 /**
+ * @def for_each_efi_memory_desc_in_map(md, descs, e)
  * @brief Iterate over each EFI memory descriptor in the memory map.
  *
  * The descriptor size (`e->efi_memdesc_size`) represents the size in bytes of
  * an EFI_MEMORY_DESCRIPTOR element. The size is returned to allow for future
  * expansion of the EFI_MEMORY_DESCRIPTOR. Use the descriptor size to iterate
  * over the map.
- *
- * @param md Pointer to the current EFI memory descriptor.
- * @param descs Pointer to the start of the EFI memory descriptor array.
- * @param e Pointer to the EFI system table containing memory map information.
  *
  * @see https://uefi.org/specs/UEFI/2.10/07_Services_Boot_Services.html#efi-boot-services-getmemorymap
  */
@@ -68,6 +65,13 @@ static void __init __used efi_memory_print_type(u32 type)
 	default:
 		ulog_info("type %u", type);
 	}
+}
+
+int __init efi_memblock_x86_reserve_range(void)
+{
+	/* TODO. Reserve ''efi_info''. */
+
+	return SUCCESS;
 }
 
 int __init efi_add_memmap(void)

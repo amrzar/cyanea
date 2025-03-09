@@ -10,7 +10,7 @@
 #include <cyanea/types.h>
 #include <asm/cpu.h>
 #include <asm/cpuinfo.h>
-#include <asm/entry_64.h>
+#include <asm/idtentry.h>
 #include <asm/page.h>
 #include <cyanea/string.h>
 #include <asm/tlb.h>

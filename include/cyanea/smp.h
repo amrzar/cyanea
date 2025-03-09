@@ -7,10 +7,6 @@
 #include <cyanea/percpu.h>
 
 extern unsigned int nr_cpu_ids;
-static __always_inline void set_nr_cpu_ids(unsigned int nr)
-{
-	nr_cpu_ids = nr;
-}
 
 /* Per-cpu CPU ID mappings. */
 extern u32 cpuid_to_apic_id __percpu;

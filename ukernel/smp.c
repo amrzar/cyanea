@@ -8,3 +8,7 @@ unsigned int nr_cpu_ids = 1;
 u32 cpuid_to_apic_id __percpu;
 u32 cpuid_to_acpi_id __percpu;
 
+void __init setup_nr_cpu_ids(void)
+{
+
+}
